@@ -5,7 +5,7 @@ use crate::core::text::WeakFont;
 use crate::core::RaylibHandle;
 use crate::ffi;
 
-use std::ffi::{c_char, CStr, CString};
+use std::ffi::{CStr, CString, c_char};
 
 /// Global gui modification functions
 impl RaylibHandle {
@@ -381,15 +381,32 @@ pub trait RaylibDrawGui {
         buffer: &mut String,
         edit_mode: bool,
     ) -> bool {
-        let len = buffer.len();
-        unsafe {
-            ffi::GuiTextBox(
-                bounds.into(),
-                buffer.as_mut_ptr() as *mut _,
-                len as i32,
-                edit_mode,
-            ) > 0
+        // NOTE: method of dealing with null terminated strings copied from imgui(input_widget.rs:289, build func)
+        buffer.push('\0');
+        let (ptr, capacity) = (buffer.as_mut_ptr(), buffer.capacity());
+        let res = unsafe {
+            ffi::GuiTextBox(bounds.into(), ptr as *mut i8, capacity as i32, edit_mode) > 0
+        };
+        let cap = buffer.capacity();
+
+        // SAFETY: this slice is simply a view into the underlying buffer
+        // of a String. We MAY be holding onto a view of uninitialized memory,
+        // however, since we're holding this as a u8 slice, I think it should be
+        // alright...
+        // additionally, we can go over the bytes directly, rather than char indices,
+        // because NUL will never appear in any UTF8 outside the NUL character (ie, within
+        // a char).
+        let buf = unsafe { std::slice::from_raw_parts(buffer.as_ptr(), cap) };
+        if let Some(len) = buf.iter().position(|x| *x == b'\0') {
+            // `len` is the position of the first `\0` byte in the String
+            unsafe {
+                buffer.as_mut_vec().set_len(len);
+            }
+        } else {
+            // There is no null terminator, the best we can do is to not
+            // update the string length.
         }
+        res
     }
 
     /// Slider control, returns selected value
@@ -572,22 +589,45 @@ pub trait RaylibDrawGui {
         text_max_size: i32,
         secret_view_active: &mut bool,
     ) -> i32 {
-        // rgui.h: line 3699 MAX_FILENAME_LEN
-        text.reserve(256usize.saturating_sub(text.len()));
+        text.reserve(text_max_size as usize);
+        // NOTE: method of dealing with null terminated strings copied from imgui(input_widget.rs:289, build func)
+        text.push('\0');
+        let (ptr, capacity) = (text.as_mut_ptr(), text.capacity());
+
         let c_title = CString::new(title).unwrap();
         let c_message = CString::new(message).unwrap();
         let c_buttons = CString::new(buttons).unwrap();
-        unsafe {
+        let btn_index = unsafe {
             ffi::GuiTextInputBox(
                 bounds.into(),
                 c_title.as_ptr(),
                 c_message.as_ptr(),
                 c_buttons.as_ptr(),
-                text.as_mut_ptr() as *mut _,
-                text_max_size,
+                ptr as *mut i8,
+                capacity as i32,
                 secret_view_active,
             )
+        };
+        let cap = text.capacity();
+
+        // SAFETY: this slice is simply a view into the underlying buffer
+        // of a String. We MAY be holding onto a view of uninitialized memory,
+        // however, since we're holding this as a u8 slice, I think it should be
+        // alright...
+        // additionally, we can go over the bytes directly, rather than char indices,
+        // because NUL will never appear in any UTF8 outside the NUL character (ie, within
+        // a char).
+        let buf = unsafe { std::slice::from_raw_parts(text.as_ptr(), cap) };
+        if let Some(len) = buf.iter().position(|x| *x == b'\0') {
+            // `len` is the position of the first `\0` byte in the String
+            unsafe {
+                text.as_mut_vec().set_len(len);
+            }
+        } else {
+            // There is no null terminator, the best we can do is to not
+            // update the string length.
         }
+        btn_index
     }
 
     /// Color Picker control
