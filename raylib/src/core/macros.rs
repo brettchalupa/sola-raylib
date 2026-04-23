@@ -124,6 +124,16 @@ macro_rules! deref_impl_wrapper {
         }
     };
 }
+// Why `ManuallyDrop<Box<[T]>>` instead of copying into a `Vec`:
+// raylib returns buffers allocated by its own allocator. Earlier versions of
+// these bindings copied into a `Vec` and then freed the raw buffer with
+// `libc::free`, but that breaks if the user has a custom allocator or links
+// libc differently — the free goes to the wrong allocator. Wrapping as
+// `ManuallyDrop<Box<[T]>>` lets us hand callers a slice with the usual
+// iterator/indexing ergonomics without an extra allocation, and on drop we
+// use `Box::leak` + `ManuallyDrop::take` to recover the raw pointer and hand
+// it to raylib's matching `UnloadX` (or `MemFree`) so it's freed with the
+// same allocator that allocated it.
 macro_rules! make_rslice {
     ($name:ident, $t:ty, $dropfunc:expr) => {
         #[repr(transparent)]
