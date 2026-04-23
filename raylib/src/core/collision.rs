@@ -33,7 +33,7 @@ impl Rectangle {
         if self.check_collision_recs(other) {
             return Some(unsafe { ffi::GetCollisionRec(self.into(), other.into()).into() });
         }
-        return None;
+        None
     }
 
     /// Checks if point is inside rectangle.
@@ -81,7 +81,7 @@ pub fn check_collision_point_poly(point: Vector2, points: &[Vector2]) -> bool {
     unsafe {
         ffi::CheckCollisionPointPoly(
             point.into(),
-            std::mem::transmute(points.as_ptr()),
+            std::mem::transmute::<*const Vector2, *const ffi::Vector2>(points.as_ptr()),
             points.len() as i32,
         )
     }
@@ -128,9 +128,9 @@ pub fn check_collision_lines(
         )
     };
     if collision {
-        return Some(out.into());
+        Some(out.into())
     } else {
-        return None;
+        None
     }
 }
 

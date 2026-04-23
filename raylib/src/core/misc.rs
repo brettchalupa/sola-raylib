@@ -5,7 +5,6 @@ use crate::core::{RaylibHandle, RaylibThread};
 use crate::ffi;
 use std::ffi::CString;
 use std::ops::{Deref, DerefMut, Range};
-use std::usize;
 
 /// Struct for holding the result of RaylibHandle::load_random_sequence.
 /// This is a thin wrapper for an array of i32. The reason it exists is because Raylib expects you
@@ -22,7 +21,7 @@ impl<'a> Deref for RandomSequence<'a> {
 
 impl<'a> DerefMut for RandomSequence<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        self.0
     }
 }
 
@@ -49,10 +48,7 @@ impl<'a> Iterator for RandSeqIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let ret = self.0.get(self.1);
         self.1 += 1;
-        match ret {
-            Some(a) => Some(*a),
-            None => None,
-        }
+        ret.copied()
     }
 }
 
@@ -73,7 +69,7 @@ impl RaylibHandle {
     /// Load random values sequence, no values repeated
     pub fn load_random_sequence<'a>(&self, num: Range<i32>, count: u32) -> RandomSequence<'a> {
         unsafe {
-            let ptr = ffi::LoadRandomSequence(count, num.start, num.end.into());
+            let ptr = ffi::LoadRandomSequence(count, num.start, num.end);
             RandomSequence(std::slice::from_raw_parts_mut(ptr, count as usize))
         }
     }
@@ -99,7 +95,7 @@ impl RaylibHandle {
     ///     println!("random value: {}", r);
     /// }
     pub fn get_random_value<T: From<i32>>(&self, num: Range<i32>) -> T {
-        unsafe { (ffi::GetRandomValue(num.start, num.end.into()) as i32).into() }
+        unsafe { (ffi::GetRandomValue(num.start, num.end) as i32).into() }
     }
 
     /// Set the seed for random number generation

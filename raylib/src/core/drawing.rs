@@ -11,20 +11,19 @@ use crate::core::vr::VrStereoConfig;
 use crate::core::{RaylibHandle, RaylibThread};
 use crate::ffi;
 use crate::math::Matrix;
-use crate::models::{Mesh, WeakMaterial};
-use crate::text::Codepoints;
+use crate::models::WeakMaterial;
 use std::convert::AsRef;
 use std::ffi::CString;
 
 use super::camera::Camera2D;
-use super::shaders::{Shader, ShaderV};
+use super::shaders::Shader;
 
 /// Seems like all draw commands must be issued from the main thread
 impl RaylibHandle {
     #[must_use]
     /// Setup canvas (framebuffer) to start drawing.
     /// Prefer using the closure version, [RaylibHandle::draw]. This version returns a handle that calls [raylib_sys::EndDrawing] at the end of the scope and is provided as a fallback incase you run into issues with closures(such as lifetime or performance reasons)
-    pub fn begin_drawing(&mut self, _: &RaylibThread) -> RaylibDrawHandle {
+    pub fn begin_drawing(&mut self, _: &RaylibThread) -> RaylibDrawHandle<'_> {
         unsafe {
             ffi::BeginDrawing();
         };
@@ -48,7 +47,7 @@ pub struct RaylibDrawHandle<'a>(&'a mut RaylibHandle);
 impl<'a> RaylibDrawHandle<'a> {
     #[deprecated = "Calling begin_drawing within RaylibDrawHandle will result in a runtime error."]
     #[doc(hidden)]
-    pub fn begin_drawing(&mut self, _: &RaylibThread) -> RaylibDrawHandle {
+    pub fn begin_drawing(&mut self, _: &RaylibThread) -> RaylibDrawHandle<'_> {
         panic!("Nested begin_drawing call")
     }
     #[deprecated = "Calling draw within RaylibDrawHandle will result in a runtime error."]
@@ -70,7 +69,7 @@ impl<'a> std::ops::Deref for RaylibDrawHandle<'a> {
     type Target = RaylibHandle;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 
@@ -94,7 +93,7 @@ impl<'a, T> std::ops::Deref for RaylibTextureMode<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 impl<'a, T> std::ops::DerefMut for RaylibTextureMode<'a, T> {
@@ -115,7 +114,7 @@ where
         &'a mut self,
         _: &RaylibThread,
         framebuffer: &'a mut ffi::RenderTexture2D,
-    ) -> RaylibTextureMode<Self> {
+    ) -> RaylibTextureMode<'a, Self> {
         unsafe { ffi::BeginTextureMode(*framebuffer) }
         RaylibTextureMode(self, framebuffer)
     }
@@ -148,7 +147,7 @@ impl<'a, T> std::ops::Deref for RaylibVRMode<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 
@@ -163,7 +162,7 @@ where
         &'a mut self,
         _: &RaylibThread,
         vr_config: &'a mut VrStereoConfig,
-    ) -> RaylibVRMode<Self> {
+    ) -> RaylibVRMode<'a, Self> {
         unsafe { ffi::BeginVrStereoMode(*vr_config.as_ref()) }
         RaylibVRMode(self, vr_config)
     }
@@ -174,7 +173,7 @@ where
         mut func: impl FnMut(RaylibVRMode<Self>),
     ) {
         unsafe { ffi::BeginVrStereoMode(*vr_config.as_ref()) }
-        func(RaylibVRMode(&self, vr_config));
+        func(RaylibVRMode(self, vr_config));
     }
 }
 
@@ -193,7 +192,7 @@ impl<'a, T> std::ops::Deref for RaylibMode2D<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 impl<'a, T> std::ops::DerefMut for RaylibMode2D<'a, T> {
@@ -210,7 +209,7 @@ where
     /// Prefer using the closure version, [RaylibMode2DExt::draw_mode2D]. This version returns a handle that calls [raylib_sys::EndMode2D] at the end of the scope and is provided as a fallback incase you run into issues with closures(such as lifetime or performance reasons)
     #[allow(non_snake_case)]
     #[must_use]
-    fn begin_mode2D(&mut self, camera: impl Into<ffi::Camera2D>) -> RaylibMode2D<Self> {
+    fn begin_mode2D(&mut self, camera: impl Into<ffi::Camera2D>) -> RaylibMode2D<'_, Self> {
         unsafe {
             ffi::BeginMode2D(camera.into());
         }
@@ -248,7 +247,7 @@ impl<'a, T> std::ops::Deref for RaylibMode3D<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 impl<'a, T> std::ops::DerefMut for RaylibMode3D<'a, T> {
@@ -265,7 +264,7 @@ where
     /// Prefer using the closure version, [RaylibMode3DExt::draw_mode3D]. This version returns a handle that calls [raylib_sys::EndMode3D] at the end of the scope and is provided as a fallback incase you run into issues with closures(such as lifetime or performance reasons)
     #[allow(non_snake_case)]
     #[must_use]
-    fn begin_mode3D(&mut self, camera: impl Into<ffi::Camera3D>) -> RaylibMode3D<Self> {
+    fn begin_mode3D(&mut self, camera: impl Into<ffi::Camera3D>) -> RaylibMode3D<'_, Self> {
         unsafe {
             ffi::BeginMode3D(camera.into());
         }
@@ -305,7 +304,7 @@ impl<'a, T> std::ops::Deref for RaylibShaderMode<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 impl<'a, T> std::ops::DerefMut for RaylibShaderMode<'a, T> {
@@ -321,7 +320,7 @@ where
     /// Begin custom shader drawing.
     /// Prefer using the closure version, [RaylibShaderModeExt::draw_shader_mode]. This version returns a handle that calls [raylib_sys::EndShaderMode] at the end of the scope and is provided as a fallback incase you run into issues with closures(such as lifetime or performance reasons)
     #[must_use]
-    fn begin_shader_mode<'a>(&'a mut self, shader: &'a mut Shader) -> RaylibShaderMode<Self> {
+    fn begin_shader_mode<'a>(&'a mut self, shader: &'a mut Shader) -> RaylibShaderMode<'a, Self> {
         unsafe { ffi::BeginShaderMode(*shader.as_ref()) }
         RaylibShaderMode(self, shader)
     }
@@ -352,7 +351,7 @@ impl<'a, T> std::ops::Deref for RaylibBlendMode<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 impl<'a, T> std::ops::DerefMut for RaylibBlendMode<'a, T> {
@@ -368,7 +367,10 @@ where
     /// Begin blending mode (alpha, additive, multiplied, subtract, custom).
     /// Prefer using the closure version, [RaylibBlendModeExt::draw_blend_mode]. This version returns a handle that calls [raylib_sys::EndBlendMode] at the end of the scope and is provided as a fallback incase you run into issues with closures(such as lifetime or performance reasons)
     #[must_use]
-    fn begin_blend_mode(&mut self, blend_mode: crate::consts::BlendMode) -> RaylibBlendMode<Self> {
+    fn begin_blend_mode(
+        &mut self,
+        blend_mode: crate::consts::BlendMode,
+    ) -> RaylibBlendMode<'_, Self> {
         unsafe { ffi::BeginBlendMode((blend_mode as u32) as i32) }
         RaylibBlendMode(self)
     }
@@ -399,7 +401,7 @@ impl<'a, T> std::ops::Deref for RaylibScissorMode<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 impl<'a, T> std::ops::DerefMut for RaylibScissorMode<'a, T> {
@@ -421,7 +423,7 @@ where
         y: i32,
         width: i32,
         height: i32,
-    ) -> RaylibScissorMode<Self> {
+    ) -> RaylibScissorMode<'_, Self> {
         unsafe { ffi::BeginScissorMode(x, y, width, height) }
         RaylibScissorMode(self)
     }
@@ -708,6 +710,8 @@ pub trait RaylibDraw {
 
     /// Draw ring
     #[inline]
+    // Argument list mirrors raylib's `DrawRing` C API; refactoring would diverge from upstream.
+    #[allow(clippy::too_many_arguments)]
     fn draw_ring(
         &mut self,
         center: impl Into<ffi::Vector2>,
@@ -733,6 +737,8 @@ pub trait RaylibDraw {
 
     /// Draw ring lines
     #[inline]
+    // Argument list mirrors raylib's `DrawRingLines` C API; refactoring would diverge from upstream.
+    #[allow(clippy::too_many_arguments)]
     fn draw_ring_lines(
         &mut self,
         center: impl Into<ffi::Vector2>,
@@ -1212,6 +1218,8 @@ pub trait RaylibDraw {
         }
     }
 
+    // Argument list mirrors raylib's `DrawTextPro` C API; refactoring would diverge from upstream.
+    #[allow(clippy::too_many_arguments)]
     fn draw_text_pro(
         &mut self,
         font: impl AsRef<ffi::Font>,
@@ -1661,12 +1669,15 @@ pub trait RaylibDraw3D {
         material: WeakMaterial,
         transforms: &[Matrix],
     ) {
-        let tr = transforms
-            .iter()
-            .map(|f| f.into())
-            .collect::<Vec<ffi::Matrix>>()
-            .as_ptr();
-        unsafe { ffi::DrawMeshInstanced(*mesh.as_ref(), material.0, tr, transforms.len() as i32) }
+        let tr: Vec<ffi::Matrix> = transforms.iter().map(|f| f.into()).collect();
+        unsafe {
+            ffi::DrawMeshInstanced(
+                *mesh.as_ref(),
+                material.0,
+                tr.as_ptr(),
+                transforms.len() as i32,
+            )
+        }
     }
 
     /// Draws a sphere.
@@ -2002,6 +2013,8 @@ pub trait RaylibDraw3D {
     }
 
     /// Draw a billboard texture defined by source and rotation
+    // Argument list mirrors raylib's `DrawBillboardPro` C API; refactoring would diverge from upstream.
+    #[allow(clippy::too_many_arguments)]
     fn draw_billboard_pro(
         &mut self,
         camera: impl Into<ffi::Camera>,

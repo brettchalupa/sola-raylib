@@ -62,7 +62,7 @@ fn build_with_cmake(src_path: &str) {
 
     let mut conf = cmake::Config::new(src_path);
     let mut builder;
-    let mut profile = "";
+    let profile;
     #[cfg(debug_assertions)]
     {
         builder = conf.profile("Debug");
@@ -552,6 +552,7 @@ fn uname() -> String {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 enum Platform {
     Web,
     Desktop,
@@ -560,6 +561,7 @@ enum Platform {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 enum PlatformOS {
     Windows,
     Linux,

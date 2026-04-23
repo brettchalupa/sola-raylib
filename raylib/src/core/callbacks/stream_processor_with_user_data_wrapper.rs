@@ -32,7 +32,7 @@ impl AudioCallbackWithUserData {
         raw_callback: RawAudioCallbackWithUserData,
     ) -> Self {
         AudioCallbackWithUserData {
-            user_data: user_data,
+            user_data,
             callback: Some(raw_callback),
         }
     }
@@ -72,7 +72,7 @@ macro_rules! generate_functions {
               $(
                   {
                       let mut guard = [< CLOSURE_ $n >].lock().unwrap();
-                      if (*guard).callback == None {
+                      if (*guard).callback.is_none() {
                         *guard = audio_callback;
                         return $n;
                       }
@@ -86,7 +86,7 @@ macro_rules! generate_functions {
               $(
                   if index == $n {
                       let mut guard = [< CLOSURE_ $n >].lock().unwrap();
-                      if (*guard).callback == None {
+                      if (*guard).callback.is_none() {
                           panic!(
                               "No callbacks registered under this number ({}).",
                               index

@@ -818,6 +818,13 @@ impl RaylibHandle {
     }
 
     /// Get native window handle
+    ///
+    /// # Safety
+    /// The returned pointer is an opaque OS-specific handle (e.g. `HWND` on Windows,
+    /// `Window` on X11). The caller must know the correct platform type and must
+    /// ensure the raylib window is still alive for the duration the handle is used.
+    /// Dereferencing or passing it to an OS API after the window has been closed is
+    /// undefined behavior.
     #[inline]
     pub unsafe fn get_window_handle(&mut self) -> *mut ::std::os::raw::c_void {
         ffi::GetWindowHandle()

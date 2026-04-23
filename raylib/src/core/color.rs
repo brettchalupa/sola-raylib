@@ -1,10 +1,8 @@
 //! [`Color`] manipulation helpers
-use std::os::raw::c_void;
 
 use crate::core::math::{Vector3, Vector4};
 use crate::ffi;
 
-use raylib_sys::{ColorIsEqual, GetPixelColor, PixelFormat};
 #[cfg(not(feature = "with_serde"))]
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -16,8 +14,6 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "with_serde")]
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-
-use super::RaylibHandle;
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Default)]
@@ -40,30 +36,30 @@ impl From<ffi::Color> for Color {
     }
 }
 
-impl Into<ffi::Color> for Color {
-    fn into(self) -> ffi::Color {
-        unsafe { std::mem::transmute(self) }
+impl From<Color> for ffi::Color {
+    fn from(val: Color) -> ffi::Color {
+        unsafe { std::mem::transmute(val) }
     }
 }
 
-impl Into<ffi::Color> for &Color {
-    fn into(self) -> ffi::Color {
+impl From<&Color> for ffi::Color {
+    fn from(val: &Color) -> ffi::Color {
         ffi::Color {
-            r: self.r,
-            g: self.g,
-            b: self.b,
-            a: self.a,
+            r: val.r,
+            g: val.g,
+            b: val.b,
+            a: val.a,
         }
     }
 }
 
-impl Into<Vector4> for Color {
-    fn into(self) -> Vector4 {
+impl From<Color> for Vector4 {
+    fn from(val: Color) -> Vector4 {
         Vector4::new(
-            self.r as f32 / 255.0,
-            self.g as f32 / 255.0,
-            self.b as f32 / 255.0,
-            self.a as f32 / 255.0,
+            val.r as f32 / 255.0,
+            val.g as f32 / 255.0,
+            val.b as f32 / 255.0,
+            val.a as f32 / 255.0,
         )
     }
 }
@@ -191,7 +187,7 @@ impl Color {
 /// change or do anything different, but in the ultra rare case that it does, we want to mimick Raylib's behavior.
 impl PartialEq for Color {
     fn eq(&self, other: &Self) -> bool {
-        return self.is_equal(other);
+        self.is_equal(other)
     }
 }
 impl Eq for Color {}

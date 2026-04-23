@@ -26,7 +26,7 @@ pub fn compress_data(data: &[u8]) -> Result<&'static [u8], Error> {
         return Err(error!("could not compress data"));
     }
     let buffer = unsafe { std::slice::from_raw_parts(buffer, out_length as usize) };
-    return Ok(buffer);
+    Ok(buffer)
 }
 
 /// Decompress data (DEFLATE algorythm)
@@ -49,7 +49,7 @@ pub fn decompress_data(data: &[u8]) -> Result<&'static [u8], Error> {
         return Err(error!("could not compress data"));
     }
     let buffer = unsafe { std::slice::from_raw_parts(buffer, out_length as usize) };
-    return Ok(buffer);
+    Ok(buffer)
 }
 
 #[cfg(unix)]
@@ -88,7 +88,7 @@ pub fn encode_data_base64(data: &[u8]) -> Vec<c_char> {
                 }
                 keep
             })
-            .map(|f| *f)
+            .copied()
             .collect();
         b
     } else {
@@ -114,7 +114,7 @@ pub fn decode_data_base64(data: &[u8]) -> Vec<u8> {
                 }
                 keep
             })
-            .map(|f| *f)
+            .copied()
             .collect();
         b
     } else {

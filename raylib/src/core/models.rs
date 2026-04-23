@@ -133,6 +133,14 @@ impl RaylibModel for WeakModel {}
 impl RaylibModel for Model {}
 
 impl Model {
+    /// Convert into a [`WeakModel`] that does not own the underlying resource.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for ensuring the returned `WeakModel`
+    /// does not outlive the GPU resources it references, and for explicitly
+    /// unloading the model via [`RaylibHandle::unload_model`] when finished.
+    /// Failing to do so will leak GPU memory.
     pub unsafe fn make_weak(self) -> WeakModel {
         let m = WeakModel(self.0);
         std::mem::forget(self);
@@ -210,14 +218,14 @@ pub trait RaylibModel: AsRef<ffi::Model> + AsMut<ffi::Model> {
         if self.as_ref().bindPose.is_null() {
             return None;
         }
-        Some(unsafe { std::mem::transmute(self.as_ref().bindPose) })
+        Some(unsafe { &*(self.as_ref().bindPose as *const crate::math::Transform) })
     }
 
     fn bind_pose_mut(&mut self) -> Option<&mut crate::math::Transform> {
         if self.as_ref().bindPose.is_null() {
             return None;
         }
-        Some(unsafe { std::mem::transmute(self.as_mut().bindPose) })
+        Some(unsafe { &mut *(self.as_mut().bindPose as *mut crate::math::Transform) })
     }
 
     /// Check model animation skeleton match
@@ -239,13 +247,13 @@ pub trait RaylibModel: AsRef<ffi::Model> + AsMut<ffi::Model> {
     /// Set material for a mesh
     fn set_model_mesh_material(&mut self, mesh_id: i32, material_id: i32) -> Result<(), Error> {
         if mesh_id >= self.as_ref().meshCount {
-            return Err(error!("mesh_id greater than mesh count"));
+            Err(error!("mesh_id greater than mesh count"))
         } else if material_id >= self.as_ref().materialCount {
-            return Err(error!("material_id greater than material count"));
+            Err(error!("material_id greater than material count"))
         } else {
             unsafe { ffi::SetModelMeshMaterial(self.as_mut(), mesh_id, material_id) };
-            return Ok(());
-        };
+            Ok(())
+        }
     }
 }
 
@@ -253,6 +261,14 @@ impl RaylibMesh for WeakMesh {}
 impl RaylibMesh for Mesh {}
 
 impl Mesh {
+    /// Convert into a [`WeakMesh`] that does not own the underlying resource.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for ensuring the returned `WeakMesh`
+    /// does not outlive the GPU resources it references, and for explicitly
+    /// unloading the mesh via [`RaylibHandle::unload_mesh`] when finished.
+    /// Failing to do so will leak GPU memory.
     pub unsafe fn make_weak(self) -> WeakMesh {
         let m = WeakMesh(self.0);
         std::mem::forget(self);
@@ -260,9 +276,24 @@ impl Mesh {
     }
 }
 pub trait RaylibMesh: AsRef<ffi::Mesh> + AsMut<ffi::Mesh> {
+    /// Upload mesh vertex data to the GPU.
+    ///
+    /// # Safety
+    ///
+    /// Must be called on the main thread while a valid raylib context exists,
+    /// as this calls into OpenGL via raylib. The mesh's CPU-side buffers must
+    /// be valid and fully initialized.
     unsafe fn upload(&mut self, dynamic: bool) {
         ffi::UploadMesh(self.as_mut(), dynamic);
     }
+    /// Update a GPU mesh buffer with new data.
+    ///
+    /// # Safety
+    ///
+    /// Must be called on the main thread while a valid raylib context exists.
+    /// `index` must identify a valid buffer that has previously been uploaded
+    /// with [`upload`], and `offset + data.len()` must not exceed the size of
+    /// that buffer on the GPU.
     unsafe fn update_buffer<A>(&mut self, index: i32, data: &[u8], offset: i32) {
         ffi::UpdateMeshBuffer(
             *self.as_ref(),
@@ -347,7 +378,7 @@ pub trait RaylibMesh: AsRef<ffi::Mesh> + AsMut<ffi::Mesh> {
     fn indicies_mut(&mut self) -> &mut [u16] {
         unsafe {
             std::slice::from_raw_parts_mut(
-                self.as_mut().indices as *mut u16,
+                self.as_mut().indices,
                 self.as_mut().vertexCount as usize,
             )
         }
@@ -461,6 +492,14 @@ pub trait RaylibMesh: AsRef<ffi::Mesh> + AsMut<ffi::Mesh> {
 }
 
 impl Material {
+    /// Convert into a [`WeakMaterial`] that does not own the underlying resource.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for ensuring the returned `WeakMaterial`
+    /// does not outlive the GPU resources it references, and for explicitly
+    /// unloading the material via [`RaylibHandle::unload_material`] when
+    /// finished. Failing to do so will leak GPU memory.
     pub unsafe fn make_weak(self) -> WeakMaterial {
         let m = WeakMaterial(self.0);
         std::mem::forget(self);
@@ -536,6 +575,16 @@ impl RaylibModelAnimation for ModelAnimation {}
 impl RaylibModelAnimation for WeakModelAnimation {}
 
 impl ModelAnimation {
+    /// Convert into a [`WeakModelAnimation`] that does not own the underlying
+    /// resource.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for ensuring the returned
+    /// `WeakModelAnimation` does not outlive the underlying data, and for
+    /// explicitly unloading the animation via
+    /// [`RaylibHandle::unload_model_animation`] when finished. Failing to do
+    /// so will leak memory.
     pub unsafe fn make_weak(self) -> WeakModelAnimation {
         let m = WeakModelAnimation(self.0);
         std::mem::forget(self);
@@ -625,6 +674,13 @@ impl RaylibHandle {
 
     /// Weak materials will leak memeory if they are not unlaoded
     /// Unload material from GPU memory (VRAM)
+    ///
+    /// # Safety
+    ///
+    /// `material` must be a valid, currently-loaded material that has not
+    /// already been unloaded. After this call the GPU resources backing
+    /// `material` are freed, so any other `WeakMaterial` copies referring to
+    /// the same material must no longer be used.
     pub unsafe fn unload_material(&mut self, _: &RaylibThread, material: WeakMaterial) {
         {
             ffi::UnloadMaterial(*material.as_ref())
@@ -633,6 +689,13 @@ impl RaylibHandle {
 
     /// Weak models will leak memeory if they are not unlaoded
     /// Unload model from GPU memory (VRAM)
+    ///
+    /// # Safety
+    ///
+    /// `model` must be a valid, currently-loaded model that has not already
+    /// been unloaded. After this call the GPU resources backing `model` are
+    /// freed, so any other `WeakModel` copies referring to the same model
+    /// must no longer be used.
     pub unsafe fn unload_model(&mut self, _: &RaylibThread, model: WeakModel) {
         {
             ffi::UnloadModel(*model.as_ref())
@@ -641,6 +704,13 @@ impl RaylibHandle {
 
     /// Weak model_animations will leak memeory if they are not unlaoded
     /// Unload model_animation from GPU memory (VRAM)
+    ///
+    /// # Safety
+    ///
+    /// `model_animation` must be a valid, currently-loaded animation that has
+    /// not already been unloaded. After this call the memory backing
+    /// `model_animation` is freed, so any other `WeakModelAnimation` copies
+    /// referring to the same animation must no longer be used.
     pub unsafe fn unload_model_animation(
         &mut self,
         _: &RaylibThread,
@@ -653,6 +723,13 @@ impl RaylibHandle {
 
     /// Weak meshs will leak memeory if they are not unlaoded
     /// Unload mesh from GPU memory (VRAM)
+    ///
+    /// # Safety
+    ///
+    /// `mesh` must be a valid, currently-loaded mesh that has not already
+    /// been unloaded. After this call the GPU resources backing `mesh` are
+    /// freed, so any other `WeakMesh` copies referring to the same mesh must
+    /// no longer be used.
     pub unsafe fn unload_mesh(&mut self, _: &RaylibThread, mesh: WeakMesh) {
         {
             ffi::UnloadMesh(*mesh.as_ref())

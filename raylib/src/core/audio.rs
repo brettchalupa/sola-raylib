@@ -161,7 +161,7 @@ impl RaylibAudio {
     pub fn new_music_from_memory<'aud>(
         &'aud self,
         filetype: &str,
-        bytes: &Vec<u8>,
+        bytes: &[u8],
     ) -> Result<Music<'aud>, Error> {
         let c_filetype = CString::new(filetype).unwrap();
         let w = unsafe {
@@ -192,7 +192,7 @@ impl RaylibAudio {
     }
 }
 
-impl<'aud> Drop for RaylibAudio {
+impl Drop for RaylibAudio {
     fn drop(&mut self) {
         unsafe { ffi::CloseAudioDevice() }
     }
@@ -211,6 +211,14 @@ impl<'aud> Wave<'aud> {
     pub fn channels(&self) -> u32 {
         self.0.channels
     }
+    /// Extract the raw FFI [`ffi::Wave`] value, bypassing the automatic `Drop` that would
+    /// normally free it.
+    ///
+    /// # Safety
+    /// After calling this function, the caller takes full responsibility for the underlying
+    /// raylib resource. The returned wave must eventually be freed via `ffi::UnloadWave` (or
+    /// reattached to a safe wrapper) to avoid leaking memory, and it must not be used after the
+    /// owning [`RaylibAudio`] has been dropped (which calls `CloseAudioDevice`).
     pub unsafe fn inner(self) -> ffi::Wave {
         let inner = self.0;
         std::mem::forget(self);
@@ -229,16 +237,9 @@ impl<'aud> Wave<'aud> {
         unsafe { ffi::ExportWave(self.0, c_filename.as_ptr()) }
     }
 
-    /// Export wave sample data to code (.h)
-    /*#[inline]
-    pub fn export_wave_as_code(&self, filename: &str) -> bool {
-        let c_filename = CString::new(filename).unwrap();
-        unsafe { ffi::ExportWaveAsCode(self.0, c_filename.as_ptr()) }
-    }*/
-
     /// Copies a wave to a new wave.
     #[inline]
-    pub(crate) fn copy(&self) -> Wave {
+    pub(crate) fn copy(&self) -> Wave<'_> {
         unsafe { Wave(ffi::WaveCopy(self.0), self.1) }
     }
 
@@ -286,6 +287,14 @@ impl<'aud> Sound<'aud> {
     pub fn frame_count(&self) -> u32 {
         self.0.frameCount
     }
+    /// Extract the raw FFI [`ffi::Sound`] value, bypassing the automatic `Drop` that would
+    /// normally free it.
+    ///
+    /// # Safety
+    /// After calling this function, the caller takes full responsibility for the underlying
+    /// raylib resource. The returned sound must eventually be freed via `ffi::UnloadSound` (or
+    /// reattached to a safe wrapper) to avoid leaking memory, and it must not be used after the
+    /// owning [`RaylibAudio`] has been dropped (which calls `CloseAudioDevice`).
     pub unsafe fn inner(self) -> ffi::Sound {
         let inner = self.0;
         std::mem::forget(self);
@@ -361,6 +370,15 @@ impl<'aud, 'bind> SoundAlias<'aud, 'bind> {
     pub fn frame_count(&self) -> u32 {
         self.0.frameCount
     }
+    /// Extract the raw FFI [`ffi::Sound`] value, bypassing the automatic `Drop` that would
+    /// normally free it.
+    ///
+    /// # Safety
+    /// After calling this function, the caller takes full responsibility for the underlying
+    /// raylib resource. The returned sound alias must eventually be freed via
+    /// `ffi::UnloadSoundAlias` (or reattached to a safe wrapper) to avoid leaking memory, and it
+    /// must not be used after its parent [`Sound`] or the owning [`RaylibAudio`] has been
+    /// dropped.
     pub unsafe fn inner(self) -> ffi::Sound {
         let inner = self.0;
         std::mem::forget(self);
@@ -512,6 +530,15 @@ impl<'aud> AudioStream<'aud> {
         self.0.channels
     }
 
+    /// Extract the raw FFI [`ffi::AudioStream`] value, bypassing the automatic `Drop` that
+    /// would normally free it.
+    ///
+    /// # Safety
+    /// After calling this function, the caller takes full responsibility for the underlying
+    /// raylib resource. The returned stream must eventually be freed via
+    /// `ffi::UnloadAudioStream` (or reattached to a safe wrapper) to avoid leaking memory, and
+    /// it must not be used after the owning [`RaylibAudio`] has been dropped (which calls
+    /// `CloseAudioDevice`).
     pub unsafe fn inner(self) -> ffi::AudioStream {
         let inner = self.0;
         std::mem::forget(self);
@@ -525,7 +552,7 @@ impl<'aud> AudioStream<'aud> {
             ffi::UpdateAudioStream(
                 self.0,
                 data.as_ptr() as *const std::os::raw::c_void,
-                (data.len() * std::mem::size_of::<T>()) as i32,
+                std::mem::size_of_val(data) as i32,
             );
         }
     }
