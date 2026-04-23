@@ -3,7 +3,21 @@
 Originally the raylib-rs Changelog; sola-raylib is a fork of raylib-rs.
 Outdated and incomplete.
 
-## 3.7.0 (WIP)
+## 5.5.2
+
+- Renamed to sola-raylib and sola-raylib-sys
+- Fixed incorrect param ordering for `gui_list_view_ex`
+- Added `window_highdpi` to `RaylibBuilder` and associated `highdpi` builder
+  function
+- Expanded CI
+- Formatting and linter fixes
+- Clean up files in repo
+
+---
+
+Old, stale changelog below from raylib-rs. Keeping around for posterity's sake.
+
+## 3.7.0
 
 - [core] ADDED: LoadVrStereoConfig()
 - [core] ADDED: UnloadVrStereoConfig()

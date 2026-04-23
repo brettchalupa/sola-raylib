@@ -1,6 +1,6 @@
 [package]
 name = "sola-raylib-test"
-version = "5.5.1"
+version = "5.5.2"
 authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 edition = "2018"
 license = "Zlib"
@@ -8,8 +8,8 @@ readme = "../README.md"
 repository = "https://github.com/brettchalupa/sola-raylib"
 
 [dependencies]
-raylib = { package = "sola-raylib", version = "5.5.1", path = "../raylib" }
-raylib-sys = { package = "sola-raylib-sys", version = "5.5.1", path = "../raylib-sys" }
+raylib = { package = "sola-raylib", version = "5.5.2", path = "../raylib" }
+raylib-sys = { package = "sola-raylib-sys", version = "5.5.2", path = "../raylib-sys" }
 lazy_static = "1.2.0"
 colored = "2.1.0"
 
