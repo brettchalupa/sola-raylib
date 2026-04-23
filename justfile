@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Run all checks that should be green before committing/pushing.
-ok: build clippy doctest
+ok: build clippy doctest samples
     @echo "All checks passed."
 
 # Build every crate in the workspace.

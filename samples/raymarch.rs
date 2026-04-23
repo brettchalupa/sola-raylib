@@ -56,13 +56,13 @@ pub fn main() {
 
         // Draw
         //----------------------------------------------------------------------------------
-        rl.start_drawing(&thread, |mut d| {
+        rl.draw(&thread, |mut d| {
             d.clear_background(Color::RAYWHITE);
 
             // We only draw a white full-screen rectangle,
             // frame is generated in shader using raymarching
             {
-                d.start_shader_mode(&mut shader, |mut d, _shader| {
+                d.draw_shader_mode(&mut shader, |mut d| {
                     d.draw_rectangle(0, 0, w, h, Color::WHITE);
                 });
             }

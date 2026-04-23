@@ -18,7 +18,7 @@ fn main() {
     let font = rl.get_font_default();
     while !rl.window_should_close() {
         // Detect window close button or ESC key
-        rl.start_drawing(&thread, |mut d| {
+        rl.draw(&thread, |mut d| {
             d.clear_background(Color::WHITE);
             d.custom_draw(&font);
         });
