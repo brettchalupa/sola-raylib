@@ -79,3 +79,17 @@ Contributions are welcome to improve or fix the shell.nix!
 
 The sola-raylib-test crate tests the bindings by opening a window, and checking
 the results of various functions. It requires nightly to use.
+
+## Maintenance scripts
+
+`scripts/find_unimplemented.py` lists raylib and raygui FFI functions that
+aren't yet wrapped in the safe layer. Run from the repo root:
+
+```
+python3 scripts/find_unimplemented.py
+```
+
+Output is a `- [ ]` checklist grouped by `Raylib` / `Raygui`, handy when
+tracking wrapping progress against a new upstream release. Functions we never
+intend to wrap (std-covered helpers, etc.) live in the `wont_impl` list at the
+top of the script. Edit there if a new one should be ignored.
