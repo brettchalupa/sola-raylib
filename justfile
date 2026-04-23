@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Run all checks that should be green before committing/pushing.
-ok: build clippy doctest samples
+ok: build clippy test samples
     @echo "All checks passed."
 
 # Build every crate in the workspace.
@@ -16,9 +16,10 @@ build:
 clippy:
     cargo clippy --workspace --all-targets
 
-# Run doc tests (real tests require a display and are run manually).
-doctest:
-    cargo test --doc --workspace
+# Run all workspace tests (unit + doc tests).
+# Tests that require a display live in the raylib-test crate, which is excluded from the workspace.
+test:
+    cargo test --workspace
 
 # Format all code in place.
 fmt:
