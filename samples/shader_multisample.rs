@@ -31,11 +31,10 @@ pub fn main() {
         } else if divider_value > 1.0 {
             divider_value = 1.0;
         };
-        rl.start_drawing(&thread, |mut d| {
-            d.start_shader_mode(&mut shader, |mut d, shader| {
-                shader.set_shader_value(divider_loc, divider_value);
-                shader.set_shader_value_texture(tex_blue_loc, &tex_blue);
-
+        shader.set_shader_value(divider_loc, divider_value);
+        shader.set_shader_value_texture(tex_blue_loc, &tex_blue);
+        rl.draw(&thread, |mut d| {
+            d.draw_shader_mode(&mut shader, |mut d| {
                 d.clear_background(Color::WHITE);
                 d.draw_texture(&tex_red, 0, 0, Color::WHITE);
             });
