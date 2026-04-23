@@ -28,24 +28,24 @@ impl From<ffi::VrDeviceInfo> for VrDeviceInfo {
     }
 }
 
-impl Into<ffi::VrDeviceInfo> for VrDeviceInfo {
-    fn into(self) -> ffi::VrDeviceInfo {
-        unsafe { std::mem::transmute(self) }
+impl From<VrDeviceInfo> for ffi::VrDeviceInfo {
+    fn from(val: VrDeviceInfo) -> ffi::VrDeviceInfo {
+        unsafe { std::mem::transmute(val) }
     }
 }
 
-impl Into<ffi::VrDeviceInfo> for &VrDeviceInfo {
-    fn into(self) -> ffi::VrDeviceInfo {
+impl From<&VrDeviceInfo> for ffi::VrDeviceInfo {
+    fn from(val: &VrDeviceInfo) -> ffi::VrDeviceInfo {
         ffi::VrDeviceInfo {
-            hResolution: self.h_resolution,  // Horizontal resolution in pixels
-            vResolution: self.v_esolution,   // Vertical resolution in pixels
-            hScreenSize: self.h_screen_size, // Horizontal size in meters
-            vScreenSize: self.v_screen_size, // Vertical size in meters
-            eyeToScreenDistance: self.eye_to_screen_distance, // Distance between eye and display in meters
-            lensSeparationDistance: self.lens_separation_distance, // Lens separation distance in meters
-            interpupillaryDistance: self.interpupillary_distance, // IPD (distance between pupils) in meters
-            lensDistortionValues: self.lens_distortion_values, // Lens distortion constant parameters
-            chromaAbCorrection: self.chroma_ab_correction,
+            hResolution: val.h_resolution,  // Horizontal resolution in pixels
+            vResolution: val.v_esolution,   // Vertical resolution in pixels
+            hScreenSize: val.h_screen_size, // Horizontal size in meters
+            vScreenSize: val.v_screen_size, // Vertical size in meters
+            eyeToScreenDistance: val.eye_to_screen_distance, // Distance between eye and display in meters
+            lensSeparationDistance: val.lens_separation_distance, // Lens separation distance in meters
+            interpupillaryDistance: val.interpupillary_distance, // IPD (distance between pupils) in meters
+            lensDistortionValues: val.lens_distortion_values, // Lens distortion constant parameters
+            chromaAbCorrection: val.chroma_ab_correction,
         }
     }
 }

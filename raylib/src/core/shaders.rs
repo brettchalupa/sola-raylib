@@ -1,5 +1,4 @@
 //! Code for the safe manipulation of shaders
-use thiserror::Error;
 
 use crate::consts::ShaderUniformDataType;
 use crate::core::math::Matrix;
@@ -32,14 +31,12 @@ impl RaylibHandle {
         // Trust me, I have tried ALL the RUST option ergonamics. This is the only way
         // to get this to work without raylib breaking for whatever reason
         // UPDATE FOR 2024 FROM ANOTHER PERSON: Yes this is still true, doing although "for some reason" is likely due to the pointer getting freed too early if you don't do it this way.
-        let shader = match (c_vs_filename, c_fs_filename) {
+        match (c_vs_filename, c_fs_filename) {
             (Some(vs), Some(fs)) => unsafe { Shader(ffi::LoadShader(vs.as_ptr(), fs.as_ptr())) },
             (None, Some(fs)) => unsafe { Shader(ffi::LoadShader(std::ptr::null(), fs.as_ptr())) },
             (Some(vs), None) => unsafe { Shader(ffi::LoadShader(vs.as_ptr(), std::ptr::null())) },
             (None, None) => unsafe { Shader(ffi::LoadShader(std::ptr::null(), std::ptr::null())) },
-        };
-
-        return shader;
+        }
     }
 
     /// Loads shader from code strings and binds default locations.
@@ -51,7 +48,7 @@ impl RaylibHandle {
     ) -> Shader {
         let c_vs_code = vs_code.map(|f| CString::new(f).unwrap());
         let c_fs_code = fs_code.map(|f| CString::new(f).unwrap());
-        return match (c_vs_code, c_fs_code) {
+        match (c_vs_code, c_fs_code) {
             (Some(vs), Some(fs)) => unsafe {
                 Shader(ffi::LoadShaderFromMemory(
                     vs.as_ptr() as *mut c_char,
@@ -76,7 +73,7 @@ impl RaylibHandle {
                     std::ptr::null_mut(),
                 ))
             },
-        };
+        }
     }
 
     /// Get default shader. Modifying it modifies everthing that uses that shader
@@ -93,6 +90,15 @@ impl RaylibHandle {
 
 pub trait ShaderV {
     const UNIFORM_TYPE: ShaderUniformDataType;
+    /// Returns a raw pointer to the underlying data for use as a shader uniform value.
+    ///
+    /// # Safety
+    ///
+    /// The returned pointer is only valid for as long as `self` is borrowed; the
+    /// caller must not outlive `self` nor read more bytes than the underlying
+    /// type contains. The caller must also ensure the pointer is passed to a
+    /// raylib uniform-setter that matches `UNIFORM_TYPE`, otherwise the GPU
+    /// will read past the end of the allocation.
     unsafe fn value(&self) -> *const c_void;
 }
 
@@ -181,6 +187,15 @@ impl ShaderV for &[i32] {
 }
 
 impl Shader {
+    /// Converts this owned [`Shader`] into a [`WeakShader`] that will not
+    /// unload the underlying GPU resource on drop.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for manually unloading the shader via
+    /// `ffi::UnloadShader`. Failing to do so leaks GPU memory. Using the
+    /// returned `WeakShader` after the underlying shader has been unloaded is
+    /// undefined behaviour.
     pub unsafe fn make_weak(self) -> WeakShader {
         let m = WeakShader(self.0);
         std::mem::forget(self);

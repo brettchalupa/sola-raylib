@@ -1,6 +1,5 @@
 //! Text and Font related functions
 //! Text manipulation functions are super unsafe so use rust String functions
-use raylib_sys::LoadUTF8;
 
 use crate::core::math::Vector2;
 use crate::core::texture::{Image, Texture2D};
@@ -12,7 +11,6 @@ use crate::math::Rectangle;
 use std::convert::{AsMut, AsRef, TryInto};
 use std::ffi::{CString, OsString};
 use std::mem::ManuallyDrop;
-use std::ops::Deref;
 
 fn no_drop<T>(_thing: T) {}
 make_thin_wrapper!(Font, ffi::Font, ffi::UnloadFont);
@@ -75,13 +73,13 @@ impl std::ops::DerefMut for RSliceGlyphInfo {
 
 impl AsRef<ffi::Texture2D> for Font {
     fn as_ref(&self) -> &ffi::Texture2D {
-        return &self.0.texture;
+        &self.0.texture
     }
 }
 
 impl AsRef<ffi::Texture2D> for WeakFont {
     fn as_ref(&self) -> &ffi::Texture2D {
-        return &self.0.texture;
+        &self.0.texture
     }
 }
 
@@ -103,7 +101,7 @@ impl RaylibHandle {
 
         unsafe {
             Codepoints(std::mem::ManuallyDrop::new(Box::from_raw(
-                std::slice::from_raw_parts_mut(u, text.len()),
+                std::ptr::slice_from_raw_parts_mut(u, text.len()),
             )))
         }
     }
@@ -260,7 +258,7 @@ impl RaylibHandle {
                 None
             } else {
                 Some(RSliceGlyphInfo(std::mem::ManuallyDrop::new(Box::from_raw(
-                    std::slice::from_raw_parts_mut(ci_arr_ptr as *mut _, ci_size),
+                    std::ptr::slice_from_raw_parts_mut(ci_arr_ptr as *mut _, ci_size),
                 ))))
             }
         }
@@ -334,7 +332,7 @@ impl Font {
     pub fn make_weak(self) -> WeakFont {
         let w = WeakFont(self.0);
         std::mem::forget(self);
-        return w;
+        w
     }
     /// Returns a new `Font` using provided `GlyphInfo` data and parameters.
     fn from_data(
@@ -416,7 +414,7 @@ pub fn gen_image_font_atlas(
         recs.set_len(chars.len());
         std::ptr::copy(ptr, recs.as_mut_ptr(), chars.len());
         ffi::MemFree(ptr as *mut ::std::os::raw::c_void);
-        return (img, recs);
+        (img, recs)
     }
 }
 

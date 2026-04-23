@@ -44,6 +44,11 @@ macro_rules! impl_wrapper {
     ($name:ident$(<$lifetime:tt>)?, $t:ty, $dropfunc:expr, $rawfield:tt) => {
         impl$(<$lifetime>)? $name$(<$lifetime>)? {
             /// Take the raw ffi type. Must manually free memory by calling the proper unload function
+            ///
+            /// # Safety
+            ///
+            /// The returned raw value is no longer managed by Rust. The caller is responsible for
+            /// freeing it via the appropriate raylib unload function; otherwise memory will leak.
             pub unsafe fn unwrap(self) -> $t {
                 let inner = self.$rawfield;
                 std::mem::forget(self);
@@ -77,6 +82,11 @@ macro_rules! gen_from_raw_wrapper {
             /// converts raylib-sys object to a "safe"
             /// version. Make sure to call this function
             /// from the thread the resource was created.
+            ///
+            /// # Safety
+            ///
+            /// The caller must ensure `raw` is a valid value produced by raylib and that Rust now
+            /// has exclusive ownership of it; otherwise double-free or use-after-free can occur.
             pub unsafe fn from_raw(raw: $t) -> Self {
                 Self(raw)
             }

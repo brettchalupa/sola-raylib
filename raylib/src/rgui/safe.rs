@@ -475,7 +475,7 @@ pub trait RaylibDrawGui {
         subdivs: i32,
     ) -> (bool, Vector2) {
         let c_text = CString::new(text).unwrap();
-        let mut mouseCell = ffi::Vector2 { x: 0.0, y: 0.0 };
+        let mut mouse_cell = ffi::Vector2 { x: 0.0, y: 0.0 };
         (
             unsafe {
                 ffi::GuiGrid(
@@ -483,10 +483,10 @@ pub trait RaylibDrawGui {
                     c_text.as_ptr(),
                     spacing,
                     subdivs,
-                    &mut mouseCell,
+                    &mut mouse_cell,
                 ) > 0
             },
-            mouseCell.into(),
+            mouse_cell.into(),
         )
     }
     /// List View control, returns selected list item index
@@ -552,6 +552,9 @@ pub trait RaylibDrawGui {
         }
     }
     /// Text Input Box control, ask for text
+    // Mirrors raylib's `GuiTextInputBox` which takes the same number of parameters;
+    // splitting would require changing the public API shape.
+    #[allow(clippy::too_many_arguments)]
     #[inline]
     fn gui_text_input_box(
         &mut self,
@@ -564,11 +567,11 @@ pub trait RaylibDrawGui {
         secret_view_active: &mut bool,
     ) -> i32 {
         // rgui.h: line 3699 MAX_FILENAME_LEN
-        text.reserve((256 - text.len()).max(0) as usize);
+        text.reserve(256usize.saturating_sub(text.len()));
         let c_title = CString::new(title).unwrap();
         let c_message = CString::new(message).unwrap();
         let c_buttons = CString::new(buttons).unwrap();
-        let btn_index = unsafe {
+        unsafe {
             ffi::GuiTextInputBox(
                 bounds.into(),
                 c_title.as_ptr(),
@@ -578,9 +581,7 @@ pub trait RaylibDrawGui {
                 text_max_size,
                 secret_view_active,
             )
-        };
-
-        btn_index
+        }
     }
 
     /// Color Picker control
@@ -594,8 +595,8 @@ pub trait RaylibDrawGui {
         let mut out = color.into();
         let c_text = CString::new(text).unwrap();
 
-        let result = unsafe { ffi::GuiColorPicker(bounds.into(), c_text.as_ptr(), &mut out) };
-        return out.into();
+        let _result = unsafe { ffi::GuiColorPicker(bounds.into(), c_text.as_ptr(), &mut out) };
+        out.into()
     }
     // Get text with icon id prepended
     // NOTE: Useful to add icons by name id (enum) instead of
@@ -672,6 +673,9 @@ pub trait RaylibDrawGui {
     note = "As of Raylib 5.5, raygui functions that once took \"property enum as i32\" now just take the enum."
 )]
 pub trait GuiProperty {
+    // `self` by value is intentional: all implementors are `Copy` enums that use
+    // `self as i32` (an enum-to-int cast), which requires an owned value.
+    #[allow(clippy::wrong_self_convention)]
     fn as_i32(self) -> i32;
 }
 

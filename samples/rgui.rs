@@ -16,12 +16,12 @@ use raylib::prelude::*;
 pub fn main() {
     // Initialization
     //---------------------------------------------------------------------------------------
-    let screenWidth = 960;
-    let screenHeight = 560;
+    let screen_width = 960;
+    let screen_height = 560;
 
     let (mut rl, thread) = raylib::init()
-        .width(screenWidth)
-        .height(screenHeight)
+        .width(screen_width)
+        .height(screen_height)
         .title("raygui - controls test suite")
         .build();
 
@@ -29,31 +29,31 @@ pub fn main() {
 
     // GUI controls initialization
     //----------------------------------------------------------------------------------
-    let mut dropdownBox000Active = 0;
-    let mut dropDown000EditMode = false;
+    let mut dropdown_box000_active = 0;
+    let mut drop_down000_edit_mode = false;
 
-    let mut dropdownBox001Active = 0;
-    let mut dropDown001EditMode = false;
+    let mut dropdown_box001_active = 0;
+    let mut drop_down001_edit_mode = false;
 
-    let mut spinner001Value = 0;
-    let mut spinnerEditMode = false;
+    let mut spinner001_value = 0;
+    let mut spinner_edit_mode = false;
 
-    let mut valueBox002Value = 0;
-    let mut valueBoxEditMode = false;
+    let mut value_box002_value = 0;
+    let mut value_box_edit_mode = false;
 
-    let mut textBoxText = String::from("Text box");
-    let mut textBoxEditMode = false;
+    let mut text_box_text = String::from("Text box");
+    let mut text_box_edit_mode = false;
 
-    let mut textBoxMultiText = String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat Nonea pariatur.\n\nThisisastringlongerthanexpectedwithoutspacestotestcharbreaksforthosecases,checkingifworkingasexpected.\n\nExcepteur slet occaecatcupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-    let mut textBoxMultiEditMode = false;
+    let mut text_box_multi_text = String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat Nonea pariatur.\n\nThisisastringlongerthanexpectedwithoutspacestotestcharbreaksforthosecases,checkingifworkingasexpected.\n\nExcepteur slet occaecatcupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+    let mut text_box_multi_edit_mode = false;
 
-    let mut listViewScrollIndex = 0;
-    let mut listViewActive = -1;
+    let mut list_view_scroll_index = 0;
+    let mut list_view_active = -1;
 
-    let mut listViewExScrollIndex = 0;
-    let mut listViewExActive = 2;
-    let mut listViewExFocus = -1;
-    let mut listViewExList = [
+    let mut list_view_ex_scroll_index = 0;
+    let mut list_view_ex_active = 2;
+    let mut list_view_ex_focus = -1;
+    let list_view_ex_list = [
         "This",
         "is",
         "a",
@@ -64,36 +64,35 @@ pub fn main() {
         "amazing!",
     ];
 
-    let colorPickerValue = Color::RED;
+    let color_picker_value = Color::RED;
 
-    let mut sliderValue = 50.0;
-    let mut sliderBarValue = 60.0;
-    let mut progressValue = 0.1;
+    let mut slider_value = 50.0;
+    let mut slider_bar_value = 60.0;
+    let mut progress_value = 0.1;
 
-    let mut forceSquaredChecked = false;
+    let mut force_squared_checked = false;
 
-    let mut alphaValue = 0.5;
+    let mut alpha_value = 0.5;
 
     //let comboBoxActive= 1;
-    let mut visualStyleActive = 0;
-    let mut prevVisualStyleActive = 0;
+    let mut visual_style_active = 0;
+    let mut prev_visual_style_active = 0;
 
-    let mut toggleGroupActive = 0;
-    let mut toggleSliderActive = 0;
+    let mut toggle_group_active = 0;
+    let mut toggle_slider_active = 0;
 
-    let viewScroll = Vector2::new(0.0, 0.0);
+    let view_scroll = Vector2::new(0.0, 0.0);
     //----------------------------------------------------------------------------------
 
     // Custom GUI font loading
     //Font font = LoadFontEx("fonts/rainyhearts16.ttf", 12, 0, 0);
     //GuiSetFont(font);
 
-    let mut exitWindow = false;
-    let mut showMessageBox = false;
+    let mut exit_window = false;
+    let mut show_message_box = false;
 
-    let mut textInput = String::new();
-    let mut textInputFileName = String::new();
-    let mut showTextInputBox = false;
+    let mut text_input = String::new();
+    let mut show_text_input_box = false;
 
     let mut alpha = 1.0;
 
@@ -105,26 +104,26 @@ pub fn main() {
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while !exitWindow
+    while !exit_window
     // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
-        exitWindow = rl.window_should_close();
+        exit_window = rl.window_should_close();
 
         if rl.is_key_pressed(KEY_ESCAPE) {
-            showMessageBox = !showMessageBox
+            show_message_box = !show_message_box
         };
 
         if rl.is_key_down(KEY_LEFT_CONTROL) && rl.is_key_pressed(KEY_S) {
-            showTextInputBox = true
+            show_text_input_box = true
         };
 
         if rl.is_file_dropped() {
-            let droppedFiles = rl.load_dropped_files();
+            let dropped_files = rl.load_dropped_files();
 
-            let paths = droppedFiles.paths();
-            if droppedFiles.count > 0 && paths[0].ends_with(".rgs") {
+            let paths = dropped_files.paths();
+            if dropped_files.count > 0 && paths[0].ends_with(".rgs") {
                 rl.gui_load_style(paths[0])
             };
         }
@@ -142,22 +141,22 @@ pub fn main() {
         //progressValue += 0.002;
         if rl.is_key_pressed(KEY_LEFT) {
             {
-                progressValue -= 0.1
+                progress_value -= 0.1
             };
         } else if rl.is_key_pressed(KEY_RIGHT) {
             {
-                progressValue += 0.1
+                progress_value += 0.1
             };
         }
-        if progressValue > 1.0 {
-            progressValue = 1.0;
-        } else if progressValue < 0.0 {
+        if progress_value > 1.0 {
+            progress_value = 1.0;
+        } else if progress_value < 0.0 {
             {
-                progressValue = 0.0
+                progress_value = 0.0
             };
         }
 
-        if visualStyleActive != prevVisualStyleActive {
+        if visual_style_active != prev_visual_style_active {
             rl.gui_load_style_default();
 
             // switch (visualStyleActive)
@@ -174,7 +173,7 @@ pub fn main() {
 
             rl.gui_set_style(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT as i32);
 
-            prevVisualStyleActive = visualStyleActive;
+            prev_visual_style_active = visual_style_active;
         }
         //----------------------------------------------------------------------------------
 
@@ -191,7 +190,7 @@ pub fn main() {
         // raygui: controls drawing
         //----------------------------------------------------------------------------------
         // Check all possible events that require d.gui_lock
-        if dropDown000EditMode || dropDown001EditMode {
+        if drop_down000_edit_mode || drop_down001_edit_mode {
             d.gui_lock()
         };
 
@@ -200,7 +199,7 @@ pub fn main() {
         d.gui_check_box(
             Rectangle::new(25.0, 108.0, 15.0, 15.0),
             "FORCE CHECK!",
-            &mut forceSquaredChecked,
+            &mut force_squared_checked,
         );
 
         d.gui_set_style(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER as i32);
@@ -208,30 +207,30 @@ pub fn main() {
         if d.gui_spinner(
             Rectangle::new(25.0, 135.0, 125.0, 30.0),
             "",
-            &mut spinner001Value,
+            &mut spinner001_value,
             0,
             100,
-            spinnerEditMode,
+            spinner_edit_mode,
         ) {
-            spinnerEditMode = !spinnerEditMode
+            spinner_edit_mode = !spinner_edit_mode
         };
         if d.gui_value_box(
             Rectangle::new(25.0, 175.0, 125.0, 30.0),
             "",
-            &mut valueBox002Value,
+            &mut value_box002_value,
             0,
             100,
-            valueBoxEditMode,
+            value_box_edit_mode,
         ) {
-            valueBoxEditMode = !valueBoxEditMode
+            value_box_edit_mode = !value_box_edit_mode
         };
         d.gui_set_style(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT as i32);
         if d.gui_text_box(
             Rectangle::new(25.0, 215.0, 125.0, 30.0),
-            &mut textBoxText,
-            textBoxEditMode,
+            &mut text_box_text,
+            text_box_edit_mode,
         ) {
-            textBoxEditMode = !textBoxEditMode
+            text_box_edit_mode = !text_box_edit_mode
         };
 
         d.gui_set_style(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER as i32);
@@ -241,7 +240,7 @@ pub fn main() {
             Rectangle::new(25.0, 255.0, 125.0, 30.0),
             gui_icon_text.as_str(),
         ) {
-            showTextInputBox = true
+            show_text_input_box = true
         };
 
         d.gui_group_box(Rectangle::new(25.0, 310.0, 125.0, 150.0), "STATES");
@@ -260,7 +259,7 @@ pub fn main() {
         d.gui_combo_box(
             Rectangle::new(25.0, 480.0, 125.0, 30.0),
             "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal",
-            &mut visualStyleActive,
+            &mut visual_style_active,
         );
 
         // NOTE: d.gui_dropdown_box must draw after any other control that can be covered on unfolding
@@ -270,10 +269,10 @@ pub fn main() {
         if d.gui_dropdown_box(
             Rectangle::new(25.0, 65.0, 125.0, 30.0),
             "#01#ONE;#02#TWO;#03#THREE;#04#FOUR",
-            &mut dropdownBox001Active,
-            dropDown001EditMode,
+            &mut dropdown_box001_active,
+            drop_down001_edit_mode,
         ) {
-            dropDown001EditMode = !dropDown001EditMode
+            drop_down001_edit_mode = !drop_down001_edit_mode
         };
         d.gui_set_style(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER as i32);
         d.gui_set_style(DROPDOWNBOX, TEXT_PADDING, 0);
@@ -281,39 +280,39 @@ pub fn main() {
         if d.gui_dropdown_box(
             Rectangle::new(25.0, 25.0, 125.0, 30.0),
             "ONE;TWO;THREE",
-            &mut dropdownBox000Active,
-            dropDown000EditMode,
+            &mut dropdown_box000_active,
+            drop_down000_edit_mode,
         ) {
-            dropDown000EditMode = !dropDown000EditMode
+            drop_down000_edit_mode = !drop_down000_edit_mode
         };
 
         // Second GUI column
         d.gui_list_view(
             Rectangle::new(165.0, 25.0, 140.0, 124.0),
             "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey",
-            &mut listViewScrollIndex,
-            &mut listViewActive,
+            &mut list_view_scroll_index,
+            &mut list_view_active,
         );
         d.gui_list_view_ex(
             Rectangle::new(165.0, 162.0, 140.0, 184.0),
-            listViewExList.iter(),
-            &mut listViewExScrollIndex,
-            &mut listViewExActive,
-            &mut listViewExFocus,
+            list_view_ex_list.iter(),
+            &mut list_view_ex_scroll_index,
+            &mut list_view_ex_active,
+            &mut list_view_ex_focus,
         );
 
         //GuiToggle(Rectangle::new( 165, 400, 140, 25 ), "#1#ONE", &toggleGroupActive);
         d.gui_toggle_group(
             Rectangle::new(165.0, 360.0, 140.0, 24.0),
             "#1#ONE\n#3#TWO\n#8#THREE\n#23#",
-            &mut toggleGroupActive,
+            &mut toggle_group_active,
         );
         //d.gui_disable();
         d.gui_set_style(SLIDER, SLIDER_PADDING, 2);
         d.gui_toggle_slider(
             Rectangle::new(165.0, 480.0, 140.0, 30.0),
             "ON;OFF",
-            &mut toggleSliderActive,
+            &mut toggle_slider_active,
         );
         d.gui_set_style(SLIDER, SLIDER_PADDING, 0);
 
@@ -322,23 +321,23 @@ pub fn main() {
         d.gui_color_picker(
             Rectangle::new(320.0, 185.0, 196.0, 192.0),
             "",
-            &colorPickerValue,
+            &color_picker_value,
         );
 
         //d.gui_disable();
         d.gui_slider(
             Rectangle::new(355.0, 400.0, 165.0, 20.0),
             "TEST",
-            format!("{}", sliderValue).as_str(),
-            &mut sliderValue,
+            format!("{}", slider_value).as_str(),
+            &mut slider_value,
             -50.0,
             100.0,
         );
         d.gui_slider_bar(
             Rectangle::new(320.0, 430.0, 200.0, 20.0),
             "",
-            format!("{}", sliderBarValue).as_str(),
-            &mut sliderBarValue,
+            format!("{}", slider_bar_value).as_str(),
+            &mut slider_bar_value,
             0.0,
             100.0,
         );
@@ -346,8 +345,8 @@ pub fn main() {
         d.gui_progress_bar(
             Rectangle::new(320.0, 460.0, 200.0, 20.0),
             "",
-            format!("{}", (progressValue * 100.0)).as_str(),
-            &mut progressValue,
+            format!("{}", (progress_value * 100.0)).as_str(),
+            &mut progress_value,
             0.0,
             1.0,
         );
@@ -359,11 +358,10 @@ pub fn main() {
             Rectangle::new(560.0, 25.0, 102.0, 354.0),
             "",
             Rectangle::new(560.0, 25.0, 300.0, 1200.0),
-            &viewScroll,
+            &view_scroll,
             &view,
         );
 
-        let mouseCell = Vector2::new(0.0, 0.0);
         d.gui_grid(
             Rectangle::new(560.0, 25.0 + 180.0 + 195.0, 100.0, 120.0),
             "",
@@ -374,17 +372,17 @@ pub fn main() {
         d.gui_color_bar_alpha(
             Rectangle::new(320.0, 490.0, 200.0, 30.0),
             "",
-            &mut alphaValue,
+            &mut alpha_value,
         );
 
         d.gui_set_style(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP as i32); // WARNING: Word-wrap does not work as expected in case of no-top alignment
         d.gui_set_style(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD as i32); // WARNING: If wrap mode enabled, text editing is not supported
         if d.gui_text_box(
             Rectangle::new(678.0, 25.0, 258.0, 492.0),
-            &mut textBoxMultiText,
-            textBoxMultiEditMode,
+            &mut text_box_multi_text,
+            text_box_multi_edit_mode,
         ) {
-            textBoxMultiEditMode = !textBoxMultiEditMode
+            text_box_multi_edit_mode = !text_box_multi_edit_mode
         };
         d.gui_set_style(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_NONE as i32);
         d.gui_set_style(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE as i32);
@@ -402,13 +400,13 @@ pub fn main() {
         d.gui_set_style(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER as i32);
         //d.gui_set_style(STATUSBAR, TEXT_INDENTATION, 20);
 
-        if showMessageBox {
+        if show_message_box {
             d.draw_rectangle(
                 0,
                 0,
                 d.get_screen_width(),
                 d.get_screen_height(),
-                Color::RAYWHITE.fade(0.8),
+                Color::RAYWHITE.alpha(0.8),
             );
             let gui_icon_text = d.gui_icon_text(ICON_EXIT, "Close Window");
             let result = d.gui_message_box(
@@ -424,19 +422,19 @@ pub fn main() {
             );
 
             if result == 0 || (result == 2) {
-                showMessageBox = false
+                show_message_box = false
             } else if result == 1 {
-                exitWindow = true
+                exit_window = true
             };
         }
 
-        if showTextInputBox {
+        if show_text_input_box {
             d.draw_rectangle(
                 0,
                 0,
                 d.get_screen_width(),
                 d.get_screen_height(),
-                Color::RAYWHITE.fade(0.8),
+                Color::RAYWHITE.alpha(0.8),
             );
             let mut _act = true;
             let gui_icon_text = d.gui_icon_text(ICON_FILE_SAVE, "Save file as...");
@@ -450,19 +448,14 @@ pub fn main() {
                 gui_icon_text.as_str(),
                 "Introduce output file name:",
                 "Ok;Cancel",
-                &mut textInput,
+                &mut text_input,
                 255,
                 &mut _act,
             );
 
-            if result == 1 {
-                // TODO: Validate textInput value and save
-                textInputFileName = textInput.clone();
-            }
-
             if result == 0 || (result == 1 || (result == 2)) {
-                showTextInputBox = false;
-                textInput.truncate(0);
+                show_text_input_box = false;
+                text_input.truncate(0);
             }
         }
     }

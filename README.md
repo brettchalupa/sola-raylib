@@ -1,12 +1,3 @@
-<table border="0">
-<tr>
-<td>
-
-![logo](logo/raylib-rust_256x256.png)
-
-</td>
-<td>
-
 # sola-raylib
 
 sola-raylib is an actively maintained Rust bindings and wrapper for
@@ -29,10 +20,6 @@ Please checkout the showcase directory to find usage examples!
 
 Though this binding tries to stay close to the simple C API, it makes some
 changes to be more idiomatic for Rust.
-
-</td>
-</tr>
-</table>
 
 - Resources are automatically cleaned up when they go out of scope (or when
   `std::mem::drop` is called). This is essentially RAII. This means that
@@ -61,12 +48,16 @@ changes to be more idiomatic for Rust.
 
 ## Supported Platforms
 
-| API    | Windows            | Linux              | macOS              | Web                | Android |
-| ------ | ------------------ | ------------------ | ------------------ | ------------------ | ------- |
-| core   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:     |
-| rgui   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ❔                 | :x:     |
-| physac | :construction:     | :construction:     | :construction:     | ❔                 | :x:     |
-| rlgl   | :heavy_check_mark: | :x:                | :x:                | ❔                 | :x:     |
+sola-raylib is focused on supporting Windows, Linux, macOS, and Web targets.
+
+The table below shows which core APIs are supported for which platforms:
+
+| API    | Windows            | Linux              | macOS              | Web                |
+| ------ | ------------------ | ------------------ | ------------------ | ------------------ |
+| core   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| rgui   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ❔                 |
+| physac | :construction:     | :construction:     | :construction:     | ❔                 |
+| rlgl   | :heavy_check_mark: | :x:                | :x:                | ❔                 |
 
 ## Build Dependencies
 

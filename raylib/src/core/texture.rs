@@ -8,8 +8,6 @@ use crate::ffi;
 use std::convert::TryInto;
 use std::ffi::CString;
 use std::mem::ManuallyDrop;
-use std::os::raw::c_void;
-use std::ptr::{null, null_mut};
 
 use super::math::Vector2;
 
@@ -33,21 +31,21 @@ impl From<ffi::NPatchInfo> for NPatchInfo {
     }
 }
 
-impl Into<ffi::NPatchInfo> for NPatchInfo {
-    fn into(self) -> ffi::NPatchInfo {
-        unsafe { std::mem::transmute(self) }
+impl From<NPatchInfo> for ffi::NPatchInfo {
+    fn from(v: NPatchInfo) -> ffi::NPatchInfo {
+        unsafe { std::mem::transmute(v) }
     }
 }
 
-impl Into<ffi::NPatchInfo> for &NPatchInfo {
-    fn into(self) -> ffi::NPatchInfo {
+impl From<&NPatchInfo> for ffi::NPatchInfo {
+    fn from(v: &NPatchInfo) -> ffi::NPatchInfo {
         ffi::NPatchInfo {
-            source: self.source.into(),
-            left: self.left,
-            top: self.top,
-            right: self.right,
-            bottom: self.bottom,
-            layout: (self.layout as u32) as i32,
+            source: v.source.into(),
+            left: v.left,
+            top: v.top,
+            right: v.right,
+            bottom: v.bottom,
+            layout: (v.layout as u32) as i32,
         }
     }
 }
@@ -105,6 +103,15 @@ impl AsMut<ffi::Texture2D> for WeakRenderTexture2D {
 }
 
 impl RenderTexture2D {
+    /// Converts this owned [`RenderTexture2D`] into a [`WeakRenderTexture2D`]
+    /// that will not unload the underlying GPU resource on drop.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for manually unloading the render
+    /// texture via [`RaylibHandle::unload_render_texture`]. Failing to do so
+    /// leaks GPU memory. Using the returned weak handle after the underlying
+    /// render texture has been unloaded is undefined behaviour.
     pub unsafe fn make_weak(self) -> WeakRenderTexture2D {
         let m = WeakRenderTexture2D(self.0);
         std::mem::forget(self);
@@ -146,6 +153,15 @@ impl Image {
     pub fn mipmaps(&self) -> i32 {
         self.0.mipmaps
     }
+    /// Returns a raw pointer to the image's pixel data.
+    ///
+    /// # Safety
+    ///
+    /// The returned pointer is owned by the underlying raylib `Image` and
+    /// remains valid only until the image is dropped, reformatted, resized,
+    /// or otherwise mutated. The caller must not free the pointer, must not
+    /// read or write past the image's pixel buffer, and must ensure the image
+    /// outlives any use of the pointer.
     pub unsafe fn data(&self) -> *mut ::std::os::raw::c_void {
         self.0.data
     }
@@ -225,7 +241,7 @@ impl Image {
             let image_data = ffi::LoadImageColors(self.0);
             let image_data_len = (self.width * self.height) as usize;
             ImageColors(ManuallyDrop::new(Box::from_raw(
-                std::slice::from_raw_parts_mut(image_data as *mut _, image_data_len),
+                std::ptr::slice_from_raw_parts_mut(image_data as *mut Color, image_data_len),
             )))
         }
     }
@@ -238,7 +254,7 @@ impl Image {
             let image_data =
                 ffi::LoadImagePalette(self.0, max_palette_size as i32, &mut palette_len);
             ImagePalette(ManuallyDrop::new(Box::from_raw(
-                std::slice::from_raw_parts_mut(image_data as *mut _, palette_len as usize),
+                std::ptr::slice_from_raw_parts_mut(image_data as *mut Color, palette_len as usize),
             )))
         }
     }
@@ -746,7 +762,7 @@ impl Image {
         if self.height == 0 {
             return Err(error!("Invalid image; height == 0"));
         }
-        if self.data == null_mut() {
+        if self.data.is_null() {
             return Err(error!("Invalid image; data == null"));
         }
 
@@ -755,11 +771,11 @@ impl Image {
         let data = unsafe { ffi::ExportImageToMemory(self.0, c_filetype.as_ptr(), data_size) };
 
         // The actual function returns null if the code for converting to a file type never goes off.
-        if data == null_mut() {
+        if data.is_null() {
             return Err(error!("Unsupported format."));
         }
 
-        return Ok(unsafe { std::slice::from_raw_parts(data as *const u8, *data_size as usize) });
+        Ok(unsafe { std::slice::from_raw_parts(data as *const u8, *data_size as usize) })
     }
 
     /// Apply custom square convolution kernel to image
@@ -771,7 +787,7 @@ impl Image {
         if self.height == 0 {
             return Err(error!("Invalid image; height == 0"));
         }
-        if self.data == null_mut() {
+        if self.data.is_null() {
             return Err(error!("Invalid image; data == null"));
         }
 
@@ -1027,6 +1043,15 @@ impl RaylibTexture2D for WeakRenderTexture2D {}
 impl RaylibTexture2D for RenderTexture2D {}
 
 impl Texture2D {
+    /// Converts this owned [`Texture2D`] into a [`WeakTexture2D`] that will
+    /// not unload the underlying GPU resource on drop.
+    ///
+    /// # Safety
+    ///
+    /// The caller becomes responsible for manually unloading the texture via
+    /// [`RaylibHandle::unload_texture`]. Failing to do so leaks GPU memory.
+    /// Using the returned weak handle after the underlying texture has been
+    /// unloaded is undefined behaviour.
     pub unsafe fn make_weak(self) -> WeakTexture2D {
         let m = WeakTexture2D(self.0);
         std::mem::forget(self);
@@ -1044,7 +1069,7 @@ pub trait RaylibTexture2D: AsRef<ffi::Texture2D> + AsMut<ffi::Texture2D> {
     }
 
     fn mipmaps(&self) -> i32 {
-        self.as_ref().width
+        self.as_ref().mipmaps
     }
 
     fn format(&self) -> i32 {
@@ -1212,6 +1237,13 @@ impl RaylibHandle {
 impl RaylibHandle {
     /// Weak Textures will leak memeory if they are not unlaoded
     /// Unload textures from GPU memory (VRAM)
+    ///
+    /// # Safety
+    ///
+    /// The given [`WeakTexture2D`] must reference a live GPU texture that has
+    /// not already been unloaded, and must not be used after this call. Passing
+    /// a handle whose underlying texture was already freed, or using the
+    /// handle again afterwards, is undefined behaviour.
     pub unsafe fn unload_texture(&mut self, _: &RaylibThread, texture: WeakTexture2D) {
         {
             ffi::UnloadTexture(*texture.as_ref())
@@ -1219,6 +1251,13 @@ impl RaylibHandle {
     }
     /// Weak RenderTextures will leak memeory if they are not unlaoded
     /// Unload RenderTextures from GPU memory (VRAM)
+    ///
+    /// # Safety
+    ///
+    /// The given [`WeakRenderTexture2D`] must reference a live GPU render
+    /// texture that has not already been unloaded, and must not be used after
+    /// this call. Passing a handle whose underlying render texture was already
+    /// freed, or using the handle again afterwards, is undefined behaviour.
     pub unsafe fn unload_render_texture(&mut self, _: &RaylibThread, texture: WeakRenderTexture2D) {
         {
             ffi::UnloadRenderTexture(*texture.as_ref())

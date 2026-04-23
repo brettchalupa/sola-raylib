@@ -48,3 +48,6 @@ imgui = ["raylib-sys/imgui", "dep:imgui", "dep:imgui-sys"]
 nobuild = ["raylib-sys/nobuild"]
 bindgen = ["raylib-sys/bindgen"]
 default = ["bindgen"]
+
+[lints]
+workspace = true

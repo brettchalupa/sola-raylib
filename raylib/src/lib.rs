@@ -69,13 +69,10 @@ pub mod ffi {
 }
 
 pub use crate::core::collision::*;
-pub use crate::core::logging::*;
 pub use crate::core::misc::open_url;
 pub use crate::core::*;
 
 // Re-exports
-#[cfg(feature = "nalgebra_interop")]
-pub use nalgebra as na;
 #[cfg(feature = "with_serde")]
 pub use serde;
 

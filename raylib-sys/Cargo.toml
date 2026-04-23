@@ -49,3 +49,6 @@ custom_frame_control = []
 
 # ImGui support
 imgui = ["dep:imgui", "dep:imgui-sys"]
+
+[lints]
+workspace = true

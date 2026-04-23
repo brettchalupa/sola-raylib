@@ -1,5 +1,5 @@
 //! Keyboard, Controller, and Mouse related functions
-use raylib_sys::{GamepadButton, TraceLogLevel};
+use raylib_sys::TraceLogLevel;
 
 use crate::consts::Gesture;
 use crate::core::math::Vector2;
@@ -149,7 +149,9 @@ impl RaylibHandle {
     pub fn get_gamepad_button_pressed(&self) -> Option<crate::consts::GamepadButton> {
         let button = unsafe { ffi::GetGamepadButtonPressed() };
         if button != raylib_sys::GamepadButton::GAMEPAD_BUTTON_UNKNOWN as i32 {
-            return Some(unsafe { std::mem::transmute(button as u32) });
+            return Some(unsafe {
+                std::mem::transmute::<u32, crate::consts::GamepadButton>(button as u32)
+            });
         }
         None
     }
@@ -274,7 +276,7 @@ impl RaylibHandle {
     #[inline]
     pub fn set_gestures_enabled(&self, gesture_flags: u32) {
         unsafe {
-            ffi::SetGesturesEnabled(gesture_flags as u32);
+            ffi::SetGesturesEnabled(gesture_flags);
         }
     }
 

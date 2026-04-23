@@ -22,20 +22,20 @@ impl From<ffi::Camera3D> for Camera3D {
     }
 }
 
-impl Into<ffi::Camera3D> for Camera3D {
-    fn into(self) -> ffi::Camera3D {
-        unsafe { std::mem::transmute(self) }
+impl From<Camera3D> for ffi::Camera3D {
+    fn from(val: Camera3D) -> ffi::Camera3D {
+        unsafe { std::mem::transmute(val) }
     }
 }
 
-impl Into<ffi::Camera3D> for &Camera3D {
-    fn into(self) -> ffi::Camera3D {
+impl From<&Camera3D> for ffi::Camera3D {
+    fn from(val: &Camera3D) -> ffi::Camera3D {
         ffi::Camera3D {
-            position: self.position.into(),
-            target: self.target.into(),
-            up: self.up.into(),
-            fovy: self.fovy,
-            projection: (self.projection_ as u32) as i32,
+            position: val.position.into(),
+            target: val.target.into(),
+            up: val.up.into(),
+            fovy: val.fovy,
+            projection: (val.projection_ as u32) as i32,
         }
     }
 }
@@ -55,26 +55,26 @@ impl From<ffi::Camera2D> for Camera2D {
     }
 }
 
-impl Into<ffi::Camera2D> for Camera2D {
-    fn into(self) -> ffi::Camera2D {
-        unsafe { std::mem::transmute(self) }
+impl From<Camera2D> for ffi::Camera2D {
+    fn from(val: Camera2D) -> ffi::Camera2D {
+        unsafe { std::mem::transmute(val) }
     }
 }
 
-impl Into<ffi::Camera2D> for &Camera2D {
-    fn into(self) -> ffi::Camera2D {
+impl From<&Camera2D> for ffi::Camera2D {
+    fn from(val: &Camera2D) -> ffi::Camera2D {
         ffi::Camera2D {
-            offset: self.offset.into(),
-            target: self.target.into(),
-            rotation: self.rotation,
-            zoom: self.zoom,
+            offset: val.offset.into(),
+            target: val.target.into(),
+            rotation: val.rotation,
+            zoom: val.zoom,
         }
     }
 }
 
 impl Camera3D {
     pub fn camera_type(&self) -> crate::consts::CameraProjection {
-        unsafe { std::mem::transmute(self.projection_.clone()) }
+        self.projection_
     }
     /// Create a perspective camera.
     /// fovy is in degrees

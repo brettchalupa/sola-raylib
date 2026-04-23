@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Run all checks that should be green before committing/pushing.
-ok: build clippy test samples
+ok: fmt-check build clippy test samples
     @echo "All checks passed."
 
 # Build every crate in the workspace.
@@ -25,9 +25,8 @@ test:
 fmt:
     cargo fmt --all
 
-# TODO: re-enable once the workspace is cleanly formatted end-to-end.
-# fmt-check:
-#     cargo fmt --all -- --check
+fmt-check:
+    cargo fmt --all -- --check
 
 # Build the sample binaries crate.
 samples:
@@ -35,4 +34,4 @@ samples:
 
 # Run a specific sample by name, e.g. `just sample drop`.
 sample name:
-    cd samples && cargo run --bin {{name}}
+    cd samples && cargo run --bin {{ name }}

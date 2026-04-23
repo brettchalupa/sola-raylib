@@ -59,6 +59,9 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets
 
+      - name: Fmt
+        run: cargo fmt --all -- --check
+
       - name: Tests
         run: cargo test --workspace
 
