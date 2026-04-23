@@ -7,7 +7,6 @@ license = "Zlib"
 readme = "../README.md"
 repository = "https://github.com/brettchalupa/sola-raylib"
 
-
 [dependencies]
 raylib = { package = "sola-raylib", path = "../raylib", version = "5.5.1" }
 structopt = "0.2"
@@ -42,8 +41,8 @@ path = "./logo.rs"
 
 
 [[bin]]
-name = "camera2D"
-path = "./camera2D.rs"
+name = "camera_2d"
+path = "./camera_2d.rs"
 
 [[bin]]
 name = "raymarch"
@@ -104,7 +103,7 @@ name = "music_effects"
 path = "music_effects.rs"
 required-features = ["ringbuf"]
 
-# samples is excluded from the workspace, so we declare lints locally
+# examples is excluded from the workspace, so we declare lints locally
 # (matching the workspace `[workspace.lints]` in the repo root Cargo.toml).
 [lints.rust]
 warnings = "deny"

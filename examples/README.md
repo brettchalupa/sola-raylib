@@ -1,4 +1,18 @@
-cd into the samples folder before running samples!
+# Sola Examples
+
+Various example projects showing how to use sola-raylib.
+
+You can run an example with `just sample NAME` or `cargo run --bin NAME`. For example:
+
+```shell
+cargo run --bin asteroids
+# OR
+just example asteroids
+```
+
+## Preview
+
+Screenshots of the various examples:
 
 [arkanoid](arkanoid.rs)
 ![arkanoid](docs/arkanoid.PNG)
