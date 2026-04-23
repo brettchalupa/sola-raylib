@@ -38,10 +38,20 @@ jobs:
           shared-key: ${{ matrix.os }}
 
       - name: Install Linux system deps
+        # raylib's bundled glfw needs X11 dev headers to build on Linux.
+        # libasound2-dev → audio. libudev-dev → gamepad/input.
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev
+          sudo apt-get install -y --no-install-recommends \
+            libasound2-dev \
+            libudev-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libgl1-mesa-dev
 
       - name: Build workspace
         run: cargo build --workspace
