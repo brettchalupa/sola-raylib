@@ -80,7 +80,7 @@ impl Color {
     /// * `color_hex_str` - A string slice, 6 characters long
     /// # Example
     /// ```
-    ///    use raylib::prelude::*;
+    ///    use sola_raylib::prelude::*;
     ///     let color_white = Color::from_hex("FFFFFF").unwrap();
     ///     let color_black = Color::from_hex("000000").unwrap();
     ///     
@@ -132,7 +132,7 @@ impl Color {
 
     /// Returns color from normalized values [0..1]
     /// ```rust
-    /// use raylib::prelude::*;
+    /// use sola_raylib::prelude::*;
     /// fn main() {    
     ///     assert_eq!(Color::color_from_normalized(Vector4::new(1.0, 1.0, 1.0, 1.0)), Color::new(255, 255, 255, 255));
     /// }

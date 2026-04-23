@@ -22,7 +22,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 //!
 //! For more control over the game window, the [`init`] function will return a [`RaylibBuilder`] which allows for tweaking various settings such as VSync, anti-aliasing, fullscreen, and so on. Calling [`RaylibBuilder::build`] will then provide a [`RaylibHandle`].
 //!
-//! Some useful constants can be found in the [`consts`] module, which is also re-exported in the [`prelude`] module. In most cases you will probably want to `use raylib::prelude::*;` to make your experience more smooth.
+//! Some useful constants can be found in the [`consts`] module, which is also re-exported in the [`prelude`] module. In most cases you will probably want to `use sola_raylib::prelude::*;` to make your experience more smooth.
 //!
 //! [`init_window`]: fn.init_window.html
 //! [`init`]: fn.init.html
@@ -38,10 +38,10 @@ Permission is granted to anyone to use this software for any purpose, including 
 //! The classic "Hello, world":
 //!
 //! ```no_run
-//! use raylib::prelude::*;
+//! use sola_raylib::prelude::*;
 //!
 //! fn main() {
-//!     let (mut rl, thread) = raylib::init()
+//!     let (mut rl, thread) = sola_raylib::init()
 //!         .size(640, 480)
 //!         .title("Hello, World")
 //!         .build();

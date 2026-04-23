@@ -11,7 +11,7 @@ use crate::{
 
 /// Compress data (DEFLATE algorythm)
 /// ```rust
-/// use raylib::prelude::*;
+/// use sola_raylib::prelude::*;
 /// let data = compress_data(b"11111").unwrap();
 /// let expected: &[u8] = &[1, 5, 0, 250, 255, 49, 49, 49, 49, 49];
 /// assert_eq!(data, expected);
@@ -31,7 +31,7 @@ pub fn compress_data(data: &[u8]) -> Result<&'static [u8], Error> {
 
 /// Decompress data (DEFLATE algorythm)
 /// ```rust
-/// use raylib::prelude::*;
+/// use sola_raylib::prelude::*;
 /// let input: &[u8] = &[1, 5, 0, 250, 255, 49, 49, 49, 49, 49];
 /// let expected: &[u8] = b"11111";
 /// let data = decompress_data(input).unwrap();

@@ -1,19 +1,19 @@
 [package]
-name = "raylib"
+name = "sola-raylib"
 version = "5.5.1"
-authors = ["raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
+authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 license = "Zlib"
 readme = "../README.md"
-description = "Safe Rust bindings for Raylib."
-documentation = "https://docs.rs/raylib"
-repository = "https://github.com/raylib-rs/raylib-rs"
+description = "Safe Rust bindings for raylib. sola-raylib N.x tracks raylib N.x (e.g. 5.x → raylib 5.5; 6.x → raylib 6.0)."
+documentation = "https://docs.rs/sola-raylib"
+repository = "https://github.com/brettchalupa/sola-raylib"
 keywords = ["bindings", "raylib", "gamedev"]
 categories = ["api-bindings", "game-engines", "graphics"]
 edition = "2018"
 autoexamples = false
 
 [dependencies]
-raylib-sys = { version = "5.5.1", path = "../raylib-sys" }
+raylib-sys = { package = "sola-raylib-sys", version = "5.5.1", path = "../raylib-sys" }
 cfg-if = "1.0.0"
 serde = { version = "1.0.125", features = ["derive"], optional = true }
 serde_json = { version = "1.0.64", optional = true }

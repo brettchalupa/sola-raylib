@@ -20,7 +20,7 @@ impl Rectangle {
 
     /// Gets the overlap between two colliding rectangles.
     /// ```rust
-    /// use raylib::prelude::*;
+    /// use sola_raylib::prelude::*;
     /// fn main() {
     ///    let r1 = Rectangle::new(0.0, 0.0, 10.0, 10.0);
     ///    let r2 = Rectangle::new(20.0, 20.0, 10.0, 10.0);

@@ -341,7 +341,7 @@ pub fn get_monitor_position(monitor: i32) -> Vector2 {
 /// fails if monitor name is not a utf8 string
 /// ```rust
 /// use std::ffi::IntoStringError;
-/// use raylib::prelude::*;
+/// use sola_raylib::prelude::*;
 /// fn main() -> Result<(), IntoStringError> {
 ///     let count = get_monitor_count();
 ///     for i in (0..count) {
@@ -366,7 +366,7 @@ pub fn get_monitor_info(monitor: i32) -> Result<MonitorInfo, IntoStringError> {
 
 /// Returns camera transform matrix (view matrix)
 /// ```rust
-/// use raylib::prelude::*;
+/// use sola_raylib::prelude::*;
 /// fn main() {
 ///     let c = Camera::perspective(
 ///            Vector3::zero(),
@@ -384,7 +384,7 @@ pub fn get_camera_matrix(camera: impl Into<ffi::Camera>) -> Matrix {
 
 /// Returns camera 2D transform matrix (view matrix)
 /// ```rust
-/// use raylib::prelude::*;
+/// use sola_raylib::prelude::*;
 /// fn main() {
 ///     let c = Camera2D::default();
 ///     let m = get_camera_matrix2D(&c);
