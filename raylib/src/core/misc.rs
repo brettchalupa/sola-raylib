@@ -58,7 +58,7 @@ impl<'a> Iterator for RandSeqIterator<'a> {
 
 /// Open URL with default system browser (if available)
 /// ```ignore
-/// use raylib::*;
+/// use sola_raylib::*;
 /// fn main() {
 ///     open_url("https://google.com");
 /// }
@@ -92,7 +92,7 @@ impl RaylibHandle {
 
     /// Returns a random value between min and max (both included)
     /// ```ignore
-    /// use raylib::*;
+    /// use sola_raylib::*;
     /// fn main() {
     ///     let (mut rl, thread) = ...;
     ///     let r = rl.get_random_value(0, 10);

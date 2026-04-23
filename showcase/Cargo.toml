@@ -1,13 +1,13 @@
 [package]
-name = "raylib-showcase"
+name = "sola-raylib-showcase"
 version = "5.5.1"
-authors = ["raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
+authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 edition = "2018"
 license = "Zlib"
 readme = "../README.md"
-repository = "https://github.com/raylib-rs/raylib-rs"
+repository = "https://github.com/brettchalupa/sola-raylib"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-raylib = { version = "5.5.1", path = "../raylib" }
+raylib = { package = "sola-raylib", version = "5.5.1", path = "../raylib" }

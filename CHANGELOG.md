@@ -1,4 +1,7 @@
-# raylib-rs Changelog
+# sola-raylib Changelog
+
+Originally the raylib-rs Changelog; sola-raylib is a fork of raylib-rs.
+Outdated and incomplete.
 
 ## 3.7.0 (WIP)
 

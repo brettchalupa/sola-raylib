@@ -21,7 +21,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 //! # Example
 //!
 //! ```
-//! use raylib::prelude::*;
+//! use sola_raylib::prelude::*;
 //! ```
 
 pub use crate::callbacks::*;

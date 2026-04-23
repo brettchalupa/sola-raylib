@@ -1,6 +1,12 @@
 # License
 
+Copyright (c) 2026- Brett Chalupa (sola-raylib fork)
+Copyright (c) 2020-2025 raylib-rs contributors
 Copyright (c) 2018-2019 Paul Clement (@deltaphc)
+
+sola-raylib is a fork of raylib-rs (https://github.com/raylib-rs/raylib-rs),
+which is itself a fork of deltaphc/raylib-rs. Per clause 2 below, this is an
+altered version and is marked as such.
 
 This software is provided "as-is", without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 
