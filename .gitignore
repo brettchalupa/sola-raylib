@@ -6,6 +6,6 @@ Cargo.lock
 raylib-test/test_out/*
 !raylib-test/test_out/.gitkeep
 raylib-test/storage.data
-samples/savegame
+examples/savegame
 showcase/*.png
 showcase/*.raw

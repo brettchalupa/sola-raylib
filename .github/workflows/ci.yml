@@ -65,6 +65,6 @@ jobs:
       - name: Tests
         run: cargo test --workspace
 
-      - name: Build samples
-        working-directory: samples
+      - name: Build examples
+        working-directory: examples
         run: cargo build

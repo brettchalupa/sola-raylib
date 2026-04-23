@@ -7,7 +7,7 @@ Pull requests will get squashed down into a single commit following
 
 Good ways to get started:
 
-- Add examples in the ./samples dir
+- Add examples in the ./examples dir
 - Improve documentation by making it more clear and adding missing docs
 
 Ensure `just ok` passes on your machine before opening a PR.

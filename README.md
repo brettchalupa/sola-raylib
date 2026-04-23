@@ -16,7 +16,7 @@ commit
 (v5.5.1 release), which was a fork of
 [github.com/deltaphc/raylib-rs](https://github.com/deltaphc/raylib-rs).
 
-Check out the [samples](./samples) directory to find usage examples.
+Check out the [examples](./examples) directory to find usage examples.
 
 Sola development happens on `main`. Be sure to view the tag version of the
 repository if you're wanting to find details on a specific version.

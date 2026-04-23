@@ -27,7 +27,7 @@ Guide to creating new releases on crates.io.
    - `raylib-sys/Cargo.toml` — its own `version`
    - `raylib/Cargo.toml` — its own `version` **and** the `version = "X.Y.Z"`
      pinned on the `raylib-sys` dep line (easy to miss)
-   - `samples/Cargo.toml` and `showcase/Cargo.toml` — keep in lockstep even
+   - `examples/Cargo.toml` and `showcase/Cargo.toml` — keep in lockstep even
      though they aren't published
    - Any version references in `README.md`
 2. **After the PR merges, tag the merge commit and push the tag:**
