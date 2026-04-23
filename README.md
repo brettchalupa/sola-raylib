@@ -1,4 +1,4 @@
-# sola-raylib
+# Sola - sola-raylib
 
 sola-raylib is an actively maintained Rust bindings and wrapper for
 [raylib](http://www.raylib.com/) 5.5. It currently targets Rust toolchain
@@ -16,7 +16,12 @@ commit
 (v5.5.1 release), which was a fork of
 [github.com/deltaphc/raylib-rs](https://github.com/deltaphc/raylib-rs).
 
-Please checkout the showcase directory to find usage examples!
+Check out the [samples](./samples) directory to find usage examples.
+
+Sola development happens on `main`. Be sure to view the tag version of the
+repository if you're wanting to find details on a specific version.
+
+## Features / Bugs
 
 Though this binding tries to stay close to the simple C API, it makes some
 changes to be more idiomatic for Rust.
@@ -44,9 +49,9 @@ changes to be more idiomatic for Rust.
 - `SubText` and `FormatText` are omitted, and are instead covered by Rust's
   string slicing and Rust's `format!` macro, respectively.
 
-# Installation
+## Installation
 
-## Supported Platforms
+### Supported Platforms
 
 sola-raylib is focused on supporting Windows, Linux, macOS, and Web targets.
 
@@ -118,13 +123,7 @@ Cross compiling with sola-raylib can be made easier with cross. See the
 [upstream raylib-rs wiki](https://github.com/raylib-rs/raylib-rs/wiki/Cross%E2%80%90compiling-using-cross)
 for a writeup that should still largely apply.
 
-## Developing
-
-[just](https://just.systems/man/en/) is used for running commands while working
-on the project. See `./justfile` for available commands. `just ok` is a helpful
-command to run regularly and ensure is passing.
-
-### Tech Notes
+## Tech Notes
 
 - Structs holding resources have RAII/move semantics, including: `Image`,
   `Texture2D`, `RenderTexture2D`, `Font`, `Mesh`, `Shader`, `Material`, and
@@ -147,33 +146,20 @@ command to run regularly and ensure is passing.
   `["opengl_21"]` or `["opengl_es_20]` to the `features` array in your
   Cargo.toml dependency definition.
 
-### Building from source
+## Building from source
 
 1. Clone repository: `git clone --recurse-submodules`
 2. `cargo build`
 
 ### If building for Wayland on Linux
 
-3. Install these packages:\
+1. Install these packages:\
    `libglfw3-dev wayland-devel libxkbcommon-devel wayland-protocols wayland-protocols-devel libecm-dev`
-4. Enable wayland by adding `features=["wayland"]` to your dependency definition
+2. Enable wayland by adding `features=["wayland"]` to your dependency definition
 
 **Note that the packages may not be a comprehensive list, please add details for
 your distribution or expand on these packages if you believe this to be
 incomplete.**
-
-### NixOS
-
-To use raylib-rs on NixOS there's a provided nix-shell file `shell.nix` at the
-root of the repo that should get you up and running, which can be used like so:
-
-`nix-shell ./shell.nix`
-
-You'll also need to enable the Wayland feature on the raylib crate:
-
-`cargo add raylib -F wayland`
-
-Contributions are welcome to improve or fix the shell.nix!
 
 ## Extras
 
@@ -184,11 +170,9 @@ Contributions are welcome to improve or fix the shell.nix!
   on the various Vector and Matrix types. Operator overloading is used for more
   intuitive design.
 
-## Testing
-
-The sola-raylib-test crate tests the bindings by opening a window, and checking
-the results of various functions. It requires nightly to use.
-
 ## Contribution & Support
 
-All contributions are welcome, see ./CONTRIBUTE.md for more details.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for more
+details.
+
+See [DEVELOPING.md](DEVELOPING.md) for how to work with this repo locally.
