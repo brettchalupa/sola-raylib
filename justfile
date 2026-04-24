@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Run all checks that should be green before committing/pushing.
-ok: fmt-check build clippy test examples
+ok: fmt-check build clippy test build-examples
     @echo "All checks passed."
 
 # Build every crate in the workspace.
@@ -30,7 +30,7 @@ fmt-check:
     cargo fmt --all -- --check
 
 # Build the examples binaries crate.
-examples:
+build-examples:
     cd examples && cargo build --all-targets
 
 # Run a specific example by name, e.g. `just sample drop`.
@@ -40,3 +40,20 @@ example name:
 # Initializes git submodules
 setup:
     git submodule update --init
+
+# Run a handful of examples to quickly check things are working
+examples:
+    just example 3d_camera_first_person
+    just example arkanoid
+    just example asteroids
+    just example camera_2d
+    just example extensions
+    just example hello_raylib
+    just example input
+    just example logo
+    just example font
+    just example model_shader
+    just example raymarch
+    just example rgui
+    just example texture
+    just example yaw_pitch_roll

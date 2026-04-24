@@ -23,6 +23,7 @@ impl Opt {
         let (mut rl, thread) = raylib::init()
             .size(self.width, self.height)
             .title(name)
+            .highdpi()
             .build();
         let logo = raylib::prelude::Image::load_image("static/logo.png").unwrap();
         rl.set_window_icon(&logo);

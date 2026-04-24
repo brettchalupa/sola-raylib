@@ -63,7 +63,7 @@ fn main() {
         }
 
         // Plane yaw (y-axis) controls
-        if rl.is_key_down(raylib::consts::KeyboardKey::KEY_S) {
+        if rl.is_key_down(raylib::consts::KeyboardKey::KEY_D) {
             yaw += 1.0;
         } else if rl.is_key_down(raylib::consts::KeyboardKey::KEY_A) {
             yaw -= 1.0;
@@ -227,7 +227,7 @@ fn main() {
                 Color::DARKGRAY,
             );
             d.draw_text(
-                "Yaw controlled with: KEY_A / KEY_S",
+                "Yaw controlled with: KEY_A / KEY_D",
                 40,
                 410,
                 10,

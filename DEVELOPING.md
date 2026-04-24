@@ -9,7 +9,17 @@ on the project. See `./justfile` for available commands.
 
 Run `just setup` to initialize the needed Git submodules.
 
-`just ok` is a helpful command to run regularly and ensure is passing.
+## Verifying Your Changes
+
+The best way to verify your changes is to add a project to ./examples that
+exercises the changed code. Then add that to `just examples` in the `justfile`.
+That way it can be verified to not break with future changes.
+
+If you want to verify your changes haven't broken other code and examples, run
+`just examples` to quickly test a bunch of different functionality in
+sola-raylib.
+
+Ensure `just ok` is passing before submitting changes.
 
 ## Releasing
 

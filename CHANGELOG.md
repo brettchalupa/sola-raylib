@@ -46,6 +46,8 @@ soundness and correctness. Thanks to all the original authors linked below.
 
 - CI and `just ok` build with `--all-targets` so examples are exercised
   alongside the library crates.
+- Examples look better on High DPI screens.
+- `just examples` to quickly run a bunch of different examples.
 
 [rr-212]: https://github.com/raylib-rs/raylib-rs/pull/212
 [rr-247]: https://github.com/raylib-rs/raylib-rs/issues/247
