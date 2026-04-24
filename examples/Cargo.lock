@@ -531,7 +531,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "sola-raylib"
-version = "6.0.0-dev.0"
+version = "6.0.0"
 dependencies = [
  "cfg-if",
  "paste",
@@ -542,7 +542,7 @@ dependencies = [
 
 [[package]]
 name = "sola-raylib-examples"
-version = "6.0.0-dev.0"
+version = "0.0.0"
 dependencies = [
  "rand",
  "ringbuf",
@@ -552,7 +552,7 @@ dependencies = [
 
 [[package]]
 name = "sola-raylib-sys"
-version = "6.0.0-dev.0"
+version = "6.0.0"
 dependencies = [
  "bindgen",
  "cc",

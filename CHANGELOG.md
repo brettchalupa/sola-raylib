@@ -1,6 +1,6 @@
 # sola-raylib Changelog
 
-## 6.0.0 - UNRELEASED
+## 6.0.0 - Apr 24, 2026
 
 Upgrade to **raylib 6.0** and **raygui 5**. sola-raylib's major version tracks
 raylib's, so 6.x binds raylib 6.0. See raylib's [6.0 release notes][raylib-6]

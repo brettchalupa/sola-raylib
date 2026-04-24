@@ -26,9 +26,9 @@ changes and the new APIs wrapped from raylib 6.0.
 sola-raylib development happens on `main`. Be sure to view the tag version of
 the repository if you're wanting to find details on a specific version.
 
-The latest released version on crates.io is 5.5.3 (binds raylib 5.5). `main`
-targets raylib 6.0 and compiles cleanly, but 6.0.0 hasn't been tagged yet — pull
-from GitHub if you want it now:
+The latest released version on crates.io is 6.0.0 (binds raylib 6.0).
+
+Pull from GitHub if you want the latest `main`:
 
 ```
 raylib = { package = "sola-raylib", git = "https://github.com/brettchalupa/sola-raylib.git" }
@@ -86,7 +86,7 @@ platform [here](https://github.com/raysan5/raylib/wiki)
 
 ```toml
 [dependencies]
-sola-raylib = "5.5"
+sola-raylib = "6.0"
 ```
 
 Then in your code, use it as `sola_raylib`:
@@ -103,7 +103,7 @@ still imported as `raylib` in your source code:
 
 ```toml
 [dependencies]
-raylib = { package = "sola-raylib", version = "5.5" }
+raylib = { package = "sola-raylib", version = "6.0" }
 ```
 
 With that line, all your existing `raylib` code keeps working. The ./examples in

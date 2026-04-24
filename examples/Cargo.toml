@@ -1,6 +1,5 @@
 [package]
 name = "sola-raylib-examples"
-version = "6.0.0-dev.0"
 authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 edition = "2021"
 license = "Zlib"
@@ -8,7 +7,7 @@ readme = "../README.md"
 repository = "https://github.com/brettchalupa/sola-raylib"
 
 [dependencies]
-raylib = { package = "sola-raylib", path = "../raylib", version = "6.0.0-dev.0" }
+raylib = { package = "sola-raylib", path = "../raylib", version = "6.0.0" }
 structopt = "0.3"
 rand = "0.10"
 ringbuf = {version = "0.4.7", optional = true}
