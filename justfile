@@ -59,6 +59,7 @@ examples:
     just example logo
     just example font
     just example model_shader
+    just example pixel_color
     just example raymarch
     just example rgui
     just example shapes_new

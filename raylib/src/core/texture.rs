@@ -1200,6 +1200,47 @@ pub fn get_pixel_data_size(width: i32, height: i32, format: ffi::PixelFormat) ->
     unsafe { ffi::GetPixelDataSize(width, height, format as i32) }
 }
 
+/// Read a single pixel out of a raw buffer of bytes using `format` to
+/// interpret them.
+///
+/// Returns `None` if `src` is smaller than the per-pixel size required by
+/// `format`.
+#[inline]
+pub fn get_pixel_color(src: &[u8], format: ffi::PixelFormat) -> Option<crate::color::Color> {
+    let needed = unsafe { ffi::GetPixelDataSize(1, 1, format as i32) } as usize;
+    if src.len() < needed {
+        return None;
+    }
+    let raw = unsafe { ffi::GetPixelColor(src.as_ptr() as *mut std::ffi::c_void, format as i32) };
+    Some(raw.into())
+}
+
+/// Write a single pixel into a raw buffer of bytes using `format`.
+///
+/// Returns `Err` if `dst` is smaller than the per-pixel size required by
+/// `format`. On success, `dst[..pixel_size]` has been overwritten.
+#[inline]
+pub fn set_pixel_color(
+    dst: &mut [u8],
+    color: crate::color::Color,
+    format: ffi::PixelFormat,
+) -> Result<(), Error> {
+    let needed = unsafe { ffi::GetPixelDataSize(1, 1, format as i32) } as usize;
+    if dst.len() < needed {
+        return Err(error!(
+            "destination buffer smaller than one pixel for format"
+        ));
+    }
+    unsafe {
+        ffi::SetPixelColor(
+            dst.as_mut_ptr() as *mut std::ffi::c_void,
+            color.into(),
+            format as i32,
+        );
+    }
+    Ok(())
+}
+
 impl RaylibHandle {
     /// Loads texture from file into GPU memory (VRAM).
     pub fn load_texture(&mut self, _: &RaylibThread, filename: &str) -> Result<Texture2D, Error> {
