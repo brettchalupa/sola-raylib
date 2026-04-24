@@ -30,7 +30,7 @@ The latest released version on crates.io in this SHA is 5.5.3.
 GitHub if you want to use Raylib 6.0:
 
 ```
-raylib = { package = "raylib-sola", git = "https://github.com/brettchalupa/sola-raylib.git" }
+raylib = { package = "sola-raylib", git = "https://github.com/brettchalupa/sola-raylib.git" }
 ```
 
 ## Features / Bugs
