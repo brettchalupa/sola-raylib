@@ -18,12 +18,10 @@ Bindings are **generated at build time**. There are no checked-in
    and `-I./raylib/src` so clang resolves the submoduled raylib headers (not a
    system `/usr/include/raylib.h`).
 2. `binding/binding.h` pulls in raylib plus the raygui wrapper shim
-   (`binding/rgui_wrapper.h`). With the `imgui` feature, the rlImGui header is
-   added too.
+   (`binding/rgui_wrapper.h`).
 3. The generated `bindings.rs` is written to `$OUT_DIR` and pulled into
    `src/lib.rs` via `include!(concat!(env!("OUT_DIR"), "/bindings.rs"))`.
-4. `cc` compiles the raygui wrapper (and rlImGui if enabled) and links them with
-   libraylib.
+4. `cc` compiles the raygui wrapper and links it with libraylib.
 
 To inspect the generated bindings:
 
@@ -59,14 +57,13 @@ See [DEVELOPING.md](../DEVELOPING.md) for the full "bumping raylib" checklist.
 | `wayland`                                                   | Build raylib with Wayland support on Linux.                                                                           |
 | `sdl`                                                       | Build raylib with the SDL platform backend.                                                                           |
 | `opengl_21` / `opengl_33` / `opengl_es_20` / `opengl_es_30` | Select the GL backend raylib compiles against.                                                                        |
-| `imgui`                                                     | Build the rlImGui shim so the safe crate's imgui integration works.                                                   |
 | `noscreenshot`, `nogif`                                     | Disable raylib's F12 screenshot / GIF recording.                                                                      |
 | `custom_frame_control`                                      | Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` build flag.                                                            |
 
 ## Layout
 
 ```
-binding/           raygui wrapper shim, binding.h, utils_log, imgui decoy
+binding/           raygui wrapper shim, binding.h, utils_log
 raylib/            git submodule: raysan5/raylib (C source + headers)
 src/lib.rs         thin shell that includes the bindgen output
 build.rs           drives bindgen + cc for the wrappers + raylib linkage

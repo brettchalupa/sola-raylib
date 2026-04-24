@@ -17,10 +17,16 @@ for the full upstream story.
 - Removed `RaylibMesh::indicies` / `indicies_mut`. The typo'd aliases were
   deprecated in 5.5.3 with a "removed in 6.0" note — use `indices` /
   `indices_mut`.
-- `RayImGUITrait::draw_imgui` closures are now `FnMut` (was `Fn`), so they can
-  mutate captured state.
 - `DrawModelPoints` / `DrawModelPointsEx` removed — raylib 6.0 dropped these
   from its public API.
+- **Removed the rlImGui / imgui integration.** The `imgui` feature, the
+  `raylib::imgui` module, the `RayImGUITrait` and friends, the rlImGui
+  submodule, and the `imgui` example are all gone. sola-raylib is focused on
+  raylib + raygui; if you want imgui-in-raylib, use a community bridge crate or
+  roll a small integration crate against `sola-raylib-sys`.
+- **Removed the physac status row from the README.** There was no actual physac
+  binding in the safe crate; the row was aspirational. Physac itself is a
+  separate raylib-extras library — a real binding would live in its own crate.
 
 ### Added
 
@@ -39,17 +45,9 @@ New examples exercising the new surface: `animation_blending`, `shapes_new`,
 
 ### Other
 
-- `just example-imgui <name>` and `just examples-imgui` — dedicated recipes for
-  examples that need `--features imgui`. `just examples` chains the imgui demo
-  in as the final step.
-- `raylib/src/imgui/mod.rs` compiles under current Rust (the `static-mut-refs`
-  lint): replaced `static mut CONTEXT` with a `Sync`-asserting newtype around
-  `OnceLock<Context>`.
 - `raylib-sys/README.md` rewritten to reflect the current build-time bindgen
   flow; the old doc described a workflow that no longer exists.
 - `DEVELOPING.md` gains a "Bumping raylib" checklist.
-- `unimplemented.txt` at the repo root tracks non-6.0 wrapper gaps (pixel-color
-  helpers, audio stream processors, `ExportWaveAsCode`).
 
 [raylib-6]: https://github.com/raysan5/raylib/releases/tag/6.0
 

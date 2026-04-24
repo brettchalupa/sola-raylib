@@ -70,12 +70,11 @@ sola-raylib is focused on supporting Windows, Linux, macOS, and Web targets.
 
 The table below shows which core APIs are supported for which platforms:
 
-| API    | Windows            | Linux              | macOS              | Web                |
-| ------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| core   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| rgui   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ❔                 |
-| physac | :construction:     | :construction:     | :construction:     | ❔                 |
-| rlgl   | :heavy_check_mark: | :x:                | :x:                | ❔                 |
+| API  | Windows            | Linux              | macOS              | Web                |
+| ---- | ------------------ | ------------------ | ------------------ | ------------------ |
+| core | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| rgui | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ❔                 |
+| rlgl | :heavy_check_mark: | :x:                | :x:                | ❔                 |
 
 ## Build Dependencies
 

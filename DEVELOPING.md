@@ -144,15 +144,12 @@ it as a breaking release.
    loading, audio, and gui paths only surface problems when actually run. For
    any new API you wrapped, add or extend an example that exercises it.
 
-7. **Bump the rlImGui submodule if needed.** It lives at
-   `raylib-sys/binding/rlImGui`. Test with `cargo build -F imgui`.
-
-8. **Update docs and versions.**
+7. **Update docs and versions.**
    - `CHANGELOG.md` — add a section for the new version.
    - `README.md` — bump every raylib version reference.
    - Workspace crate versions — see the "Releasing" section above.
 
-9. **Ship.** Follow the Releasing checklist.
+8. **Ship.** Follow the Releasing checklist.
 
 ## Maintenance scripts
 
