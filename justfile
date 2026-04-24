@@ -36,10 +36,13 @@ build-examples:
 example name:
     cd examples && cargo run --bin {{ name }}
 
-# Run an example built with raylib's CPU software renderer (rlsw).
+# Run an example built with raylib's CPU software renderer (rlsw) over SDL.
+# Requires SDL2 dev headers installed (Fedora: `SDL2-devel`, Debian/Ubuntu:
+# `libsdl2-dev`, macOS/Homebrew: `sdl2`). rlsw is not compatible with GLFW,
+# so we also enable the `sdl` feature; see raylib#5664.
 # Defaults to hello_raylib; override with e.g. `just example-sw logo`.
 example-sw name="hello_raylib":
-    cd examples && cargo run --features software_render --bin {{ name }}
+    cd examples && cargo run --features "sdl,software_render" --bin {{ name }}
 
 # Initializes git submodules
 setup:
@@ -68,6 +71,7 @@ examples:
     just example drop
     just examples-sw
 
-# Smoke-test the CPU software renderer backend (raylib 6.0 `rlsw`).
+# Smoke-test the CPU software renderer backend (raylib 6.0 `rlsw`) over SDL.
+# Requires SDL2 dev headers. See `example-sw` comment above for details.
 examples-sw:
     just example-sw hello_raylib

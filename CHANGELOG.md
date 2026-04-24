@@ -83,12 +83,12 @@ displays `get_key_name`.
   as new backends with known gaps. We expose the flags so you can opt in; what
   actually renders or links is whatever upstream supports today.
   - `software_render`: build raylib with the CPU `rlsw` backend
-    (`OPENGL_VERSION=Software`). Links and starts, but on Linux/X11 the
-    framebuffer-to-window present path is currently broken upstream and windows
-    open to a black screen. Track [raylib#4832][rlsw-pr] for progress.
-    `just example-sw <name>` and `just examples-sw` build and run with the
-    feature enabled, useful to smoke-test whether upstream has fixed the
-    presentation path on your platform.
+    (`OPENGL_VERSION=Software`). rlsw is **not compatible with the default GLFW
+    desktop backend** per upstream (raylib#5664), so use it via
+    `--features "sdl,software_render"` on Linux/macOS (requires SDL2 dev
+    headers). `just example-sw <name>` and `just examples-sw` wire that combo
+    for you. Windows would need the `rcore_desktop_win32` native backend, which
+    sola-raylib does not wire yet.
   - `platform_memory`: build raylib with the headless `PLATFORM=Memory` backend.
     The feature compiles the backend, but reading the framebuffer requires
     `rlsw.h` APIs (e.g. `swGetColorBuffer`) that are **not yet wrapped** in the

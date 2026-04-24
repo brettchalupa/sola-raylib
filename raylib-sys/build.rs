@@ -166,7 +166,19 @@ fn build_with_cmake(src_path: &str) {
             }
             #[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
             {
-                println!("cargo:rustc-link-lib=SDL2");
+                // raylib's CMake prefers SDL3 via find_package() and falls
+                // back to SDL2 if SDL3 isn't present. Mirror that here so
+                // we link whichever one raylib actually compiled against.
+                let sdl3_present = std::process::Command::new("pkg-config")
+                    .args(["--exists", "sdl3"])
+                    .status()
+                    .map(|s| s.success())
+                    .unwrap_or(false);
+                if sdl3_present {
+                    println!("cargo:rustc-link-lib=SDL3");
+                } else {
+                    println!("cargo:rustc-link-lib=SDL2");
+                }
                 conf.define("PLATFORM", "SDL")
             }
             #[cfg(not(any(feature = "sdl", feature = "platform_memory")))]
