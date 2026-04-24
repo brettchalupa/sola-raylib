@@ -96,6 +96,38 @@ impl RaylibAudio {
         }
     }
 
+    /// Attach a raw processor callback to the entire audio pipeline. The
+    /// callback receives the final mixed output (interleaved f32 stereo,
+    /// `frames * 2` samples).
+    ///
+    /// # Safety
+    ///
+    /// See [`AudioStream::attach_audio_stream_processor`] for the audio-
+    /// thread safety requirements. The function pointer must outlive any
+    /// `RaylibAudio` that has it attached.
+    #[inline]
+    pub unsafe fn attach_audio_mixed_processor(
+        &self,
+        processor: unsafe extern "C" fn(*mut std::ffi::c_void, u32),
+    ) {
+        ffi::AttachAudioMixedProcessor(Some(processor));
+    }
+
+    /// Detach a previously-attached mixed processor. `processor` must be
+    /// the same function pointer you passed to
+    /// [`attach_audio_mixed_processor`].
+    ///
+    /// # Safety
+    ///
+    /// See [`attach_audio_mixed_processor`].
+    #[inline]
+    pub unsafe fn detach_audio_mixed_processor(
+        &self,
+        processor: unsafe extern "C" fn(*mut std::ffi::c_void, u32),
+    ) {
+        ffi::DetachAudioMixedProcessor(Some(processor));
+    }
+
     /// Loads a new sound from file.
     #[inline]
     pub fn new_sound<'aud>(&'aud self, filename: &str) -> Result<Sound<'aud>, Error> {
@@ -235,6 +267,14 @@ impl<'aud> Wave<'aud> {
     pub fn export(&self, filename: impl AsRef<Path>) -> bool {
         let c_filename = CString::new(filename.as_ref().to_string_lossy().as_bytes()).unwrap();
         unsafe { ffi::ExportWave(self.0, c_filename.as_ptr()) }
+    }
+
+    /// Export wave sample data to a C header (.h) file, returns true on
+    /// success. Raylib 6.0.
+    #[inline]
+    pub fn export_as_code(&self, filename: impl AsRef<Path>) -> bool {
+        let c_filename = CString::new(filename.as_ref().to_string_lossy().as_bytes()).unwrap();
+        unsafe { ffi::ExportWaveAsCode(self.0, c_filename.as_ptr()) }
     }
 
     /// Copies a wave to a new wave.
@@ -621,6 +661,44 @@ impl<'aud> AudioStream<'aud> {
         unsafe {
             ffi::SetAudioStreamPan(self.0, pan);
         }
+    }
+
+    /// Attach a raw audio-thread processor callback to this stream.
+    ///
+    /// `processor` is invoked from the miniaudio worker thread with a
+    /// `*mut c_void` pointing at interleaved `f32` stereo samples (so
+    /// `frames * 2` f32s total). Pass the same function pointer to
+    /// [`detach_audio_stream_processor`] to remove it later.
+    ///
+    /// # Safety
+    ///
+    /// Your callback runs concurrently with the rest of your program on
+    /// raylib's audio thread. Any state it touches must be synchronized
+    /// (lock-free queues, atomics) and must outlive the stream. We don't
+    /// store a closure, so you are responsible for making sure the
+    /// function pointer stays valid and behaves for as long as it's
+    /// attached.
+    #[inline]
+    pub unsafe fn attach_audio_stream_processor(
+        &self,
+        processor: unsafe extern "C" fn(*mut std::ffi::c_void, u32),
+    ) {
+        ffi::AttachAudioStreamProcessor(self.0, Some(processor));
+    }
+
+    /// Detach a previously-attached processor from this stream. `processor`
+    /// must be the same function pointer you passed to
+    /// [`attach_audio_stream_processor`].
+    ///
+    /// # Safety
+    ///
+    /// See [`attach_audio_stream_processor`].
+    #[inline]
+    pub unsafe fn detach_audio_stream_processor(
+        &self,
+        processor: unsafe extern "C" fn(*mut std::ffi::c_void, u32),
+    ) {
+        ffi::DetachAudioStreamProcessor(self.0, Some(processor));
     }
 }
 

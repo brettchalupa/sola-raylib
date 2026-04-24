@@ -39,9 +39,20 @@ New API wrappers for raylib 6.0 additions:
   `draw_ellipse_lines_v`.
 - Text: `measure_text_codepoints`.
 - Math: `Vector2::cross_product`, `Matrix::multiply_value`, `Matrix::compose`.
+- Pixel helpers in `core::texture`: `get_pixel_color` and `set_pixel_color`
+  (take a `PixelFormat` enum and byte slice, validate slice length).
+- Audio: `Wave::export_as_code`. Raw audio-thread processor hooks as
+  `unsafe fn`s that take `extern "C" fn(*mut c_void, u32)` pointers:
+  `AudioStream::attach_audio_stream_processor` /
+  `detach_audio_stream_processor`, and
+  `RaylibAudio::attach_audio_mixed_processor` / `detach_audio_mixed_processor`.
+  Ergonomic closure wrapping is future work; the raw pointer interface is honest
+  about the audio-thread risk.
 
 New examples exercising the new surface: `animation_blending`, `shapes_new`,
-`borderless_fullscreen`. The `input` example now also displays `get_key_name`.
+`borderless_fullscreen`, `pixel_color` (HSV wheel painted via `set_pixel_color`,
+read back under the cursor with `get_pixel_color`). The `input` example now also
+displays `get_key_name`.
 
 ### Other
 

@@ -102,6 +102,10 @@ name = "shapes_new"
 path = "shapes_new.rs"
 
 [[bin]]
+name = "pixel_color"
+path = "pixel_color.rs"
+
+[[bin]]
 name = "borderless_fullscreen"
 path = "borderless_fullscreen.rs"
 
