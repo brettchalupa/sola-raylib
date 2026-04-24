@@ -277,6 +277,11 @@ fn gen_bindings() {
         .header("binding/binding.h")
         .rustified_enum(".+")
         .clang_arg("-std=c99")
+        // Point clang at the submoduled raylib headers. Without this, clang
+        // falls back to a system-installed raylib.h (e.g. /usr/include) when
+        // raygui.h does `#include "raylib.h"`, which silently generates
+        // bindings against the wrong version.
+        .clang_arg("-I./raylib/src")
         .clang_arg(plat)
         .parse_callbacks(Box::new(ignored_macros));
 
@@ -309,12 +314,16 @@ fn gen_bindings() {
 }
 
 fn gen_rgui() {
-    // Compile the code and link with cc crate
+    // Compile the code and link with cc crate. `raygui.h` does
+    // `#include "raylib.h"`, so we need the submoduled raylib src on the
+    // include path — otherwise cc falls back to a system install (and
+    // fails outright on machines that don't have one, e.g. CI runners).
     #[cfg(target_os = "windows")]
     {
         cc::Build::new()
             .files(vec!["binding/rgui_wrapper.cpp", "binding/utils_log.cpp"])
             .include("binding")
+            .include("raylib/src")
             .warnings(false)
             // .flag("-std=c99")
             .extra_warnings(false)
@@ -325,6 +334,7 @@ fn gen_rgui() {
         cc::Build::new()
             .files(vec!["binding/rgui_wrapper.c", "binding/utils_log.c"])
             .include("binding")
+            .include("raylib/src")
             .warnings(false)
             // .flag("-std=c99")
             .extra_warnings(false)

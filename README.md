@@ -21,7 +21,7 @@ commit
 
 Check out the [examples](./examples) directory to find usage examples.
 
-Sola development happens on `main`. Be sure to view the tag version of the
+sola-raylib development happens on `main`. Be sure to view the tag version of the
 repository if you're wanting to find details on a specific version.
 
 ## Features / Bugs
