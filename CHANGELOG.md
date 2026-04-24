@@ -44,6 +44,7 @@ soundness and correctness. Thanks to all the original authors linked below.
 
 ### Other
 
+- Add docs to README on drop ordering.
 - CI and `just ok` build with `--all-targets` so examples are exercised
   alongside the library crates.
 - Examples look better on High DPI screens.

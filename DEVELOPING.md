@@ -2,6 +2,10 @@
 
 Documentation on how to work on Sola.
 
+## Style
+
+sola-raylib follows Rust styles and lint rules. It aims to have no warnings.
+
 ## Commands
 
 [just](https://just.systems/man/en/) is used for running commands while working
@@ -28,8 +32,9 @@ Guide to creating new releases on crates.io.
 ### Pre-flight
 
 - Be on `main` with a clean working tree:
-  `git checkout main && git pull && git status`.
-- `just ok` is green.
+  `git checkout main && git pull && git status`
+- `just ok` is green
+- `just examples` all work
 
 ### Steps
 

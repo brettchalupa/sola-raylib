@@ -21,8 +21,10 @@ commit
 
 Check out the [examples](./examples) directory to find usage examples.
 
-sola-raylib development happens on `main`. Be sure to view the tag version of the
-repository if you're wanting to find details on a specific version.
+sola-raylib development happens on `main`. Be sure to view the tag version of
+the repository if you're wanting to find details on a specific version.
+
+The latest released version on crates.io in this SHA is 5.5.3.
 
 ## Features / Bugs
 
@@ -148,6 +150,36 @@ for a writeup that should still largely apply.
 - OpenGL 3.3, 2.1, and ES 2.0 may be forced via adding `["opengl_33"]`,
   `["opengl_21"]` or `["opengl_es_20]` to the `features` array in your
   Cargo.toml dependency definition.
+
+## Drop ordering
+
+Resources like `Texture2D`, `RenderTexture2D`, `Font`, `Model`, `Mesh`, and
+`Shader` hold GPU handles and free them in their `Drop` impl. `RaylibHandle`'s
+`Drop` calls `CloseWindow()`, which tears down the GL context. **GPU resources
+must drop before the `RaylibHandle`** — otherwise their unload calls run against
+a dead context and segfault.
+
+Rust drops local variables in reverse declaration order, and struct fields in
+**declaration order**. So if you hold both resources and `RaylibHandle` in the
+same struct, declare `rl` last:
+
+```rust
+struct Engine {
+    // resources (dropped first, while the GL context is still alive)
+    texture: Texture2D,
+    rt: RenderTexture2D,
+    // handle (dropped last -> CloseWindow runs after resources are unloaded)
+    thread: RaylibThread,
+    rl: RaylibHandle,
+}
+```
+
+The same rule applies when `rl` and resources are locals in the same function:
+declare `rl` first so it drops last.
+
+Audio resources (`Wave`, `Sound`, `Music`, `AudioStream`) are lifetime-bound to
+`RaylibAudio`, so the borrow checker enforces their ordering for you — no
+discipline required.
 
 ## Building from source
 
