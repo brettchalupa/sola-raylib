@@ -53,7 +53,7 @@ jobs:
             libgl1-mesa-dev
 
       - name: Build workspace
-        run: cargo build --workspace
+        run: cargo build --workspace --all-targets
 
       - name: Clippy
         run: cargo clippy --workspace --all-targets
@@ -66,4 +66,4 @@ jobs:
 
       - name: Build examples
         working-directory: examples
-        run: cargo build
+        run: cargo build --all-targets
