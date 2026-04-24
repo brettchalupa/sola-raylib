@@ -6,11 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Cancel in-flight runs for the same ref — prevents a PR push from queueing
-# behind its own older run.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-
 env:
   CARGO_TERM_COLOR: always
 
