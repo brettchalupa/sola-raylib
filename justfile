@@ -10,7 +10,7 @@ ok: fmt-check build clippy test examples
 
 # Build every crate in the workspace.
 build:
-    cargo build --workspace
+    cargo build --workspace --all-targets
 
 # Lint every crate and target. Warnings are allowed for now (lots of pre-existing upstream noise).
 clippy:
@@ -31,7 +31,7 @@ fmt-check:
 
 # Build the examples binaries crate.
 examples:
-    cd examples && cargo build
+    cd examples && cargo build --all-targets
 
 # Run a specific example by name, e.g. `just sample drop`.
 example name:
