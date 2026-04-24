@@ -80,6 +80,10 @@ fn build_with_cmake(src_path: &str) {
     builder
         .define("BUILD_EXAMPLES", "OFF")
         .define("CMAKE_BUILD_TYPE", profile)
+        // raylib 6.0 only honors SUPPORT_* overrides when CUSTOMIZE_BUILD=ON
+        // (see cmake/CompileDefinitions.cmake). Without this the flags below
+        // were silently dropped on the floor.
+        .define("CUSTOMIZE_BUILD", "ON")
         // turn off until this is fixed
         .define("SUPPORT_BUSY_WAIT_LOOP", "OFF")
         .define("SUPPORT_FILEFORMAT_JPG", "ON");
@@ -89,16 +93,13 @@ fn build_with_cmake(src_path: &str) {
         builder.define("SUPPORT_CUSTOM_FRAME_CONTROL", "ON");
     }
 
-    // Enable wayland cmake flag if feature is specified
+    // Enable wayland cmake flag if feature is specified. raylib 6.0 renamed
+    // the knob from USE_WAYLAND (gone) to GLFW_BUILD_WAYLAND.
     #[cfg(feature = "wayland")]
     {
-        builder.define("USE_WAYLAND", "ON");
+        builder.define("GLFW_BUILD_WAYLAND", "ON");
         builder.define("USE_EXTERNAL_GLFW", "ON"); // Necessary for wayland support in my testing
     }
-
-    // This seems redundant, but I felt it was needed incase raylib changes it's default
-    #[cfg(not(feature = "wayland"))]
-    builder.define("USE_WAYLAND", "OFF");
 
     // Scope implementing flags for forcing OpenGL version
     // See all possible flags at https://github.com/raysan5/raylib/wiki/CMake-Build-Options
