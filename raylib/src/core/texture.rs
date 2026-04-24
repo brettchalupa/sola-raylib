@@ -755,7 +755,7 @@ impl Image {
     }
 
     /// Export image to memory buffer.
-    pub fn export_image_to_memory(&self, file_type: &str) -> Result<&[u8], Error> {
+    pub fn export_image_to_memory(&self, file_type: &str) -> Result<Vec<u8>, Error> {
         if self.width == 0 {
             return Err(error!("Invalid image; width == 0"));
         }
@@ -767,15 +767,18 @@ impl Image {
         }
 
         let c_filetype = CString::new(file_type).unwrap();
-        let data_size: &mut i32 = &mut 0;
-        let data = unsafe { ffi::ExportImageToMemory(self.0, c_filetype.as_ptr(), data_size) };
+        let mut data_size: i32 = 0;
+        let data = unsafe { ffi::ExportImageToMemory(self.0, c_filetype.as_ptr(), &mut data_size) };
 
         // The actual function returns null if the code for converting to a file type never goes off.
         if data.is_null() {
             return Err(error!("Unsupported format."));
         }
 
-        Ok(unsafe { std::slice::from_raw_parts(data as *const u8, *data_size as usize) })
+        let out =
+            unsafe { std::slice::from_raw_parts(data as *const u8, data_size as usize) }.to_vec();
+        unsafe { ffi::MemFree(data as *mut std::os::raw::c_void) };
+        Ok(out)
     }
 
     /// Apply custom square convolution kernel to image
