@@ -2,6 +2,62 @@
 
 ## [Unreleased] - 5.5.3
 
+Doc improvements and bug fixes ported from upstream raylib-rs, scoped to
+soundness and correctness. Thanks to all the original authors linked below.
+
+### Breaking
+
+- `Image::export_image_to_memory` now returns `Result<Vec<u8>, Error>` instead
+  of `Result<&[u8], Error>`. The previous signature leaked on every call
+  (raylib's buffer was never freed) and had an unsound lifetime. Adapted from
+  raylib-rs [#250][rr-250] / [#247][rr-247].
+
+### Deprecated
+
+- `RaylibMesh::indicies` / `indicies_mut` — use `indices` / `indices_mut`. The
+  typo'd names stay through 5.x and are removed in 6.0.
+
+### Fixed
+
+- **Soundness:** `RaylibMesh` accessors return an empty slice when the
+  underlying buffer is null instead of invoking UB via
+  `slice::from_raw_parts(null, _)` ([raylib-rs#257][rr-257]).
+- **Soundness:** `RaylibMesh::indices` length is now `triangleCount * 3` (what
+  raylib allocates) rather than `vertexCount` ([raylib-rs#257][rr-257]).
+- **Soundness:** `Sound::alias` lifetimes correctly bind the sound's lifetime to
+  the receiver ([`4d53bd4`][rr-4d53bd4]).
+- **Use-after-free:** `load_model_animations` frees only the outer array via
+  `MemFree`, rather than `UnloadModelAnimations` which also tore down the
+  animations the `Vec` had just taken ownership of ([`ccc0827`][rr-ccc0827]).
+- **Data corruption:** `AudioStream::update` passes element count (not byte
+  size) to `ffi::UpdateAudioStream`, matching the C API
+  ([raylib-rs#212][rr-212]).
+- `Texture2D::update_texture_rec` validates the destination rectangle and sizes
+  the expected pixel buffer from rect dimensions ([`cb0c004`][rr-cb0c004]).
+- Closure-based draw helpers (`draw`, `draw_mode2D`, etc.) no longer call
+  `ffi::End*()` twice — the handle's `Drop` already does
+  ([`aadf1a7`][rr-aadf1a7]).
+- `gui_text_box` and `gui_text_input_box` grow the buffer and round-trip the
+  null terminator, so text input works ([`e2be94b`][rr-e2be94b]).
+- `gui_panel` passes a null pointer for empty strings, matching `GuiPanel`'s C
+  API ([`95234d1`][rr-95234d1]).
+
+### Other
+
+- CI and `just ok` build with `--all-targets` so examples are exercised
+  alongside the library crates.
+
+[rr-212]: https://github.com/raylib-rs/raylib-rs/pull/212
+[rr-247]: https://github.com/raylib-rs/raylib-rs/issues/247
+[rr-250]: https://github.com/raylib-rs/raylib-rs/pull/250
+[rr-257]: https://github.com/raylib-rs/raylib-rs/pull/257
+[rr-4d53bd4]: https://github.com/raylib-rs/raylib-rs/commit/4d53bd49af9a437433b7dff92b38cb06831351df
+[rr-95234d1]: https://github.com/raylib-rs/raylib-rs/commit/95234d17a1943e00b06e30f8323a63b78323880c
+[rr-aadf1a7]: https://github.com/raylib-rs/raylib-rs/commit/aadf1a76be022f197460d061c17570803010df58
+[rr-cb0c004]: https://github.com/raylib-rs/raylib-rs/commit/cb0c0048b6c80ec8e487fafad2b07da1886007c8
+[rr-ccc0827]: https://github.com/raylib-rs/raylib-rs/commit/ccc0827b9667578476c67b6c9d3b37a1b167034e
+[rr-e2be94b]: https://github.com/raylib-rs/raylib-rs/commit/e2be94bab26db3a30bca7226e5f03a4b15c54b0e
+
 ## 5.5.2
 
 - Renamed to sola-raylib and sola-raylib-sys
@@ -23,130 +79,101 @@ Incomplete changelog below from raylib-rs. Keeping around for posterity's sake.
 - [core] ADDED: BeginVrStereoMode()
 - [core] ADDED: EndVrStereoMode()
 
-- [core] ADDED: GetCurrentMonitor() (#1485) by @object71
-  [core] ADDED: SetGamepadMappings() (#1506)
+- [core] ADDED: GetCurrentMonitor() (#1485) by @object71 [core] ADDED:
+  SetGamepadMappings() (#1506)
 - [core] RENAMED: struct Camera: camera.type to camera.projection
 - [core] RENAMED: LoadShaderCode() to LoadShaderFromMemory() (#1690)
 - [core] RENAMED: SetMatrixProjection() to rlSetMatrixProjection()
 - [core] RENAMED: SetMatrixModelview() to rlSetMatrixModelview()
 - [core] RENAMED: GetMatrixModelview() to rlGetMatrixModelview()
 - [core] RENAMED: GetMatrixProjection() to rlGetMatrixProjection()
-- [core] RENAMED: GetShaderDefault() to rlGetShaderDefault()
-  [core] RENAMED: GetTextureDefault() to rlGetTextureDefault()
-  [core] REMOVED: GetShapesTexture()
-  [core] REMOVED: GetShapesTextureRec()
-  [core] REMOVED: GetMouseCursor()
-- [core] REMOVED: SetTraceLogExit()
-  [core] REVIEWED: GetFileName() and GetDirectoryPath() (#1534) by @gilzoide
-  [core] REVIEWED: Wait() to support FreeBSD (#1618)
-  [core] REVIEWED: HighDPI support on macOS retina (#1510)
-  [core] REDESIGNED: GetFileExtension(), includes the .dot
-  [core] REDESIGNED: IsFileExtension(), includes the .dot
-  [core] REDESIGNED: Compresion API to use sdefl/sinfl libs
-- [rlgl] ADDED: SUPPORT_GL_DETAILS_INFO config flag
-  [rlgl] REMOVED: GenTexture\*() functions (#721)
-  [rlgl] REVIEWED: rlLoadShaderDefault()
-  [rlgl] REDESIGNED: rlLoadExtensions(), more details exposed
-  [raymath] REVIEWED: QuaternionFromEuler() (#1651)
-  [raymath] REVIEWED: MatrixRotateZYX() (#1642)
-- [shapes] ADDED: DrawLineBezierQuad() (#1468) by @epsilon-phase
-  [shapes] ADDED: CheckCollisionLines()
-- [shapes] ADDED: CheckCollisionPointLine() by @mkupiec1
-  [shapes] REVIEWED: CheckCollisionPointTriangle() by @mkupiec1
-  [shapes] REDESIGNED: SetShapesTexture()
+- [core] RENAMED: GetShaderDefault() to rlGetShaderDefault() [core] RENAMED:
+  GetTextureDefault() to rlGetTextureDefault() [core] REMOVED:
+  GetShapesTexture() [core] REMOVED: GetShapesTextureRec() [core] REMOVED:
+  GetMouseCursor()
+- [core] REMOVED: SetTraceLogExit() [core] REVIEWED: GetFileName() and
+  GetDirectoryPath() (#1534) by @gilzoide [core] REVIEWED: Wait() to support
+  FreeBSD (#1618) [core] REVIEWED: HighDPI support on macOS retina (#1510)
+  [core] REDESIGNED: GetFileExtension(), includes the .dot [core] REDESIGNED:
+  IsFileExtension(), includes the .dot [core] REDESIGNED: Compresion API to use
+  sdefl/sinfl libs
+- [rlgl] ADDED: SUPPORT_GL_DETAILS_INFO config flag [rlgl] REMOVED:
+  GenTexture\*() functions (#721) [rlgl] REVIEWED: rlLoadShaderDefault() [rlgl]
+  REDESIGNED: rlLoadExtensions(), more details exposed [raymath] REVIEWED:
+  QuaternionFromEuler() (#1651) [raymath] REVIEWED: MatrixRotateZYX() (#1642)
+- [shapes] ADDED: DrawLineBezierQuad() (#1468) by @epsilon-phase [shapes] ADDED:
+  CheckCollisionLines()
+- [shapes] ADDED: CheckCollisionPointLine() by @mkupiec1 [shapes] REVIEWED:
+  CheckCollisionPointTriangle() by @mkupiec1 [shapes] REDESIGNED:
+  SetShapesTexture()
 - [shapes] REDESIGNED: DrawCircleSector(), to use float params
 - [shapes] REDESIGNED: DrawCircleSectorLines(), to use float params
 - [shapes] REDESIGNED: DrawRing(), to use float params
 - [shapes] REDESIGNED: DrawRingLines(), to use float params
 - [textures] ADDED: DrawTexturePoly() and example (#1677) by @chriscamacho
-- [textures] ADDED: UnloadImageColors() for allocs consistency
-  [textures] RENAMED: GetImageData() to LoadImageColors()
-  [textures] REVIEWED: ImageClearBackground() and ImageDrawRectangleRec() (#1487) by @JeffM2501
-  [textures] REVIEWED: DrawTexturePro() and DrawRectanglePro() transformations (#1632) by @ChrisDill
-  [text] REDESIGNED: DrawFPS()
-- [models] ADDED: UploadMesh() (#1529)
-  [models] ADDED: UpdateMeshBuffer()
-  [models] ADDED: DrawMesh()
-  [models] ADDED: DrawMeshInstanced()
-  [models] ADDED: UnloadModelAnimations() (#1648) by @object71
-  :( [models] REMOVED: DrawGizmo()
-- [models] REMOVED: LoadMeshes()
-  [models] REMOVED: MeshNormalsSmooth()
-- [models] REVIEWED: DrawLine3D() (#1643)
-  [audio] REVIEWED: Multichannel sound system (#1548)
-  [audio] REVIEWED: jar_xm library (#1701) by @jmorel33
-  [utils] ADDED: SetLoadFileDataCallback()
-  [utils] ADDED: SetSaveFileDataCallback()
-  [utils] ADDED: SetLoadFileTextCallback()
-  [utils] ADDED: SetSaveFileTextCallback()
-  [examples] ADDED: text_draw_3d (#1689) by @Demizdor
-  [examples] ADDED: textures_poly (#1677) by @chriscamacho
-  [examples] ADDED: models_gltf_model (#1551) by @object71
-  [examples] RENAMED: shaders_rlgl_mesh_instanced to shaders_mesh_intancing
-  [examples] REDESIGNED: shaders_rlgl_mesh_instanced by @moliad
-  [examples] REDESIGNED: core_vr_simulator
-  [examples] REDESIGNED: models_yaw_pitch_roll
-  [build] ADDED: Config flag: SUPPORT_STANDARD_FILEIO
-  [build] ADDED: Config flag: SUPPORT_WINMM_HIGHRES_TIMER (#1641)
-  [build] ADDED: Config flag: SUPPORT_GL_DETAILS_INFO
-  [build] ADDED: Examples projects to VS2019 solution
-  [build] REVIEWED: Makefile to support PLATFORM_RPI (#1580)
-  [build] REVIEWED: Multiple typecast warnings by @JeffM2501
-  [build] REDESIGNED: VS2019 project build paths
-  [build] REDESIGNED: CMake build system by @object71
-  [*] RENAMED: Several functions parameters for consistency
-  [*] UPDATED: Multiple bindings to latest version
-  [*] UPDATED: All external libraries to latest versions
-  [*] Multiple code improvements and fixes by multiple contributors!
+- [textures] ADDED: UnloadImageColors() for allocs consistency [textures]
+  RENAMED: GetImageData() to LoadImageColors() [textures] REVIEWED:
+  ImageClearBackground() and ImageDrawRectangleRec() (#1487) by @JeffM2501
+  [textures] REVIEWED: DrawTexturePro() and DrawRectanglePro() transformations
+  (#1632) by @ChrisDill [text] REDESIGNED: DrawFPS()
+- [models] ADDED: UploadMesh() (#1529) [models] ADDED: UpdateMeshBuffer()
+  [models] ADDED: DrawMesh() [models] ADDED: DrawMeshInstanced() [models] ADDED:
+  UnloadModelAnimations() (#1648) by @object71 :( [models] REMOVED: DrawGizmo()
+- [models] REMOVED: LoadMeshes() [models] REMOVED: MeshNormalsSmooth()
+- [models] REVIEWED: DrawLine3D() (#1643) [audio] REVIEWED: Multichannel sound
+  system (#1548) [audio] REVIEWED: jar_xm library (#1701) by @jmorel33 [utils]
+  ADDED: SetLoadFileDataCallback() [utils] ADDED: SetSaveFileDataCallback()
+  [utils] ADDED: SetLoadFileTextCallback() [utils] ADDED:
+  SetSaveFileTextCallback() [examples] ADDED: text_draw_3d (#1689) by @Demizdor
+  [examples] ADDED: textures_poly (#1677) by @chriscamacho [examples] ADDED:
+  models_gltf_model (#1551) by @object71 [examples] RENAMED:
+  shaders_rlgl_mesh_instanced to shaders_mesh_intancing [examples] REDESIGNED:
+  shaders_rlgl_mesh_instanced by @moliad [examples] REDESIGNED:
+  core_vr_simulator [examples] REDESIGNED: models_yaw_pitch_roll [build] ADDED:
+  Config flag: SUPPORT_STANDARD_FILEIO [build] ADDED: Config flag:
+  SUPPORT_WINMM_HIGHRES_TIMER (#1641) [build] ADDED: Config flag:
+  SUPPORT_GL_DETAILS_INFO [build] ADDED: Examples projects to VS2019 solution
+  [build] REVIEWED: Makefile to support PLATFORM_RPI (#1580) [build] REVIEWED:
+  Multiple typecast warnings by @JeffM2501 [build] REDESIGNED: VS2019 project
+  build paths [build] REDESIGNED: CMake build system by @object71 [_] RENAMED:
+  Several functions parameters for consistency [_] UPDATED: Multiple bindings to
+  latest version [_] UPDATED: All external libraries to latest versions [_]
+  Multiple code improvements and fixes by multiple contributors!
 
 ## 3.5.0 (Done)
 
-Added: SetWindowState
-Added: ClearW‌indowState
-Added: IsWindowFocused
-Added: GetWindowScaleDPI
-Added: GetMonitorRefreshRate
-Added: IsCursorOnScreen
-Added: SetMouseCursor/GetMouseCursor
-Added: Normalize
-Added: Remap
-Added: Vector2Reflect
-Added: Vector2LengthSqr
-Added: Vector2MoveTowards
-Added: UnloadFontData
-Added: LoadFontFromMemmory(ttf)
-Added: ColorAlphaBlend
-Added: GetPixelColor
-Added: SetPixelColor
-Added: LoadImageFromMemory
-Added: LoadImageAnim
-Added: DrawTextureTiled
-Added: UpdateTextureRec
-Added: UnloadImageColors,
-Added: UnloadImagePallet,
-Added: UnloadWaveSample
-Added: DrawTriangle3D
-Added: DrawTriangleStrip3D
-Added: LoadWaveFromMemory
-Added: MemAlloc() / MemFree()
-Added: UnloadFileData
-Added: UnloadFileText
+Added: SetWindowState Added: ClearW‌indowState Added: IsWindowFocused Added:
+GetWindowScaleDPI Added: GetMonitorRefreshRate Added: IsCursorOnScreen Added:
+SetMouseCursor/GetMouseCursor Added: Normalize Added: Remap Added:
+Vector2Reflect Added: Vector2LengthSqr Added: Vector2MoveTowards Added:
+UnloadFontData Added: LoadFontFromMemmory(ttf) Added: ColorAlphaBlend Added:
+GetPixelColor Added: SetPixelColor Added: LoadImageFromMemory Added:
+LoadImageAnim Added: DrawTextureTiled Added: UpdateTextureRec Added:
+UnloadImageColors, Added: UnloadImagePallet, Added: UnloadWaveSample Added:
+DrawTriangle3D Added: DrawTriangleStrip3D Added: LoadWaveFromMemory Added:
+MemAlloc() / MemFree() Added: UnloadFileData Added: UnloadFileText
 
 ## 0.10.0 (WIP)
 
 - Basic macOS support. Currently untested.
 - Improved ergonomics across the board:
-  - Copied over and tweaked many FFI structs so that fields use proper types instead of FFI types.
-  - Added `vec2`, `vec3`, `quat`, `rgb`, and `rgba` convenience functions for a middle ground between `From` conversion and `new` methods.
-  - Changed several key and gamepad functions to use `u32`, making it more ergonomic with key/gamepad constants.
-  - Added optional `prelude` module for conveniently bringing in all the common types and definitions.
+  - Copied over and tweaked many FFI structs so that fields use proper types
+    instead of FFI types.
+  - Added `vec2`, `vec3`, `quat`, `rgb`, and `rgba` convenience functions for a
+    middle ground between `From` conversion and `new` methods.
+  - Changed several key and gamepad functions to use `u32`, making it more
+    ergonomic with key/gamepad constants.
+  - Added optional `prelude` module for conveniently bringing in all the common
+    types and definitions.
 - Fixed unnecessary `&mut` in `load_image_ex` and `draw_poly_ex`.
 - Fixed linking on MSVC toolchains by including `user32`.
-- Prevent `RaylibHandle` from being manually constructed. Fixes a safety soundness hole.
+- Prevent `RaylibHandle` from being manually constructed. Fixes a safety
+  soundness hole.
 
 ## 0.9.1
 
-- Fixed docs.rs build by removing use of a uniform module path. This also keeps the crate compatible with Rust 1.31+.
+- Fixed docs.rs build by removing use of a uniform module path. This also keeps
+  the crate compatible with Rust 1.31+.
 
 ## 0.9.0
 
