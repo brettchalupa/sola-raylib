@@ -57,3 +57,4 @@ examples:
     just example rgui
     just example texture
     just example yaw_pitch_roll
+    just example drop
