@@ -1,6 +1,10 @@
 target
 **/*.rs.bk
 Cargo.lock
+# examples/ is a binary crate excluded from the workspace. Its lockfile
+# should be tracked for reproducibility so the bisect-confusion-via-
+# regenerated-lockfile bug we hit during 6.0.0 dev doesn't happen again.
+!examples/Cargo.lock
 /.vscode
 /.idea
 raylib-test/test_out/*
