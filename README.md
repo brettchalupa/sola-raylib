@@ -1,4 +1,4 @@
-# Sola - sola-raylib
+# sola-raylib
 
 sola-raylib is an actively maintained Rust bindings and wrapper for
 [raylib](http://www.raylib.com/) 5.5. It currently targets Rust toolchain
