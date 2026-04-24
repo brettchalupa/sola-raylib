@@ -1,6 +1,6 @@
 [workspace]
 members = ["raylib", "raylib-sys"]
-exclude = ["raylib-test", "examples"]
+exclude = ["examples"]
 
 [workspace.lints.rust]
 # Workspace lints apply only to our own crates, never to dependencies.

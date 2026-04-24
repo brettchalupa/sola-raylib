@@ -93,8 +93,10 @@ Contributions are welcome to improve or fix the shell.nix!
 
 ## Testing
 
-The sola-raylib-test crate tests the bindings by opening a window, and checking
-the results of various functions. It requires nightly to use.
+Compile-time and unit tests run via `just test` (which shells out to
+`cargo test --workspace`). Runtime verification lives in the `examples` crate.
+`just examples` runs a curated set of 18+ binaries so you can eyeball animation,
+audio, input, shaders, fonts, and gui against a real raylib context.
 
 ## Bumping raylib
 
