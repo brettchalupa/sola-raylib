@@ -12,11 +12,6 @@ fn no_drop<T>(_thing: T) {}
 make_thin_wrapper!(Shader, ffi::Shader, ffi::UnloadShader);
 make_thin_wrapper!(WeakShader, ffi::Shader, no_drop);
 
-// #[cfg(feature = "nightly")]
-// impl !Send for Shader {}
-// #[cfg(feature = "nightly")]
-// unsafe impl Sync for Shader {}
-
 impl RaylibHandle {
     /// Loads a custom shader and binds default locations.
     pub fn load_shader(

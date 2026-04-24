@@ -62,15 +62,6 @@ impl std::ops::DerefMut for RSliceGlyphInfo {
     }
 }
 
-// #[cfg(feature = "nightly")]
-// impl !Send for Font {}
-// #[cfg(feature = "nightly")]
-// unsafe impl Sync for Font {}
-// #[cfg(feature = "nightly")]
-// impl !Send for WeakFont {}
-// #[cfg(feature = "nightly")]
-// unsafe impl Sync for WeakFont {}
-
 impl AsRef<ffi::Texture2D> for Font {
     fn as_ref(&self) -> &ffi::Texture2D {
         &self.0.texture

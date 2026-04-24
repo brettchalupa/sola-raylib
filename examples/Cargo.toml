@@ -9,20 +9,12 @@ repository = "https://github.com/brettchalupa/sola-raylib"
 
 [dependencies]
 raylib = { package = "sola-raylib", path = "../raylib", version = "6.0.0-dev.0" }
-structopt = "0.2"
-specs-derive = "0.4.1"
+structopt = "0.3"
 rand = "0.8"
-#tcod = "0.14"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 ringbuf = {version = "0.4.7", optional = true}
 
 [features]
 ringbuf = ["dep:ringbuf"]
-
-[dependencies.specs]
-version = "0.16.1"
-default-features = false
 
 [[bin]]
 name = "rgui"

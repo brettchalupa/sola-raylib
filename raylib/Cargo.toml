@@ -30,7 +30,6 @@ structopt = "0.3"
 rand = "0.8.5"
 
 [features]
-nightly = []
 with_serde = ["serde", "serde_json"]
 wayland = ["raylib-sys/wayland"]
 convert_mint = ["mint"]

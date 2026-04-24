@@ -44,8 +44,5 @@ Screenshots of the various examples:
 [model_shader](model_shader.rs)
 ![model_shader](docs/model_shader.PNG)
 
-[roguelike](roguelike.rs)
-![roguelike](docs/roguelike.PNG)
-
 [yaw_pitch_roll](yaw_pitch_roll.rs)
 ![yaw_pitch_roll](docs/yaw_pitch_roll.PNG)
