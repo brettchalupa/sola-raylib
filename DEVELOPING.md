@@ -7,6 +7,8 @@ Documentation on how to work on Sola.
 [just](https://just.systems/man/en/) is used for running commands while working
 on the project. See `./justfile` for available commands.
 
+Run `just setup` to initialize the needed Git submodules.
+
 `just ok` is a helpful command to run regularly and ensure is passing.
 
 ## Releasing

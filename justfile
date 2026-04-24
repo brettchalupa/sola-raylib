@@ -17,6 +17,7 @@ clippy:
     cargo clippy --workspace --all-targets
 
 # Run all workspace tests (unit + doc tests).
+
 # Tests that require a display live in the raylib-test crate, which is excluded from the workspace.
 test:
     cargo test --workspace
@@ -35,3 +36,7 @@ examples:
 # Run a specific example by name, e.g. `just sample drop`.
 example name:
     cd examples && cargo run --bin {{ name }}
+
+# Initializes git submodules
+setup:
+    git submodule update --init
