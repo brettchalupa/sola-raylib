@@ -552,6 +552,28 @@ pub trait RaylibDraw {
         }
     }
 
+    /// Draws a dashed line. `dash_size` and `space_size` are in pixels.
+    /// Added in raylib 6.0.
+    #[inline]
+    fn draw_line_dashed(
+        &mut self,
+        start_pos: impl Into<ffi::Vector2>,
+        end_pos: impl Into<ffi::Vector2>,
+        dash_size: i32,
+        space_size: i32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawLineDashed(
+                start_pos.into(),
+                end_pos.into(),
+                dash_size,
+                space_size,
+                color.into(),
+            );
+        }
+    }
+
     /// Draws a line using cubic-bezier curves in-out.
     #[inline]
     fn draw_line_bezier(
@@ -717,6 +739,20 @@ pub trait RaylibDraw {
         }
     }
 
+    /// Draws ellipse (Vector2 center). Added in raylib 6.0.
+    #[inline]
+    fn draw_ellipse_v(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        radius_h: f32,
+        radius_v: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawEllipseV(center.into(), radius_h, radius_v, color.into());
+        }
+    }
+
     /// Draws ellipse.
     #[inline]
     fn draw_ellipse_lines(
@@ -729,6 +765,20 @@ pub trait RaylibDraw {
     ) {
         unsafe {
             ffi::DrawEllipseLines(center_x, center_y, radius_h, radius_v, color.into());
+        }
+    }
+
+    /// Draws ellipse outline (Vector2 center). Added in raylib 6.0.
+    #[inline]
+    fn draw_ellipse_lines_v(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        radius_h: f32,
+        radius_v: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawEllipseLinesV(center.into(), radius_h, radius_v, color.into());
         }
     }
 

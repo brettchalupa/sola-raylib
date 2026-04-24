@@ -81,6 +81,19 @@ impl RaylibHandle {
         }
     }
 
+    /// Get a human-readable name for a QWERTY key on the current keyboard
+    /// layout (e.g. returns `"q"` for `KEY_A` on AZERTY). Returns `None` if
+    /// raylib can't name the key.
+    pub fn get_key_name(&self, key: crate::consts::KeyboardKey) -> Option<String> {
+        unsafe {
+            let name = ffi::GetKeyName((key as u32) as i32);
+            if name.is_null() {
+                return None;
+            }
+            CStr::from_ptr(name).to_str().ok().map(|s| s.to_owned())
+        }
+    }
+
     /// Detect if a gamepad is available.
     #[inline]
     pub fn is_gamepad_available(&self, gamepad: i32) -> bool {

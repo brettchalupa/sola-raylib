@@ -33,11 +33,19 @@ wont_impl = [
     "TextFormat",
     "TextSubtext",
     "TextReplace",
+    "TextReplaceAlloc",
+    "TextReplaceBetween",
+    "TextReplaceBetweenAlloc",
     "TextInsert",
+    "TextInsertAlloc",
     "TextJoin",
     "TextSplit",
     "TextAppend",
     "TextFindIndex",
+    "TextRemoveSpaces",
+    "GetTextBetween",
+    "LoadTextLines",
+    "UnloadTextLines",
     "TextToUpper",
     "TextToLower",
     "TextToPascal",
@@ -64,11 +72,21 @@ wont_impl = [
     "ChangeDirectory",
     "IsFileNameValid",
     "GetFileModTime",
-    "ComputeCRC32",
-    "ComputeMD5",
-    "ComputeSHA1",
+    # raylib 6.0 file ops — covered by std::fs.
+    "FileRename",
+    "FileRemove",
+    "FileCopy",
+    "FileMove",
+    "FileTextReplace",
+    "FileTextFindIndex",
+    "GetDirectoryFileCount",
+    "GetDirectoryFileCountEx",
     # Misc
     "MemRealloc",
+    # ModelAnimation cleanup is inlined into the safe layer's Drop impl
+    # because raylib 6.0 removed the single-animation UnloadModelAnimation
+    # and the array-form would free stack memory if called on an owned value.
+    "UnloadModelAnimations",
 ]
 
 

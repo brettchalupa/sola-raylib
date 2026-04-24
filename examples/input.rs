@@ -12,14 +12,26 @@ fn main() {
     let _ray_white = Color::new(255, 255, 255, 255);
 
     rl.set_target_fps(60);
+    let mut last_key: Option<KeyboardKey> = None;
+    let mut last_key_name: Option<String> = None;
     while !rl.window_should_close() {
-        let pressed_key = rl.get_key_pressed();
+        if let Some(k) = rl.get_key_pressed() {
+            last_key_name = rl.get_key_name(k);
+            last_key = Some(k);
+        }
         rl.draw(&thread, |mut d| {
             d.clear_background(Color::WHITE);
-            if let Some(pressed_key) = pressed_key {
-                // Certain keyboards may have keys raylib does not expect. Uncomment this line if so.
-                // let pressed_key: u32 = unsafe { std::mem::transmute(pressed_key) };
-                d.draw_text(&format!("{:?}", pressed_key), 100, 12, 10, Color::BLACK);
+            d.draw_text("Press any key...", 12, 12, 20, Color::DARKGRAY);
+            if let Some(k) = last_key {
+                d.draw_text(&format!("enum: {:?}", k), 12, 48, 20, Color::BLACK);
+                let name = last_key_name.as_deref().unwrap_or("(no layout name)");
+                d.draw_text(
+                    &format!("get_key_name(): {}", name),
+                    12,
+                    80,
+                    20,
+                    Color::DARKBLUE,
+                );
             }
         });
     }
