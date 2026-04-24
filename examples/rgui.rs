@@ -22,6 +22,7 @@ pub fn main() {
     let (mut rl, thread) = raylib::init()
         .width(screen_width)
         .height(screen_height)
+        .highdpi()
         .title("raygui - controls test suite")
         .build();
 
