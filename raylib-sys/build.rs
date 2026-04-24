@@ -79,14 +79,7 @@ fn build_with_cmake(src_path: &str) {
 
     builder
         .define("BUILD_EXAMPLES", "OFF")
-        .define("CMAKE_BUILD_TYPE", profile)
-        // raylib 6.0 only honors SUPPORT_* overrides when CUSTOMIZE_BUILD=ON
-        // (see cmake/CompileDefinitions.cmake). Without this the flags below
-        // were silently dropped on the floor.
-        .define("CUSTOMIZE_BUILD", "ON")
-        // turn off until this is fixed
-        .define("SUPPORT_BUSY_WAIT_LOOP", "OFF")
-        .define("SUPPORT_FILEFORMAT_JPG", "ON");
+        .define("CMAKE_BUILD_TYPE", profile);
 
     #[cfg(feature = "custom_frame_control")]
     {
