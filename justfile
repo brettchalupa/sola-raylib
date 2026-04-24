@@ -37,10 +37,6 @@ build-examples:
 example name:
     cd examples && cargo run --bin {{ name }}
 
-# Run an example that needs the `imgui` feature, e.g. `just example-imgui imgui`.
-example-imgui name="imgui":
-    cd examples && cargo run --features imgui --bin {{ name }}
-
 # Initializes git submodules
 setup:
     git submodule update --init
@@ -65,8 +61,3 @@ examples:
     just example texture
     just example yaw_pitch_roll
     just example drop
-    just examples-imgui
-
-# Run the rlImGui example (separate recipe because it needs the `imgui` feature).
-examples-imgui:
-    just example-imgui imgui
