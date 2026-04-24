@@ -10,7 +10,7 @@ repository = "https://github.com/brettchalupa/sola-raylib"
 [dependencies]
 raylib = { package = "sola-raylib", path = "../raylib", version = "6.0.0-dev.0" }
 structopt = "0.3"
-rand = "0.8"
+rand = "0.10"
 ringbuf = {version = "0.4.7", optional = true}
 
 [features]

@@ -97,6 +97,18 @@ displays `get_key_name`.
     (`PLATFORM=WebRGFW`) when cross-compiling to `wasm32-unknown-emscripten`. No
     local demo path. Requires an emscripten build loop.
 
+### Dependencies
+
+- Bumped `thiserror` from `1.x` to `2.x` in the public dep graph. Our public
+  `Error` type still implements `std::error::Error`, so no API change for users.
+  Only matters if you pin `thiserror = "1"` elsewhere in your `Cargo.toml`;
+  cargo will resolve both versions side by side, or you can bump your own pin.
+- Dev-deps (`rand 0.8 → 0.10`) and build-deps (`cmake`, `cc`, `bindgen` patch
+  updates) refreshed to current versions. These are not in the downstream user's
+  dep graph.
+- Patch/minor refresh via `cargo update` across `cfg-if`, `paste`, `seq-macro`,
+  `serde`, `serde_json`, `ringbuf`.
+
 [rlsw-pr]: https://github.com/raysan5/raylib/pull/4832
 [raylib-6]: https://github.com/raysan5/raylib/releases/tag/6.0
 
