@@ -43,5 +43,24 @@ nogif = []
 # config.h's SUPPORT_CUSTOM_FRAME_CONTROL
 custom_frame_control = []
 
+# raylib 6.0 added a CPU software renderer (rlsw). This feature forces
+# `OPENGL_VERSION=Software` so raylib compiles with the SW backend while
+# still using the normal desktop platform (you get a window, rendered on
+# the CPU). Useful for GPU-less environments (ESP32, low-end Linux).
+software_render = []
+
+# raylib 6.0 added a headless framebuffer platform (PLATFORM=Memory) that
+# renders to memory with no window. Note that reading the framebuffer
+# back out requires `rlsw.h` APIs (e.g. `swGetColorBuffer`) which are NOT
+# yet exposed through our bindings — enable this feature if you want the
+# backend compiled in, but a full headless capture example is still
+# post-release work.
+platform_memory = []
+
+# raylib 6.0 added an RGFW-based web backend alongside the default
+# Emscripten/GLFW web path (`PLATFORM=WebRGFW`). Only meaningful when
+# cross-compiling to `wasm32-unknown-emscripten`.
+platform_web_rgfw = []
+
 [lints]
 workspace = true

@@ -48,7 +48,26 @@ New examples exercising the new surface: `animation_blending`, `shapes_new`,
 - `raylib-sys/README.md` rewritten to reflect the current build-time bindgen
   flow; the old doc described a workflow that no longer exists.
 - `DEVELOPING.md` gains a "Bumping raylib" checklist.
+- New opt-in feature flags for raylib 6.0's new platform backends. **All three
+  are experimental upstream and may not work well yet.** Raylib 6.0 shipped them
+  as new backends with known gaps. We expose the flags so you can opt in; what
+  actually renders or links is whatever upstream supports today.
+  - `software_render`: build raylib with the CPU `rlsw` backend
+    (`OPENGL_VERSION=Software`). Links and starts, but on Linux/X11 the
+    framebuffer-to-window present path is currently broken upstream and windows
+    open to a black screen. Track [raylib#4832][rlsw-pr] for progress.
+    `just example-sw <name>` and `just examples-sw` build and run with the
+    feature enabled, useful to smoke-test whether upstream has fixed the
+    presentation path on your platform.
+  - `platform_memory`: build raylib with the headless `PLATFORM=Memory` backend.
+    The feature compiles the backend, but reading the framebuffer requires
+    `rlsw.h` APIs (e.g. `swGetColorBuffer`) that are **not yet wrapped** in the
+    safe crate. Post-release work.
+  - `platform_web_rgfw`: use raylib's RGFW-based web backend
+    (`PLATFORM=WebRGFW`) when cross-compiling to `wasm32-unknown-emscripten`. No
+    local demo path. Requires an emscripten build loop.
 
+[rlsw-pr]: https://github.com/raysan5/raylib/pull/4832
 [raylib-6]: https://github.com/raysan5/raylib/releases/tag/6.0
 
 ## 5.5.3 - Apr 24, 2026

@@ -36,6 +36,11 @@ build-examples:
 example name:
     cd examples && cargo run --bin {{ name }}
 
+# Run an example built with raylib's CPU software renderer (rlsw).
+# Defaults to hello_raylib; override with e.g. `just example-sw logo`.
+example-sw name="hello_raylib":
+    cd examples && cargo run --features software_render --bin {{ name }}
+
 # Initializes git submodules
 setup:
     git submodule update --init
@@ -60,3 +65,8 @@ examples:
     just example texture
     just example yaw_pitch_roll
     just example drop
+    just examples-sw
+
+# Smoke-test the CPU software renderer backend (raylib 6.0 `rlsw`).
+examples-sw:
+    just example-sw hello_raylib
