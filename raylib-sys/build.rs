@@ -126,13 +126,21 @@ fn build_with_cmake(src_path: &str) {
             println!("cargo:rustc-link-lib=GLdispatch");
         }
 
+        // raylib 6.0 CPU rasterizer (rlsw). Also implicitly enabled by
+        // PLATFORM=Memory; we don't need to set it here in that case
+        // because raylib's CMake flips OPENGL_VERSION=Software itself.
+        #[cfg(all(feature = "software_render", not(feature = "platform_memory")))]
+        builder.define("OPENGL_VERSION", "Software");
+
         // Once again felt this was necessary incase a default was changed :)
         #[cfg(not(any(
             feature = "opengl_33",
             feature = "opengl_21",
             // feature = "opengl_11",
             feature = "opengl_es_20",
-            feature = "opengl_es_30"
+            feature = "opengl_es_30",
+            feature = "software_render",
+            feature = "platform_memory"
         )))]
         builder.define("OPENGL_VERSION", "OFF");
     }
@@ -156,17 +164,32 @@ fn build_with_cmake(src_path: &str) {
 
     match platform {
         Platform::Desktop => {
-            #[cfg(feature = "sdl")]
+            // `platform_memory` wins over everything else on desktop —
+            // it's a full backend swap (no window, framebuffer in RAM).
+            #[cfg(feature = "platform_memory")]
+            {
+                conf.define("PLATFORM", "Memory")
+            }
+            #[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
             {
                 println!("cargo:rustc-link-lib=SDL2");
                 conf.define("PLATFORM", "SDL")
             }
-            #[cfg(not(feature = "sdl"))]
+            #[cfg(not(any(feature = "sdl", feature = "platform_memory")))]
             {
                 conf.define("PLATFORM", "Desktop")
             }
         }
-        Platform::Web => conf.define("PLATFORM", "Web"),
+        Platform::Web => {
+            #[cfg(feature = "platform_web_rgfw")]
+            {
+                conf.define("PLATFORM", "WebRGFW")
+            }
+            #[cfg(not(feature = "platform_web_rgfw"))]
+            {
+                conf.define("PLATFORM", "Web")
+            }
+        }
         Platform::RPI => conf.define("PLATFORM", "Raspberry Pi"),
         Platform::Android => {
             // get required env variables
@@ -254,10 +277,28 @@ fn gen_bindings() {
     let (platform, os) = platform_from_target(&target);
 
     let plat = match platform {
-        Platform::Desktop => "-DPLATFORM_DESKTOP",
+        Platform::Desktop => {
+            #[cfg(feature = "platform_memory")]
+            {
+                "-DPLATFORM_MEMORY"
+            }
+            #[cfg(not(feature = "platform_memory"))]
+            {
+                "-DPLATFORM_DESKTOP"
+            }
+        }
         Platform::RPI => "-DPLATFORM_RPI",
         Platform::Android => "-DPLATFORM_ANDROID",
-        Platform::Web => "-DPLATFORM_WEB",
+        Platform::Web => {
+            #[cfg(feature = "platform_web_rgfw")]
+            {
+                "-DPLATFORM_WEB_RGFW"
+            }
+            #[cfg(not(feature = "platform_web_rgfw"))]
+            {
+                "-DPLATFORM_WEB"
+            }
+        }
     };
 
     let ignored_macros = IgnoreMacros(

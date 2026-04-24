@@ -158,6 +158,29 @@ for a writeup that should still largely apply.
   `["opengl_21"]` or `["opengl_es_20]` to the `features` array in your
   Cargo.toml dependency definition.
 
+## Experimental raylib 6.0 platform flags
+
+sola-raylib 6.0 exposes three feature flags for raylib 6.0's new backends. **All
+three are experimental upstream**, shipped with known gaps in raylib 6.0 itself.
+We surface them for opt-in use, but what actually renders or links is whatever
+raylib's C side supports at HEAD. Expect rough edges.
+
+- `software_render`: compiles raylib with the CPU `rlsw` software rasterizer.
+  Windows open, but the framebuffer-to-window present path is currently broken
+  on at least Linux/X11 upstream (you'll see a black screen even when the
+  renderer reports as `RLSW`). Track
+  [raylib#4832](https://github.com/raysan5/raylib/pull/4832).
+- `platform_memory`: compiles the `PLATFORM=Memory` headless framebuffer
+  backend. The backend builds and links; the APIs for reading the framebuffer
+  back out (from `rlsw.h`, e.g. `swGetColorBuffer`) are **not yet wrapped in the
+  safe crate**, so there's no usable headless-capture path today.
+- `platform_web_rgfw`: swaps the Emscripten/GLFW web backend for RGFW
+  (`PLATFORM=WebRGFW`) when cross-compiling to `wasm32-unknown-emscripten`. Only
+  meaningful with an emscripten build loop.
+
+If you're evaluating one of these for production, test on your target platform
+first and expect to track upstream raylib for fixes.
+
 ## Drop ordering
 
 Resources like `Texture2D`, `RenderTexture2D`, `Font`, `Model`, `Mesh`, and
