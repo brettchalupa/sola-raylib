@@ -1,6 +1,6 @@
 [package]
 name = "sola-raylib"
-version = "5.5.3"
+version = "6.0.0-dev.0"
 authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 license = "Zlib"
 readme = "../README.md"
@@ -13,7 +13,7 @@ edition = "2018"
 autoexamples = false
 
 [dependencies]
-raylib-sys = { package = "sola-raylib-sys", version = "5.5.3", path = "../raylib-sys" }
+raylib-sys = { package = "sola-raylib-sys", version = "6.0.0-dev.0", path = "../raylib-sys" }
 cfg-if = "1.0.0"
 serde = { version = "1.0.125", features = ["derive"], optional = true }
 serde_json = { version = "1.0.64", optional = true }

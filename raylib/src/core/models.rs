@@ -17,10 +17,21 @@ make_thin_wrapper!(WeakMesh, ffi::Mesh, no_drop);
 make_thin_wrapper!(Material, ffi::Material, ffi::UnloadMaterial);
 make_thin_wrapper!(WeakMaterial, ffi::Material, no_drop);
 make_thin_wrapper!(BoneInfo, ffi::BoneInfo, no_drop);
+// raylib 6.0 removed the single-anim `UnloadModelAnimation`; only the
+// array-taking `UnloadModelAnimations` remains, and it calls
+// `RL_FREE(animations)` at the end — which would free stack memory if
+// called on a single owned value. Replicate the per-animation inner
+// cleanup (free each keyframe's Transform array + the keyframePoses
+// array) without freeing the struct itself.
 make_thin_wrapper!(
     ModelAnimation,
     ffi::ModelAnimation,
-    ffi::UnloadModelAnimation
+    |anim: ffi::ModelAnimation| {
+        for i in 0..anim.keyframeCount {
+            ffi::MemFree(*anim.keyframePoses.offset(i as isize) as *mut c_void);
+        }
+        ffi::MemFree(anim.keyframePoses as *mut c_void);
+    }
 );
 make_thin_wrapper!(WeakModelAnimation, ffi::ModelAnimation, no_drop);
 make_thin_wrapper!(MaterialMap, ffi::MaterialMap, no_drop);
@@ -59,7 +70,10 @@ impl RaylibHandle {
     pub fn load_model(&mut self, _: &RaylibThread, filename: &str) -> Result<Model, Error> {
         let c_filename = CString::new(filename).unwrap();
         let m = unsafe { ffi::LoadModel(c_filename.as_ptr()) };
-        if m.meshes.is_null() && m.materials.is_null() && m.bones.is_null() && m.bindPose.is_null()
+        if m.meshes.is_null()
+            && m.materials.is_null()
+            && m.skeleton.bones.is_null()
+            && m.skeleton.bindPose.is_null()
         {
             return Err(error!("could not load model", filename));
         }
@@ -110,22 +124,10 @@ impl RaylibHandle {
         _: &RaylibThread,
         mut model: impl AsMut<ffi::Model>,
         anim: impl AsRef<ffi::ModelAnimation>,
-        frame: i32,
+        frame: f32,
     ) {
         unsafe {
             ffi::UpdateModelAnimation(*model.as_mut(), *anim.as_ref(), frame);
-        }
-    }
-
-    pub fn update_model_animation_bones(
-        &mut self,
-        _: &RaylibThread,
-        mut model: impl AsMut<ffi::Model>,
-        anim: impl AsRef<ffi::ModelAnimation>,
-        frame: i32,
-    ) {
-        unsafe {
-            ffi::UpdateModelAnimationBones(*model.as_mut(), *anim.as_ref(), frame);
         }
     }
 }
@@ -192,41 +194,41 @@ pub trait RaylibModel: AsRef<ffi::Model> + AsMut<ffi::Model> {
     }
 
     fn bones(&self) -> Option<&[BoneInfo]> {
-        if self.as_ref().bones.is_null() {
+        if self.as_ref().skeleton.bones.is_null() {
             return None;
         }
 
         Some(unsafe {
             std::slice::from_raw_parts(
-                self.as_ref().bones as *const BoneInfo,
-                self.as_ref().boneCount as usize,
+                self.as_ref().skeleton.bones as *const BoneInfo,
+                self.as_ref().skeleton.boneCount as usize,
             )
         })
     }
     fn bones_mut(&mut self) -> Option<&mut [BoneInfo]> {
-        if self.as_ref().bones.is_null() {
+        if self.as_ref().skeleton.bones.is_null() {
             return None;
         }
 
         Some(unsafe {
             std::slice::from_raw_parts_mut(
-                self.as_mut().bones as *mut BoneInfo,
-                self.as_mut().boneCount as usize,
+                self.as_mut().skeleton.bones as *mut BoneInfo,
+                self.as_mut().skeleton.boneCount as usize,
             )
         })
     }
     fn bind_pose(&self) -> Option<&crate::math::Transform> {
-        if self.as_ref().bindPose.is_null() {
+        if self.as_ref().skeleton.bindPose.is_null() {
             return None;
         }
-        Some(unsafe { &*(self.as_ref().bindPose as *const crate::math::Transform) })
+        Some(unsafe { &*(self.as_ref().skeleton.bindPose as *const crate::math::Transform) })
     }
 
     fn bind_pose_mut(&mut self) -> Option<&mut crate::math::Transform> {
-        if self.as_ref().bindPose.is_null() {
+        if self.as_ref().skeleton.bindPose.is_null() {
             return None;
         }
-        Some(unsafe { &mut *(self.as_mut().bindPose as *mut crate::math::Transform) })
+        Some(unsafe { &mut *(self.as_mut().skeleton.bindPose as *mut crate::math::Transform) })
     }
 
     /// Check model animation skeleton match
@@ -581,32 +583,17 @@ impl ModelAnimation {
 }
 
 pub trait RaylibModelAnimation: AsRef<ffi::ModelAnimation> + AsMut<ffi::ModelAnimation> {
-    fn bones(&self) -> &[BoneInfo] {
-        unsafe {
-            std::slice::from_raw_parts(
-                self.as_ref().bones as *const BoneInfo,
-                self.as_ref().boneCount as usize,
-            )
-        }
-    }
-
-    fn bones_mut(&mut self) -> &mut [BoneInfo] {
-        unsafe {
-            std::slice::from_raw_parts_mut(
-                self.as_mut().bones as *mut BoneInfo,
-                self.as_mut().boneCount as usize,
-            )
-        }
-    }
-
-    fn frame_poses(&self) -> Vec<&[crate::math::Transform]> {
+    // raylib 6.0 removed `bones` from `ModelAnimation` — bones now live on
+    // the parent `Model`'s `skeleton`. Access via `RaylibModel::bones()`.
+    fn keyframe_poses(&self) -> Vec<&[crate::math::Transform]> {
         let anim = self.as_ref();
-        let mut top = Vec::with_capacity(anim.frameCount as usize);
+        let mut top = Vec::with_capacity(anim.keyframeCount as usize);
 
-        for i in 0..anim.frameCount {
+        for i in 0..anim.keyframeCount {
             top.push(unsafe {
                 std::slice::from_raw_parts(
-                    *(anim.framePoses.offset(i as isize) as *const *const crate::math::Transform),
+                    *(anim.keyframePoses.offset(i as isize)
+                        as *const *const crate::math::Transform),
                     anim.boneCount as usize,
                 )
             });
@@ -615,14 +602,14 @@ pub trait RaylibModelAnimation: AsRef<ffi::ModelAnimation> + AsMut<ffi::ModelAni
         top
     }
 
-    fn frame_poses_mut(&mut self) -> Vec<&mut [crate::math::Transform]> {
+    fn keyframe_poses_mut(&mut self) -> Vec<&mut [crate::math::Transform]> {
         let anim = self.as_ref();
-        let mut top = Vec::with_capacity(anim.frameCount as usize);
+        let mut top = Vec::with_capacity(anim.keyframeCount as usize);
 
-        for i in 0..anim.frameCount {
+        for i in 0..anim.keyframeCount {
             top.push(unsafe {
                 std::slice::from_raw_parts_mut(
-                    *(anim.framePoses.offset(i as isize) as *mut *mut crate::math::Transform),
+                    *(anim.keyframePoses.offset(i as isize) as *mut *mut crate::math::Transform),
                     anim.boneCount as usize,
                 )
             });
@@ -704,9 +691,13 @@ impl RaylibHandle {
         _: &RaylibThread,
         model_animation: WeakModelAnimation,
     ) {
-        {
-            ffi::UnloadModelAnimation(*model_animation.as_ref())
+        // Mirror the per-animation inner cleanup from raylib 6.0's
+        // `UnloadModelAnimations` without freeing the struct itself.
+        let anim = *model_animation.as_ref();
+        for i in 0..anim.keyframeCount {
+            ffi::MemFree(*anim.keyframePoses.offset(i as isize) as *mut c_void);
         }
+        ffi::MemFree(anim.keyframePoses as *mut c_void);
     }
 
     /// Weak meshs will leak memeory if they are not unlaoded

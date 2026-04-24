@@ -637,6 +637,9 @@ pub trait RaylibDraw {
     }
 
     /// Draws a gradient-filled circle.
+    ///
+    /// raylib 6.0 changed `DrawCircleGradient` to take a `Vector2` center
+    /// instead of two ints; sola takes x/y for ergonomics and converts.
     #[inline]
     fn draw_circle_gradient(
         &mut self,
@@ -647,7 +650,15 @@ pub trait RaylibDraw {
         color2: impl Into<ffi::Color>,
     ) {
         unsafe {
-            ffi::DrawCircleGradient(center_x, center_y, radius, color1.into(), color2.into());
+            ffi::DrawCircleGradient(
+                ffi::Vector2 {
+                    x: center_x as f32,
+                    y: center_y as f32,
+                },
+                radius,
+                color1.into(),
+                color2.into(),
+            );
         }
     }
 
@@ -2052,41 +2063,6 @@ pub trait RaylibDraw3D {
                 rotation,
                 tint.into(),
             )
-        }
-    }
-
-    /// Draw a model as points
-    fn draw_model_points(
-        &mut self,
-        model: impl Into<ffi::Model>,
-        position: impl Into<ffi::Vector3>,
-        scale: f32,
-        tint: impl Into<ffi::Color>,
-    ) {
-        unsafe {
-            ffi::DrawModelPoints(model.into(), position.into(), scale, tint.into());
-        }
-    }
-
-    /// Draw a model as points with extended parameters
-    fn draw_model_points_ex(
-        &mut self,
-        model: impl Into<ffi::Model>,
-        position: impl Into<ffi::Vector3>,
-        rotation_axis: impl Into<ffi::Vector3>,
-        angle: f32,
-        scale: impl Into<ffi::Vector3>,
-        tint: impl Into<ffi::Color>,
-    ) {
-        unsafe {
-            ffi::DrawModelPointsEx(
-                model.into(),
-                position.into(),
-                rotation_axis.into(),
-                angle,
-                scale.into(),
-                tint.into(),
-            );
         }
     }
 }

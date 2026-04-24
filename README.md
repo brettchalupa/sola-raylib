@@ -26,6 +26,13 @@ the repository if you're wanting to find details on a specific version.
 
 The latest released version on crates.io in this SHA is 5.5.3.
 
+`main` currently targets Raylib v6.0, with support in progress. Pull from
+GitHub if you want to use Raylib 6.0:
+
+```
+raylib = { package = "raylib-sola", git = "https://github.com/brettchalupa/sola-raylib.git" }
+```
+
 ## Features / Bugs
 
 Though this binding tries to stay close to the simple C API, it makes some
