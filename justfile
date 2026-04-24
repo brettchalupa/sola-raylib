@@ -16,9 +16,8 @@ build:
 clippy:
     cargo clippy --workspace --all-targets
 
-# Run all workspace tests (unit + doc tests).
-
-# Tests that require a display live in the raylib-test crate, which is excluded from the workspace.
+# Run all workspace tests (unit + doc tests). Runtime tests live in
+# `just examples` — run those to actually exercise raylib in a window.
 test:
     cargo test --workspace
 
