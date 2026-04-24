@@ -33,7 +33,8 @@ impl Column {
 fn main() {
     let (mut rl, thread) = raylib::init()
         .size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        .title("Hello, world!")
+        .title("3D Camera - First-Person")
+        .highdpi()
         .build();
 
     let mut camera = Camera3D::perspective(

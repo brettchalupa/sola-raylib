@@ -55,7 +55,7 @@ fn main() {
         // Camera rotation controls
         if rl.is_key_down(KEY_A) {
             camera.rotation -= 1.0;
-        } else if rl.is_key_down(KEY_S) {
+        } else if rl.is_key_down(KEY_D) {
             camera.rotation += 1.0;
         }
 
@@ -110,7 +110,7 @@ fn main() {
             d.draw_text("Free 2d camera controls:", 20, 20, 10, Color::BLACK);
             d.draw_text("- Right/Left to move Offset", 40, 40, 10, Color::DARKGRAY);
             d.draw_text("- Mouse Wheel to Zoom in-out", 40, 60, 10, Color::DARKGRAY);
-            d.draw_text("- A / S to Rotate", 40, 80, 10, Color::DARKGRAY);
+            d.draw_text("- A / D to Rotate", 40, 80, 10, Color::DARKGRAY);
             d.draw_text(
                 "- R to reset Zoom and Rotation",
                 40,

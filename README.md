@@ -37,11 +37,11 @@ changes to be more idiomatic for Rust.
   enforcing that Raylib is only initialized once, and for making sure the window
   is closed properly. RaylibHandle has no size and goes away at compile time.
   Because of mutability rules, Raylib-rs is thread safe!
-- A `RaylibHandle` and `RaylibThread` are obtained through
-  `raylib::init_window(...)` or through the newer `init()` function which will
-  allow you to `build` up some window options before initialization (replaces
-  `set_config_flags`). RaylibThread should not be sent to any other threads, or
-  used in a any syncronization primitives (Mutex, Arc) etc.
+- A `RaylibHandle` and `RaylibThread` are obtained through through the `init()`
+  function which will allow you to `build` up some window options before
+  initialization (replaces `set_config_flags`). RaylibThread should not be sent
+  to any other threads, or used in a any syncronization primitives (Mutex, Arc)
+  etc.
 - Manually closing the window is unnecessary, because `CloseWindow` is
   automatically called when `RaylibHandle` goes out of scope.
 - `Model::set_material`, `Material::set_shader`, and `MaterialMap::set_texture`

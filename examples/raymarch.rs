@@ -8,7 +8,7 @@ const SHADER: &str = include_str!("static/raymarching.fs");
 
 pub fn main() {
     let opt = options::Opt::from_args();
-    let (mut rl, thread) = opt.open_window("Camera 2D");
+    let (mut rl, thread) = opt.open_window("Raymarch");
     let (w, h) = (opt.width, opt.height);
 
     let mut camera = Camera3D::perspective(

@@ -6,7 +6,11 @@ fn main() {
     let h = 450;
     let rust_orange = Color::new(222, 165, 132, 255);
     let ray_white = Color::new(255, 255, 255, 255);
-    let (mut rl, thread) = raylib::init().size(w, h).title("Logo").build();
+    let (mut rl, thread) = raylib::init()
+        .size(w, h)
+        .title("Custom Font")
+        .highdpi()
+        .build();
     rl.set_target_fps(60);
     let font = rl
         .load_font(&thread, "static/alagard.png")
