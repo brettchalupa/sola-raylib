@@ -5,7 +5,7 @@ use crate::core::text::WeakFont;
 use crate::core::RaylibHandle;
 use crate::ffi;
 
-use std::ffi::{CStr, CString, c_char};
+use std::ffi::{c_char, CStr, CString};
 
 /// Global gui modification functions
 impl RaylibHandle {
