@@ -1,16 +1,16 @@
 # sola-raylib
 
 sola-raylib is an actively maintained Rust bindings and wrapper for
-[raylib](http://www.raylib.com/) 5.5. It currently targets Rust toolchain
+[raylib](http://www.raylib.com/) 6.0. It currently targets Rust toolchain
 version 1.78 or higher.
 
 - View the project on crates.io: https://crates.io/crates/sola-raylib
 - View the docs: https://docs.rs/sola-raylib/latest/sola_raylib/
 
 **Versioning:** sola-raylib's major version tracks raylib's major version — 5.x
-binds raylib 5.5, 6.x will bind raylib 6.0, and so on. Minor and patch numbers
-are sola-raylib's own (raylib doesn't follow strict semver, so this project
-doesn't try to mirror it beyond the major).
+binds raylib 5.5, 6.x binds raylib 6.0, and so on. Minor and patch numbers are
+sola-raylib's own (raylib doesn't follow strict semver, so this project doesn't
+try to mirror it beyond the major).
 
 This project is a fork of
 [github.com/raylib-rs/raylib-rs](https://github.com/raylib-rs/raylib-rs) from
@@ -19,15 +19,16 @@ commit
 (v5.5.1 release), which was a fork of
 [github.com/deltaphc/raylib-rs](https://github.com/deltaphc/raylib-rs).
 
-Check out the [examples](./examples) directory to find usage examples.
+Check out the [examples](./examples) directory to find usage examples. See
+[CHANGELOG.md](CHANGELOG.md) for the 6.0.0 changes, including breaking signature
+changes and the new APIs wrapped from raylib 6.0.
 
 sola-raylib development happens on `main`. Be sure to view the tag version of
 the repository if you're wanting to find details on a specific version.
 
-The latest released version on crates.io in this SHA is 5.5.3.
-
-`main` currently targets Raylib v6.0, with support in progress. Pull from
-GitHub if you want to use Raylib 6.0:
+The latest released version on crates.io is 5.5.3 (binds raylib 5.5). `main`
+targets raylib 6.0 and compiles cleanly, but 6.0.0 hasn't been tagged yet — pull
+from GitHub if you want it now:
 
 ```
 raylib = { package = "sola-raylib", git = "https://github.com/brettchalupa/sola-raylib.git" }

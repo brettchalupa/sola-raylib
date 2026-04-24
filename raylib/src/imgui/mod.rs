@@ -13,10 +13,19 @@ use imgui_sys::{
 
 use super::drawing::RaylibDrawHandle;
 
-static mut CONTEXT: OnceLock<Context> = OnceLock::new();
+// `imgui::Context` is `!Sync`, which would forbid putting a `OnceLock<Context>`
+// in a plain `static`. The previous workaround was `static mut CONTEXT`, but
+// Rust now lints shared references to mutable statics. Instead, wrap the
+// OnceLock in a newtype and assert Sync — ImGui is single-threaded by design,
+// and the safe API already assumes the caller only touches it from one
+// thread.
+struct SyncContext(OnceLock<Context>);
+unsafe impl Sync for SyncContext {}
+
+static CONTEXT: SyncContext = SyncContext(OnceLock::new());
 
 fn context() -> &'static Context {
-    unsafe { CONTEXT.get_or_init(|| imgui::Context::create()) }
+    CONTEXT.0.get_or_init(imgui::Context::create)
 }
 
 /**
@@ -105,7 +114,7 @@ pub trait RayImGUITrait {
     /// Setup ImGUI then call the closure with the appropriate handle.
     ///
     /// Fails silently if the delta time is negative on any frame other then 0.
-    fn draw_imgui(&self, f: impl Fn(&mut Ui)) {
+    fn draw_imgui(&self, mut f: impl FnMut(&mut Ui)) {
         if let Some(mut new_frame) = RayImGUIHandle::new() {
             f(&mut new_frame);
         }

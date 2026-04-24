@@ -96,6 +96,64 @@ Contributions are welcome to improve or fix the shell.nix!
 The sola-raylib-test crate tests the bindings by opening a window, and checking
 the results of various functions. It requires nightly to use.
 
+## Bumping raylib
+
+When a new raylib release lands upstream, walk through this checklist on a fresh
+branch. The major version of sola-raylib tracks raylib's major (5.x binds 5.5,
+6.x binds 6.0), so a major raylib bump is also a major sola-raylib bump — treat
+it as a breaking release.
+
+1. **Bump the raylib submodule.**
+
+   ```
+   cd raylib-sys/raylib
+   git fetch --tags
+   git checkout <new-tag>       # e.g. 6.0
+   cd ../..
+   git add raylib-sys/raylib
+   ```
+
+2. **Bump raygui to the matching release.** raygui is vendored, not submoduled,
+   so replace `raylib-sys/binding/raygui.h` with the new release from
+   [raysan5/raygui](https://github.com/raysan5/raygui) and commit it.
+
+3. **Force a clean rebuild of the sys crate.** bindgen caches aggressively and
+   `build.rs` won't always notice a header swap:
+
+   ```
+   cargo clean -p sola-raylib-sys
+   just build
+   ```
+
+4. **Triage the compile errors, module by module.** Expect the break to land in
+   `raylib/src/core/` and `raylib/src/rgui/`. Common shapes:
+   - A struct field was renamed or its type changed (e.g. `Transform` arrays vs
+     single values).
+   - A function gained/lost a parameter — update the safe wrapper signature.
+   - A function was removed; deprecate or delete the wrapper.
+   - An enum variant name changed — sweep `consts.rs`.
+
+5. **Survey new APIs.** Run `python3 scripts/find_unimplemented.py` to list FFI
+   functions that don't yet have a safe wrapper. Decide which to add for the
+   release vs defer. Helpers covered by Rust's `std` (string manipulation, most
+   file I/O) stay unwrapped — add them to `wont_impl` at the top of the script
+   so they stop showing up.
+
+6. **Runtime-test every example.** `just examples` is the fast loop. A clean
+   compile doesn't mean correctness: skeletal animation, model loading, font
+   loading, audio, and gui paths only surface problems when actually run. For
+   any new API you wrapped, add or extend an example that exercises it.
+
+7. **Bump the rlImGui submodule if needed.** It lives at
+   `raylib-sys/binding/rlImGui`. Test with `cargo build -F imgui`.
+
+8. **Update docs and versions.**
+   - `CHANGELOG.md` — add a section for the new version.
+   - `README.md` — bump every raylib version reference.
+   - Workspace crate versions — see the "Releasing" section above.
+
+9. **Ship.** Follow the Releasing checklist.
+
 ## Maintenance scripts
 
 `scripts/find_unimplemented.py` lists raylib and raygui FFI functions that

@@ -33,9 +33,13 @@ fmt-check:
 build-examples:
     cd examples && cargo build --all-targets
 
-# Run a specific example by name, e.g. `just sample drop`.
+# Run a specific example by name, e.g. `just example drop`.
 example name:
     cd examples && cargo run --bin {{ name }}
+
+# Run an example that needs the `imgui` feature, e.g. `just example-imgui imgui`.
+example-imgui name="imgui":
+    cd examples && cargo run --features imgui --bin {{ name }}
 
 # Initializes git submodules
 setup:
@@ -44,8 +48,10 @@ setup:
 # Run a handful of examples to quickly check things are working
 examples:
     just example 3d_camera_first_person
+    just example animation_blending
     just example arkanoid
     just example asteroids
+    just example borderless_fullscreen
     just example camera_2d
     just example extensions
     just example hello_raylib
@@ -55,6 +61,12 @@ examples:
     just example model_shader
     just example raymarch
     just example rgui
+    just example shapes_new
     just example texture
     just example yaw_pitch_roll
     just example drop
+    just examples-imgui
+
+# Run the rlImGui example (separate recipe because it needs the `imgui` feature).
+examples-imgui:
+    just example-imgui imgui

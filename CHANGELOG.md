@@ -1,6 +1,59 @@
 # sola-raylib Changelog
 
-## [Unreleased] - 5.5.3
+## 6.0.0 - UNRELEASED
+
+Upgrade to **raylib 6.0** and **raygui 5**. sola-raylib's major version tracks
+raylib's, so 6.x binds raylib 6.0. See raylib's [6.0 release notes][raylib-6]
+for the full upstream story.
+
+### Breaking
+
+- raylib 6.0 — upstream redesigned skeletal animation, fullscreen modes, the
+  build-config system, and more. Most safe wrappers are unchanged; the
+  exceptions are below.
+- `RaylibModel::bind_pose` and `bind_pose_mut` now return `Option<&[Transform]>`
+  (was `Option<&Transform>`). The underlying field is an array sized by
+  `boneCount`, so the old signature read garbage past the first bone.
+- Removed `RaylibMesh::indicies` / `indicies_mut`. The typo'd aliases were
+  deprecated in 5.5.3 with a "removed in 6.0" note — use `indices` /
+  `indices_mut`.
+- `RayImGUITrait::draw_imgui` closures are now `FnMut` (was `Fn`), so they can
+  mutate captured state.
+- `DrawModelPoints` / `DrawModelPointsEx` removed — raylib 6.0 dropped these
+  from its public API.
+
+### Added
+
+New API wrappers for raylib 6.0 additions:
+
+- Models: `update_model_animation_ex` (animation blending).
+- Input: `get_key_name`.
+- Hashing: `compute_sha256`, `compute_sha1`, `compute_md5`, `compute_crc32`.
+- Shapes (`RaylibDraw`): `draw_line_dashed`, `draw_ellipse_v`,
+  `draw_ellipse_lines_v`.
+- Text: `measure_text_codepoints`.
+- Math: `Vector2::cross_product`, `Matrix::multiply_value`, `Matrix::compose`.
+
+New examples exercising the new surface: `animation_blending`, `shapes_new`,
+`borderless_fullscreen`. The `input` example now also displays `get_key_name`.
+
+### Other
+
+- `just example-imgui <name>` and `just examples-imgui` — dedicated recipes for
+  examples that need `--features imgui`. `just examples` chains the imgui demo
+  in as the final step.
+- `raylib/src/imgui/mod.rs` compiles under current Rust (the `static-mut-refs`
+  lint): replaced `static mut CONTEXT` with a `Sync`-asserting newtype around
+  `OnceLock<Context>`.
+- `raylib-sys/README.md` rewritten to reflect the current build-time bindgen
+  flow; the old doc described a workflow that no longer exists.
+- `DEVELOPING.md` gains a "Bumping raylib" checklist.
+- `unimplemented.txt` at the repo root tracks non-6.0 wrapper gaps (pixel-color
+  helpers, audio stream processors, `ExportWaveAsCode`).
+
+[raylib-6]: https://github.com/raysan5/raylib/releases/tag/6.0
+
+## 5.5.3 - Apr 24, 2026
 
 Doc improvements and bug fixes ported from upstream raylib-rs, scoped to
 soundness and correctness. Thanks to all the original authors linked below.
@@ -61,7 +114,7 @@ soundness and correctness. Thanks to all the original authors linked below.
 [rr-ccc0827]: https://github.com/raylib-rs/raylib-rs/commit/ccc0827b9667578476c67b6c9d3b37a1b167034e
 [rr-e2be94b]: https://github.com/raylib-rs/raylib-rs/commit/e2be94bab26db3a30bca7226e5f03a4b15c54b0e
 
-## 5.5.2
+## 5.5.2 - Apr 23, 2026
 
 - Renamed to sola-raylib and sola-raylib-sys
 - Fixed incorrect param ordering for `gui_list_view_ex`

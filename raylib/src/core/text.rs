@@ -331,6 +331,22 @@ pub trait RaylibFont: AsRef<ffi::Font> + AsMut<ffi::Font> {
         let c_text = CString::new(text).unwrap();
         unsafe { ffi::MeasureTextEx(*self.as_ref(), c_text.as_ptr(), font_size, spacing).into() }
     }
+
+    /// Measure size of already-decoded codepoints rendered with `font`. Added
+    /// in raylib 6.0 — useful when you already have a codepoint array and
+    /// don't want to re-encode to UTF-8 just to measure.
+    fn measure_text_codepoints(&self, codepoints: &[i32], font_size: f32, spacing: f32) -> Vector2 {
+        unsafe {
+            ffi::MeasureTextCodepoints(
+                *self.as_ref(),
+                codepoints.as_ptr(),
+                codepoints.len() as i32,
+                font_size,
+                spacing,
+            )
+            .into()
+        }
+    }
 }
 
 impl Font {

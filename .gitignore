@@ -7,3 +7,4 @@ raylib-test/test_out/*
 !raylib-test/test_out/.gitkeep
 raylib-test/storage.data
 examples/savegame
+examples/imgui.ini

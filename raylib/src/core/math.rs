@@ -160,6 +160,14 @@ impl Vector2 {
         self.x * v.x + self.y * v.y
     }
 
+    /// Calculates the 2D cross product with vector `v`. The result is a
+    /// scalar equal to the z-component of the 3D cross product of
+    /// `(self.x, self.y, 0)` and `(v.x, v.y, 0)`. Added to match raymath's
+    /// `Vector2CrossProduct` in raylib 6.0.
+    pub fn cross_product(&self, v: Vector2) -> f32 {
+        self.x * v.y - self.y * v.x
+    }
+
     /// Calculates the distance towards vector `v`.
     pub fn distance_to(&self, v: Vector2) -> f32 {
         ((self.x - v.x) * (self.x - v.x) + (self.y - v.y) * (self.y - v.y)).sqrt()
@@ -1781,6 +1789,62 @@ impl Matrix {
             self.m9, self.m10, self.m11, self.m12, self.m13, self.m14, self.m15,
         ]
     }
+
+    /// Multiply every matrix component by `value`. Added to match raymath's
+    /// `MatrixMultiplyValue` in raylib 6.0.
+    pub fn multiply_value(&self, value: f32) -> Matrix {
+        Matrix {
+            m0: self.m0 * value,
+            m1: self.m1 * value,
+            m2: self.m2 * value,
+            m3: self.m3 * value,
+            m4: self.m4 * value,
+            m5: self.m5 * value,
+            m6: self.m6 * value,
+            m7: self.m7 * value,
+            m8: self.m8 * value,
+            m9: self.m9 * value,
+            m10: self.m10 * value,
+            m11: self.m11 * value,
+            m12: self.m12 * value,
+            m13: self.m13 * value,
+            m14: self.m14 * value,
+            m15: self.m15 * value,
+        }
+    }
+
+    /// Compose a transform matrix from translation, rotation, and scale.
+    /// Mirrors raymath's `MatrixCompose` (raylib 6.0).
+    pub fn compose(translation: Vector3, rotation: Quaternion, scale: Vector3) -> Matrix {
+        let right = Vector3::new(1.0, 0.0, 0.0)
+            .scale_by(scale.x)
+            .rotate_by(rotation);
+        let up = Vector3::new(0.0, 1.0, 0.0)
+            .scale_by(scale.y)
+            .rotate_by(rotation);
+        let forward = Vector3::new(0.0, 0.0, 1.0)
+            .scale_by(scale.z)
+            .rotate_by(rotation);
+
+        Matrix {
+            m0: right.x,
+            m1: right.y,
+            m2: right.z,
+            m3: 0.0,
+            m4: up.x,
+            m5: up.y,
+            m6: up.z,
+            m7: 0.0,
+            m8: forward.x,
+            m9: forward.y,
+            m10: forward.z,
+            m11: 0.0,
+            m12: translation.x,
+            m13: translation.y,
+            m14: translation.z,
+            m15: 1.0,
+        }
+    }
 }
 
 impl Add for Matrix {
@@ -2052,8 +2116,64 @@ impl From<&Transform> for ffi::Transform {
 
 #[cfg(test)]
 mod math_test {
-    use super::{Ray, Vector2, Vector3, Vector4};
+    use super::{Matrix, Quaternion, Ray, Vector2, Vector3, Vector4};
     use crate::ffi;
+
+    fn approx_eq(a: f32, b: f32) -> bool {
+        (a - b).abs() < 1e-5
+    }
+
+    #[test]
+    fn vector2_cross_product_matches_formula() {
+        let a = Vector2::new(1.0, 2.0);
+        let b = Vector2::new(3.0, 4.0);
+        // 1*4 - 2*3 = -2
+        assert_eq!(a.cross_product(b), -2.0);
+        // Anti-commutative
+        assert_eq!(b.cross_product(a), 2.0);
+        // Parallel vectors produce zero
+        assert_eq!(a.cross_product(a), 0.0);
+    }
+
+    #[test]
+    fn matrix_multiply_value_scales_all_components() {
+        let m = Matrix::translate(1.0, 2.0, 3.0).multiply_value(2.0);
+        // Identity's diagonal should become 2.0; translation components double.
+        assert_eq!(m.m0, 2.0);
+        assert_eq!(m.m5, 2.0);
+        assert_eq!(m.m10, 2.0);
+        assert_eq!(m.m15, 2.0);
+        assert_eq!(m.m12, 2.0);
+        assert_eq!(m.m13, 4.0);
+        assert_eq!(m.m14, 6.0);
+    }
+
+    #[test]
+    fn matrix_compose_identity_rotation_equals_trs() {
+        // Identity rotation + unit scale + translation should equal
+        // Matrix::translate.
+        let t = Vector3::new(5.0, 6.0, 7.0);
+        let r = Quaternion::identity();
+        let s = Vector3::new(1.0, 1.0, 1.0);
+        let composed = Matrix::compose(t, r, s);
+        let expected = Matrix::translate(5.0, 6.0, 7.0);
+        for (c, e) in composed.to_array().iter().zip(expected.to_array().iter()) {
+            assert!(approx_eq(*c, *e), "composed {} vs expected {}", c, e);
+        }
+    }
+
+    #[test]
+    fn matrix_compose_respects_scale() {
+        let composed = Matrix::compose(
+            Vector3::new(0.0, 0.0, 0.0),
+            Quaternion::identity(),
+            Vector3::new(2.0, 3.0, 4.0),
+        );
+        assert!(approx_eq(composed.m0, 2.0));
+        assert!(approx_eq(composed.m5, 3.0));
+        assert!(approx_eq(composed.m10, 4.0));
+        assert!(approx_eq(composed.m15, 1.0));
+    }
 
     #[test]
     fn test_into() {

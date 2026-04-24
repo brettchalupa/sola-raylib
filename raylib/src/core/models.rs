@@ -130,6 +130,35 @@ impl RaylibHandle {
             ffi::UpdateModelAnimation(*model.as_mut(), *anim.as_ref(), frame);
         }
     }
+
+    /// Update model animation pose by blending two animations.
+    ///
+    /// `blend` is the ratio between `anim_a` and `anim_b`: `0.0` is all
+    /// `anim_a`, `1.0` is all `anim_b`. Added in raylib 6.0 alongside the
+    /// skeletal animation redesign.
+    // Argument list mirrors raylib's `UpdateModelAnimationEx` C API.
+    #[allow(clippy::too_many_arguments)]
+    pub fn update_model_animation_ex(
+        &mut self,
+        _: &RaylibThread,
+        mut model: impl AsMut<ffi::Model>,
+        anim_a: impl AsRef<ffi::ModelAnimation>,
+        frame_a: f32,
+        anim_b: impl AsRef<ffi::ModelAnimation>,
+        frame_b: f32,
+        blend: f32,
+    ) {
+        unsafe {
+            ffi::UpdateModelAnimationEx(
+                *model.as_mut(),
+                *anim_a.as_ref(),
+                frame_a,
+                *anim_b.as_ref(),
+                frame_b,
+                blend,
+            );
+        }
+    }
 }
 
 impl RaylibModel for WeakModel {}
@@ -217,18 +246,29 @@ pub trait RaylibModel: AsRef<ffi::Model> + AsMut<ffi::Model> {
             )
         })
     }
-    fn bind_pose(&self) -> Option<&crate::math::Transform> {
+    /// Bind-pose transforms — one entry per bone in the skeleton.
+    fn bind_pose(&self) -> Option<&[crate::math::Transform]> {
         if self.as_ref().skeleton.bindPose.is_null() {
             return None;
         }
-        Some(unsafe { &*(self.as_ref().skeleton.bindPose as *const crate::math::Transform) })
+        Some(unsafe {
+            std::slice::from_raw_parts(
+                self.as_ref().skeleton.bindPose as *const crate::math::Transform,
+                self.as_ref().skeleton.boneCount as usize,
+            )
+        })
     }
 
-    fn bind_pose_mut(&mut self) -> Option<&mut crate::math::Transform> {
+    fn bind_pose_mut(&mut self) -> Option<&mut [crate::math::Transform]> {
         if self.as_ref().skeleton.bindPose.is_null() {
             return None;
         }
-        Some(unsafe { &mut *(self.as_mut().skeleton.bindPose as *mut crate::math::Transform) })
+        Some(unsafe {
+            std::slice::from_raw_parts_mut(
+                self.as_mut().skeleton.bindPose as *mut crate::math::Transform,
+                self.as_ref().skeleton.boneCount as usize,
+            )
+        })
     }
 
     /// Check model animation skeleton match
@@ -358,20 +398,6 @@ pub trait RaylibMesh: AsRef<ffi::Mesh> + AsMut<ffi::Mesh> {
         NonNull::new(self.as_ref().indices).map_or(&mut [], |data| unsafe {
             NonNull::slice_from_raw_parts(data, self.as_ref().triangleCount as usize * 3).as_mut()
         })
-    }
-    #[deprecated(
-        since = "5.5.3",
-        note = "use `indices` instead; will be removed in 6.0"
-    )]
-    fn indicies(&self) -> &[u16] {
-        self.indices()
-    }
-    #[deprecated(
-        since = "5.5.3",
-        note = "use `indices_mut` instead; will be removed in 6.0"
-    )]
-    fn indicies_mut(&mut self) -> &mut [u16] {
-        self.indices_mut()
     }
 
     /// Generate polygonal mesh
