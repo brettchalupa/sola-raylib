@@ -94,16 +94,16 @@ still imported as `raylib` in your source code:
 raylib = { package = "sola-raylib", version = "5.5" }
 ```
 
-With that line, all your existing `use raylib::prelude::*` imports keep working
-— only `Cargo.toml` changes.
+With that line, all your existing `raylib` code keeps working. The ./examples in
+this repository use this style.
 
 2. Start coding!
 
 ```rust
-use raylib::prelude::*;
+use sola_raylib::prelude::*;
 
 fn main() {
-    let (mut rl, thread) = raylib::init()
+    let (mut rl, thread) = sola_raylib::init()
         .size(640, 480)
         .title("Hello, World")
         .build();

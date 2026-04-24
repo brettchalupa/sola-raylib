@@ -39,7 +39,6 @@ path = "./arkanoid.rs"
 name = "logo"
 path = "./logo.rs"
 
-
 [[bin]]
 name = "camera_2d"
 path = "./camera_2d.rs"
@@ -102,6 +101,10 @@ required-features = ["imgui"]
 name = "music_effects"
 path = "music_effects.rs"
 required-features = ["ringbuf"]
+
+[[bin]]
+name = "hello_raylib"
+path = "hello_raylib.rs"
 
 # examples is excluded from the workspace, so we declare lints locally
 # (matching the workspace `[workspace.lints]` in the repo root Cargo.toml).
