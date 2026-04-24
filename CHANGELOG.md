@@ -41,6 +41,22 @@ New API wrappers for raylib 6.0 additions:
 - Math: `Vector2::cross_product`, `Matrix::multiply_value`, `Matrix::compose`.
 - Pixel helpers in `core::texture`: `get_pixel_color` and `set_pixel_color`
   (take a `PixelFormat` enum and byte slice, validate slice length).
+
+### Fixed
+
+- **`RaylibMesh::tangents` / `tangents_mut` return `&[Vector4]` /
+  `&mut
+  [Vector4]`** (was `Vector3`). Raylib stores tangents as
+  `float[4 *
+  vertexCount]` (XYZW where W is the bitangent sign), but the
+  previous cast sliced 3 of every 4 floats and produced misaligned reads.
+  Covered by a new unit test in `raylib/src/core/models.rs`.
+- **CMake `USE_WAYLAND` flag updated to `GLFW_BUILD_WAYLAND`.** Upstream renamed
+  the knob in 6.0; our `wayland` feature was silently a no-op until this fix.
+- **`CUSTOMIZE_BUILD=ON` is now always set in `build.rs`.** raylib 6.0 gates all
+  `SUPPORT_*` overrides behind this flag (`cmake/CompileDefinitions.cmake:12`).
+  Without it, `SUPPORT_BUSY_WAIT_LOOP=OFF`, `SUPPORT_FILEFORMAT_JPG=ON`, and the
+  `custom_frame_control` feature were silently dropped on the floor.
 - Audio: `Wave::export_as_code`. Raw audio-thread processor hooks as
   `unsafe fn`s that take `extern "C" fn(*mut c_void, u32)` pointers:
   `AudioStream::attach_audio_stream_processor` /
