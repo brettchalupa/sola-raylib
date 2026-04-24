@@ -15,6 +15,7 @@ ringbuf = {version = "0.4.7", optional = true}
 
 [features]
 ringbuf = ["dep:ringbuf"]
+sdl = ["raylib/sdl"]
 software_render = ["raylib/software_render"]
 platform_memory = ["raylib/platform_memory"]
 platform_web_rgfw = ["raylib/platform_web_rgfw"]

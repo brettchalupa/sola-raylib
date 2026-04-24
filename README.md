@@ -166,10 +166,24 @@ We surface them for opt-in use, but what actually renders or links is whatever
 raylib's C side supports at HEAD. Expect rough edges.
 
 - `software_render`: compiles raylib with the CPU `rlsw` software rasterizer.
-  Windows open, but the framebuffer-to-window present path is currently broken
-  on at least Linux/X11 upstream (you'll see a black screen even when the
-  renderer reports as `RLSW`). Track
-  [raylib#4832](https://github.com/raysan5/raylib/pull/4832).
+  **Must be combined with the `sdl` feature** on Linux/macOS because rlsw is not
+  compatible with raylib's default GLFW desktop backend (confirmed upstream in
+  [raylib#5664](https://github.com/raysan5/raylib/issues/5664); enabling only
+  `software_render` produces a black window). The `sdl` feature needs SDL dev
+  headers installed at build time; raylib prefers SDL3 and falls back to SDL2,
+  and our `build.rs` auto-detects which is present via `pkg-config`. Install
+  with `sudo dnf install SDL2-devel` on Fedora, `sudo apt install libsdl2-dev`
+  on Debian/Ubuntu, `brew install sdl2` on macOS. Typical usage:
+
+  ```
+  # Linux or macOS, with SDL installed:
+  cargo add sola-raylib --features sdl,software_render
+  ```
+
+  Or to try it from this repo: `just example-sw hello_raylib`.
+
+  Windows would need the `rcore_desktop_win32` native backend (not yet wired in
+  sola-raylib).
 - `platform_memory`: compiles the `PLATFORM=Memory` headless framebuffer
   backend. The backend builds and links; the APIs for reading the framebuffer
   back out (from `rlsw.h`, e.g. `swGetColorBuffer`) are **not yet wrapped in the
