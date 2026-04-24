@@ -86,9 +86,9 @@ displays `get_key_name`.
     (`OPENGL_VERSION=Software`). Links and starts, but on Linux/X11 the
     framebuffer-to-window present path is currently broken upstream and windows
     open to a black screen. Track [raylib#4832][rlsw-pr] for progress.
-    `just example-sw <name>` and `just examples-sw` build and run with the
-    feature enabled, useful to smoke-test whether upstream has fixed the
-    presentation path on your platform.
+    No `just` recipe until upstream stabilizes; build with
+    `cargo run --features software_render --bin <name>` inside `examples/`
+    if you want to try it.
   - `platform_memory`: build raylib with the headless `PLATFORM=Memory` backend.
     The feature compiles the backend, but reading the framebuffer requires
     `rlsw.h` APIs (e.g. `swGetColorBuffer`) that are **not yet wrapped** in the
