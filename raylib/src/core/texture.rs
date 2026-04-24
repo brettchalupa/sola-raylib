@@ -1110,8 +1110,12 @@ pub trait RaylibTexture2D: AsRef<ffi::Texture2D> + AsMut<ffi::Texture2D> {
         pixels: &[u8],
     ) -> Result<(), Error> {
         let rec = rec.into();
-        
-        if (rec.x < 0.0) || (rec.y < 0.0) || ((rec.x as i32 + rec.width as i32) > (self.as_ref().width)) || ((rec.y as i32 + rec.height as i32) > (self.as_ref().height)) {
+
+        if (rec.x < 0.0)
+            || (rec.y < 0.0)
+            || ((rec.x as i32 + rec.width as i32) > (self.as_ref().width))
+            || ((rec.y as i32 + rec.height as i32) > (self.as_ref().height))
+        {
             return Err(error!(
                 "update_texture: Destination rectangle cannot exceed texture bounds."
             ));
@@ -1121,7 +1125,7 @@ pub trait RaylibTexture2D: AsRef<ffi::Texture2D> + AsMut<ffi::Texture2D> {
                 "update_texture: Destination rectangle cannot have negative extents."
             ));
         }
-        
+
         let expected_len = unsafe {
             get_pixel_data_size(
                 rec.width as i32,
