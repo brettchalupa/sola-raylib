@@ -552,7 +552,7 @@ impl<'aud> AudioStream<'aud> {
             ffi::UpdateAudioStream(
                 self.0,
                 data.as_ptr() as *const std::os::raw::c_void,
-                std::mem::size_of_val(data) as i32,
+                data.len() as i32,
             );
         }
     }
