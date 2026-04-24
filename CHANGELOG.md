@@ -53,10 +53,13 @@ New API wrappers for raylib 6.0 additions:
   Covered by a new unit test in `raylib/src/core/models.rs`.
 - **CMake `USE_WAYLAND` flag updated to `GLFW_BUILD_WAYLAND`.** Upstream renamed
   the knob in 6.0; our `wayland` feature was silently a no-op until this fix.
-- **`CUSTOMIZE_BUILD=ON` is now always set in `build.rs`.** raylib 6.0 gates all
-  `SUPPORT_*` overrides behind this flag (`cmake/CompileDefinitions.cmake:12`).
-  Without it, `SUPPORT_BUSY_WAIT_LOOP=OFF`, `SUPPORT_FILEFORMAT_JPG=ON`, and the
-  `custom_frame_control` feature were silently dropped on the floor.
+- Removed two long-silent no-op CMake defines (`SUPPORT_BUSY_WAIT_LOOP=OFF`,
+  `SUPPORT_FILEFORMAT_JPG=ON`). raylib 6.0 ignores `SUPPORT_*` overrides unless
+  `CUSTOMIZE_BUILD=ON` is also set; experimentally turning that on caused
+  unresponsive windows (black screen + "window is not responding") on Linux/X11.
+  Keeping raylib's config.h defaults is the safe choice for 6.0.0.
+  `custom_frame_control`, `noscreenshot`, and `nogif` features still activate
+  `CUSTOMIZE_BUILD=ON` locally when enabled, so those paths keep working.
 - Audio: `Wave::export_as_code`. Raw audio-thread processor hooks as
   `unsafe fn`s that take `extern "C" fn(*mut c_void, u32)` pointers:
   `AudioStream::attach_audio_stream_processor` /
