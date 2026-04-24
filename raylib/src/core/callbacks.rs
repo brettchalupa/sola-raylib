@@ -119,7 +119,8 @@ extern "C" fn custom_load_file_data_callback(path: *const c_char, size: *mut c_i
     }
 }
 
-extern "C" fn custom_save_file_text_callback(a: *const c_char, b: *mut c_char) -> bool {
+// raylib 6.0 fixed const-correctness: the text parameter is now `*const c_char`.
+extern "C" fn custom_save_file_text_callback(a: *const c_char, b: *const c_char) -> bool {
     let save_file_text = save_file_text_callback().unwrap();
     let a = unsafe { CStr::from_ptr(a) };
     let b = unsafe { CStr::from_ptr(b) };

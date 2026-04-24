@@ -539,8 +539,14 @@ pub trait RaylibDrawGui {
             .map(|s| CString::new(s.as_ref()).unwrap().into_boxed_c_str())
             .collect();
 
-        let mut text_params: Box<[*const c_char]> =
-            buffer.iter().map(|cstr| cstr.as_ptr()).collect();
+        // raygui 5.0 changed GuiListViewEx to take `char **` (non-const) even
+        // though it only reads the strings. Cast away const on each item
+        // pointer — the CStrings remain owned by `buffer` for the call's
+        // duration.
+        let mut text_params: Box<[*mut c_char]> = buffer
+            .iter()
+            .map(|cstr| cstr.as_ptr() as *mut c_char)
+            .collect();
 
         unsafe {
             ffi::GuiListViewEx(
@@ -775,7 +781,7 @@ impl GuiProperty for crate::consts::GuiSliderProperty {
         self as i32
     }
 }
-impl GuiProperty for crate::consts::GuiSpinnerProperty {
+impl GuiProperty for crate::consts::GuiValueBoxProperty {
     fn as_i32(self) -> i32 {
         self as i32
     }

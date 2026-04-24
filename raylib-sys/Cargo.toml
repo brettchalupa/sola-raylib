@@ -1,6 +1,6 @@
 [package]
 name = "sola-raylib-sys"
-version = "5.5.3"
+version = "6.0.0-dev.0"
 authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 license = "Zlib"
 description = "Raw FFI bindings for raylib. sola-raylib-sys N.x tracks raylib N.x (e.g. 5.x → raylib 5.5; 6.x → raylib 6.0)."
@@ -18,7 +18,7 @@ imgui-sys = { version = "0.12.0", optional = true }
 [build-dependencies]
 cmake = "0.1.51"
 cc = "1.0"
-bindgen = "0.70"
+bindgen = "0.72"
 
 [features]
 # Build Raylib headless for docs/esoteric platforms. Up to you to link.

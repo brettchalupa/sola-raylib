@@ -231,6 +231,10 @@ impl RaylibHandle {
         chars: Option<&str>,
         sdf: i32,
     ) -> Option<RSliceGlyphInfo> {
+        // raylib 6.0 added a `glyphCount` out-param that reports how many
+        // glyphs were actually loaded — replaces the previous "guess 95
+        // for the default set" heuristic.
+        let mut glyph_count: i32 = 0;
         unsafe {
             let ci_arr_ptr = match chars {
                 Some(c) => {
@@ -242,6 +246,7 @@ impl RaylibHandle {
                         co.0.as_mut_ptr(),
                         c.len() as i32,
                         sdf,
+                        &mut glyph_count,
                     )
                 }
                 None => ffi::LoadFontData(
@@ -251,14 +256,14 @@ impl RaylibHandle {
                     std::ptr::null_mut(),
                     0,
                     sdf,
+                    &mut glyph_count,
                 ),
             };
-            let ci_size = if let Some(c) = chars { c.len() } else { 95 }; // raylib assumes 95 if none given
             if ci_arr_ptr.is_null() {
                 None
             } else {
                 Some(RSliceGlyphInfo(std::mem::ManuallyDrop::new(Box::from_raw(
-                    std::ptr::slice_from_raw_parts_mut(ci_arr_ptr as *mut _, ci_size),
+                    std::ptr::slice_from_raw_parts_mut(ci_arr_ptr as *mut _, glyph_count as usize),
                 ))))
             }
         }
