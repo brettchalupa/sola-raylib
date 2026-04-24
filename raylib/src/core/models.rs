@@ -349,12 +349,12 @@ pub trait RaylibMesh: AsRef<ffi::Mesh> + AsMut<ffi::Mesh> {
     }
     fn indicies(&self) -> &[u16] {
         NonNull::new(self.as_ref().indices).map_or(&[], |data| unsafe {
-            NonNull::slice_from_raw_parts(data, self.as_ref().vertexCount as usize).as_ref()
+            NonNull::slice_from_raw_parts(data, self.as_ref().triangleCount as usize * 3).as_ref()
         })
     }
     fn indicies_mut(&mut self) -> &mut [u16] {
         NonNull::new(self.as_ref().indices).map_or(&mut [], |data| unsafe {
-            NonNull::slice_from_raw_parts(data, self.as_ref().vertexCount as usize).as_mut()
+            NonNull::slice_from_raw_parts(data, self.as_ref().triangleCount as usize * 3).as_mut()
         })
     }
 
