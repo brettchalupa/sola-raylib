@@ -4,6 +4,9 @@ sola-raylib is an actively maintained Rust bindings and wrapper for
 [raylib](http://www.raylib.com/) 5.5. It currently targets Rust toolchain
 version 1.78 or higher.
 
+- View the project on crates.io: https://crates.io/crates/sola-raylib
+- View the docs: https://docs.rs/sola-raylib/latest/sola_raylib/
+
 **Versioning:** sola-raylib's major version tracks raylib's major version — 5.x
 binds raylib 5.5, 6.x will bind raylib 6.0, and so on. Minor and patch numbers
 are sola-raylib's own (raylib doesn't follow strict semver, so this project
