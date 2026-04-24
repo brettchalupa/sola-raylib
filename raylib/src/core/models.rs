@@ -366,12 +366,17 @@ pub trait RaylibMesh: AsRef<ffi::Mesh> + AsMut<ffi::Mesh> {
             NonNull::slice_from_raw_parts(data, self.as_ref().vertexCount as usize).as_mut()
         })
     }
-    fn tangents(&self) -> &[Vector3] {
+    /// Per-vertex tangents. Each element is `(x, y, z, w)` where `w` carries
+    /// the sign of the bitangent (mirror handedness). Previously returned
+    /// `&[Vector3]`, which sliced only 3 of every 4 floats and produced
+    /// misaligned reads. Corrected to `&[Vector4]` to match the underlying
+    /// `float tangents[4 * vertexCount]` layout.
+    fn tangents(&self) -> &[crate::math::Vector4] {
         NonNull::new(self.as_ref().tangents.cast()).map_or(&[], |data| unsafe {
             NonNull::slice_from_raw_parts(data, self.as_ref().vertexCount as usize).as_ref()
         })
     }
-    fn tangents_mut(&mut self) -> &mut [Vector3] {
+    fn tangents_mut(&mut self) -> &mut [crate::math::Vector4] {
         NonNull::new(self.as_ref().tangents.cast()).map_or(&mut [], |data| unsafe {
             NonNull::slice_from_raw_parts(data, self.as_ref().vertexCount as usize).as_mut()
         })
@@ -739,5 +744,78 @@ impl RaylibHandle {
         {
             ffi::UnloadMesh(*mesh.as_ref())
         }
+    }
+}
+
+#[cfg(test)]
+mod mesh_tests {
+    use super::{RaylibMesh, WeakMesh};
+    use crate::ffi;
+    use crate::math::Vector4;
+
+    /// Regression test for the pre-6.0.0 tangents bug: raylib stores
+    /// tangents as `float[4 * vertexCount]` (XYZW), but the safe wrapper
+    /// used to cast the buffer to `*const Vector3` and read 3/4 of each
+    /// tangent with wrong component alignment. Now returns `&[Vector4]`
+    /// with `vertexCount` elements, each holding the full XYZW.
+    #[test]
+    fn tangents_returns_vector4_per_vertex() {
+        const N: i32 = 3;
+        let mut buf: Vec<f32> = vec![
+            1.0, 2.0, 3.0, 4.0, //
+            5.0, 6.0, 7.0, 8.0, //
+            9.0, 10.0, 11.0, 12.0,
+        ];
+
+        // SAFETY: `ffi::Mesh` is POD-shaped (primitives + raw pointers), so
+        // `zeroed` yields a valid value. `WeakMesh` has a no-op `Drop`, so
+        // nothing tries to free the borrowed buffer.
+        let mesh = unsafe {
+            let mut m: ffi::Mesh = std::mem::zeroed();
+            m.vertexCount = N;
+            m.tangents = buf.as_mut_ptr();
+            WeakMesh::from_raw(m)
+        };
+
+        let tangents = mesh.tangents();
+        assert_eq!(tangents.len(), N as usize);
+        assert_eq!(
+            tangents[0],
+            Vector4 {
+                x: 1.0,
+                y: 2.0,
+                z: 3.0,
+                w: 4.0
+            }
+        );
+        assert_eq!(
+            tangents[1],
+            Vector4 {
+                x: 5.0,
+                y: 6.0,
+                z: 7.0,
+                w: 8.0
+            }
+        );
+        assert_eq!(
+            tangents[2],
+            Vector4 {
+                x: 9.0,
+                y: 10.0,
+                z: 11.0,
+                w: 12.0
+            }
+        );
+    }
+
+    #[test]
+    fn tangents_empty_when_pointer_null() {
+        let mesh = unsafe {
+            let mut m: ffi::Mesh = std::mem::zeroed();
+            m.vertexCount = 42;
+            m.tangents = std::ptr::null_mut();
+            WeakMesh::from_raw(m)
+        };
+        assert!(mesh.tangents().is_empty());
     }
 }
