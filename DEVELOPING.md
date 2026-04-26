@@ -2,6 +2,20 @@
 
 Documentation on how to work on Sola.
 
+## Dependencies
+
+Install Rust using rustup: https://rustup.rs/
+
+### Windows
+
+Running sola-raylib on Windows requires cmake and llvm be installed. Run the
+following from Powershell:
+
+```
+winget install LLVM.LLVM
+winget install -e --id Kitware.CMake
+```
+
 ## Style
 
 sola-raylib follows Rust styles and lint rules. It aims to have no warnings.
