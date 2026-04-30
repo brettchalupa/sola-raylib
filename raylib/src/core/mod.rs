@@ -73,14 +73,29 @@ impl Drop for RaylibHandle {
 }
 
 /// A builder that allows more customization of the game window shown to the user before the `RaylibHandle` is created.
+///
+/// One field per `ConfigFlags` value defined in raylib 6.0
+/// (`FLAG_FULLSCREEN_MODE`, `FLAG_WINDOW_*`, `FLAG_MSAA_4X_HINT`,
+/// `FLAG_VSYNC_HINT`, `FLAG_INTERLACED_HINT`). Each one maps to a
+/// dedicated builder method so callers don't have to reach for
+/// `SetConfigFlags` directly.
 #[derive(Debug, Default)]
 pub struct RaylibBuilder {
     fullscreen_mode: bool,
     window_resizable: bool,
     window_undecorated: bool,
+    window_hidden: bool,
+    window_minimized: bool,
+    window_maximized: bool,
+    window_unfocused: bool,
+    window_topmost: bool,
+    window_always_run: bool,
     window_transparent: bool,
     window_highdpi: bool,
+    window_mouse_passthrough: bool,
+    borderless_windowed_mode: bool,
     msaa_4x_hint: bool,
+    interlaced_hint: bool,
     vsync_hint: bool,
     log_level: TraceLogLevel,
     width: i32,
@@ -99,9 +114,21 @@ pub fn init() -> RaylibBuilder {
 }
 
 impl RaylibBuilder {
-    /// Sets the window to be fullscreen.
+    /// Sets the window to be fullscreen (exclusive video mode).
+    /// Prefer `borderless_windowed` on modern platforms: borderless
+    /// avoids the OS-level mode switch and plays nicer with Alt+Tab,
+    /// notifications, and multi-monitor setups.
     pub fn fullscreen(&mut self) -> &mut Self {
         self.fullscreen_mode = true;
+        self
+    }
+
+    /// Sets the window to launch in borderless windowed mode (a
+    /// fullscreen-sized window with no chrome). Produces the visual
+    /// effect of fullscreen without the latency / flicker of an
+    /// exclusive mode switch. Equivalent to `FLAG_BORDERLESS_WINDOWED_MODE`.
+    pub fn borderless_windowed(&mut self) -> &mut Self {
+        self.borderless_windowed_mode = true;
         self
     }
 
@@ -110,6 +137,7 @@ impl RaylibBuilder {
         self.log_level = level;
         self
     }
+
     /// Sets the window to be resizable.
     pub fn resizable(&mut self) -> &mut Self {
         self.window_resizable = true;
@@ -119,6 +147,48 @@ impl RaylibBuilder {
     /// Sets the window to be undecorated (without a border).
     pub fn undecorated(&mut self) -> &mut Self {
         self.window_undecorated = true;
+        self
+    }
+
+    /// Launches the window hidden. Use `RaylibHandle::clear_window_state`
+    /// with `FLAG_WINDOW_HIDDEN` to reveal it later. Useful for
+    /// staging window state (size, position, fullscreen) before the
+    /// first frame is visible to the user.
+    pub fn hidden(&mut self) -> &mut Self {
+        self.window_hidden = true;
+        self
+    }
+
+    /// Launches the window minimized to the taskbar / dock.
+    pub fn minimized(&mut self) -> &mut Self {
+        self.window_minimized = true;
+        self
+    }
+
+    /// Launches the window maximized to the work area of its monitor.
+    pub fn maximized(&mut self) -> &mut Self {
+        self.window_maximized = true;
+        self
+    }
+
+    /// Launches the window without input focus. Useful for tools or
+    /// overlays that shouldn't steal focus from the calling shell.
+    pub fn unfocused(&mut self) -> &mut Self {
+        self.window_unfocused = true;
+        self
+    }
+
+    /// Launches the window pinned above other windows.
+    pub fn topmost(&mut self) -> &mut Self {
+        self.window_topmost = true;
+        self
+    }
+
+    /// Keeps the window's main loop running while the window is
+    /// minimized or otherwise unfocused. Without this flag, raylib
+    /// throttles or pauses while the window isn't on screen.
+    pub fn always_run(&mut self) -> &mut Self {
+        self.window_always_run = true;
         self
     }
 
@@ -135,9 +205,24 @@ impl RaylibBuilder {
         self
     }
 
+    /// Lets mouse events pass through the window to whatever is below
+    /// it. Pairs naturally with `transparent` for click-through
+    /// overlays.
+    pub fn mouse_passthrough(&mut self) -> &mut Self {
+        self.window_mouse_passthrough = true;
+        self
+    }
+
     /// Hints that 4x MSAA (anti-aliasing) should be enabled. The system's graphics drivers may override this setting.
     pub fn msaa_4x(&mut self) -> &mut Self {
         self.msaa_4x_hint = true;
+        self
+    }
+
+    /// Hints that interlaced rendering should be enabled (3D TVs).
+    /// The system's graphics drivers may override this setting.
+    pub fn interlaced(&mut self) -> &mut Self {
+        self.interlaced_hint = true;
         self
     }
 
@@ -189,14 +274,41 @@ impl RaylibBuilder {
         if self.window_undecorated {
             flags |= FLAG_WINDOW_UNDECORATED as u32;
         }
+        if self.window_hidden {
+            flags |= FLAG_WINDOW_HIDDEN as u32;
+        }
+        if self.window_minimized {
+            flags |= FLAG_WINDOW_MINIMIZED as u32;
+        }
+        if self.window_maximized {
+            flags |= FLAG_WINDOW_MAXIMIZED as u32;
+        }
+        if self.window_unfocused {
+            flags |= FLAG_WINDOW_UNFOCUSED as u32;
+        }
+        if self.window_topmost {
+            flags |= FLAG_WINDOW_TOPMOST as u32;
+        }
+        if self.window_always_run {
+            flags |= FLAG_WINDOW_ALWAYS_RUN as u32;
+        }
         if self.window_transparent {
             flags |= FLAG_WINDOW_TRANSPARENT as u32;
         }
         if self.window_highdpi {
             flags |= FLAG_WINDOW_HIGHDPI as u32;
         }
+        if self.window_mouse_passthrough {
+            flags |= FLAG_WINDOW_MOUSE_PASSTHROUGH as u32;
+        }
+        if self.borderless_windowed_mode {
+            flags |= FLAG_BORDERLESS_WINDOWED_MODE as u32;
+        }
         if self.msaa_4x_hint {
             flags |= FLAG_MSAA_4X_HINT as u32;
+        }
+        if self.interlaced_hint {
+            flags |= FLAG_INTERLACED_HINT as u32;
         }
         if self.vsync_hint {
             flags |= FLAG_VSYNC_HINT as u32;

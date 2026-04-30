@@ -1,5 +1,23 @@
 # sola-raylib Changelog
 
+## 6.1.0 - UNRELEASED
+
+### Added
+
+- `RaylibBuilder` now exposes every raylib 6.0 `ConfigFlags` value as a
+  dedicated builder method, so callers don't need to drop to
+  `SetConfigFlags` for options the builder didn't cover. New methods:
+  - `borderless_windowed()` (`FLAG_BORDERLESS_WINDOWED_MODE`) for a
+    fullscreen-sized chromeless window. Friendlier than exclusive
+    `fullscreen()` on modern desktops (no mode switch, fast Alt+Tab,
+    plays well with multi-monitor and notifications).
+  - `hidden()`, `minimized()`, `maximized()`, `unfocused()`, `topmost()`,
+    `always_run()`, `mouse_passthrough()` covering the rest of the
+    `FLAG_WINDOW_*` family.
+  - `interlaced()` (`FLAG_INTERLACED_HINT`) for 3D TV setups.
+- Doc note on `fullscreen()` recommending `borderless_windowed()` on
+  modern platforms.
+
 ## 6.0.0 - Apr 24, 2026
 
 Upgrade to **raylib 6.0** and **raygui 5**. sola-raylib's major version tracks
