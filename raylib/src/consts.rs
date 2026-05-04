@@ -23,6 +23,8 @@ pub use ffi::DEG2RAD;
 // TODO Fix when rlgl bindings are in
 pub const MAX_MATERIAL_MAPS: u32 = 12;
 pub const MAX_SHADER_LOCATIONS: u32 = 32;
+// Mirrors MAX_GAMEPADS in raylib-sys/binding/config.h, so keep in sync if changed there!
+pub const MAX_GAMEPADS: u32 = 4;
 pub use ffi::GuiCheckBoxProperty;
 pub use ffi::GuiColorPickerProperty;
 pub use ffi::GuiComboBoxProperty;
