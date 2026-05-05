@@ -36,10 +36,10 @@ opengl_es_20 = []
 opengl_es_30 = []
 sdl = []
 
-# Allow disabling raylib's built-in F12 screenshot binding.
-# WARNING: currently broken on Linux on raylib 6.0+ (see issue #40), because
-# the underlying CUSTOMIZE_BUILD CMake toggle blanks out raylib's default
-# SUPPORT_* flags. Avoid until that interaction is fixed.
+# Disable raylib's built-in F12 screenshot keybind. Implemented by
+# pre-defining `SUPPORT_SCREEN_CAPTURE=0` directly on the C compiler line
+# rather than via raylib's `CUSTOMIZE_BUILD` switch (which blanks out every
+# other `SUPPORT_*` default and breaks rendering, see issue #40).
 noscreenshot = []
 
 # config.h's SUPPORT_CUSTOM_FRAME_CONTROL

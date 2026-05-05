@@ -18,6 +18,7 @@ sdl = ["raylib/sdl"]
 software_render = ["raylib/software_render"]
 platform_memory = ["raylib/platform_memory"]
 platform_web_rgfw = ["raylib/platform_web_rgfw"]
+noscreenshot = ["raylib/noscreenshot"]
 
 [[bin]]
 name = "rgui"

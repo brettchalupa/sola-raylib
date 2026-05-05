@@ -7,30 +7,45 @@
 - **`nogif` Cargo feature.** raylib 6.0 dropped its built-in GIF recorder
   upstream (the rcore module no longer references `SUPPORT_GIF_RECORDING`), so
   the feature had no functional effect since the 6.0 bump. Drop the feature from
-  your `Cargo.toml`; nothing replaces it. [Raylib C example for
-  recording.](https://www.raylib.com/examples/core/loader.html?name=core_screen_recording)
+  your `Cargo.toml`; nothing replaces it.
+  [Raylib C example for recording.](https://www.raylib.com/examples/core/loader.html?name=core_screen_recording)
+
+### Fixed
+
+- **`noscreenshot` feature now actually works on Linux** ([#40]). The 6.0 build
+  routed it through raylib's `CUSTOMIZE_BUILD=ON` CMake switch, which also
+  defines `EXTERNAL_CONFIG_FLAGS` and makes raylib's `config.h` skip its entire
+  defaults block. Every `SUPPORT_*` macro then went undefined (rtextures,
+  partialbusy wait, gestures, etc.), so the window mapped but never rendered on
+  X11/XWayland and failed to appear at all on native Wayland. The fix
+  pre-defines `SUPPORT_SCREEN_CAPTURE=0` directly on the C compile line via
+  `cflag`, so `config.h`'s `#ifndef` guard short-circuits while every other
+  default flows through normally. The F12 keybind is gone from the compiled
+  `libraylib.a`, rendering and Wayland init are unaffected.
+
+[#40]: https://github.com/brettchalupa/sola-raylib/issues/40
 
 ### Documentation
 
 - New canonical "Cargo features" section in the top-level README listing every
-  feature, its default state, and platform notes. The `sola-raylib-sys`
-  README's table now points here.
+  feature, its default state, and platform notes. The `sola-raylib-sys` README's
+  table now points here.
 
 ### Added
 
 - `RaylibBuilder` now exposes every raylib 6.0 `ConfigFlags` value as a
-  dedicated builder method, so callers don't need to drop to
-  `SetConfigFlags` for options the builder didn't cover. New methods:
+  dedicated builder method, so callers don't need to drop to `SetConfigFlags`
+  for options the builder didn't cover. New methods:
   - `borderless_windowed()` (`FLAG_BORDERLESS_WINDOWED_MODE`) for a
-    fullscreen-sized chromeless window. Friendlier than exclusive
-    `fullscreen()` on modern desktops (no mode switch, fast Alt+Tab,
-    plays well with multi-monitor and notifications).
+    fullscreen-sized chromeless window. Friendlier than exclusive `fullscreen()`
+    on modern desktops (no mode switch, fast Alt+Tab, plays well with
+    multi-monitor and notifications).
   - `hidden()`, `minimized()`, `maximized()`, `unfocused()`, `topmost()`,
     `always_run()`, `mouse_passthrough()` covering the rest of the
     `FLAG_WINDOW_*` family.
   - `interlaced()` (`FLAG_INTERLACED_HINT`) for 3D TV setups.
-- Doc note on `fullscreen()` recommending `borderless_windowed()` on
-  modern platforms.
+- Doc note on `fullscreen()` recommending `borderless_windowed()` on modern
+  platforms.
 
 ## 6.0.0 - Apr 24, 2026
 

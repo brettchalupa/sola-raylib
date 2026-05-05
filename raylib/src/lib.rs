@@ -82,8 +82,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 //! - `custom_frame_control`: enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL`,
 //!   so you drive frame timing yourself.
 //! - `noscreenshot`: disable raylib's built-in F12 screenshot keybind.
-//!   **Currently broken on Linux on raylib 6.x** ([issue #40]); avoid until
-//!   the underlying `CUSTOMIZE_BUILD` interaction is fixed.
 //!
 //! **Interop**
 //! - `with_serde`: derive `serde::Serialize` / `Deserialize` on public types.
@@ -91,7 +89,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 //!   math types.
 //!
 //! [project README]: https://github.com/brettchalupa/sola-raylib#cargo-features
-//! [issue #40]: https://github.com/brettchalupa/sola-raylib/issues/40
 
 #![allow(dead_code)]
 pub mod consts;

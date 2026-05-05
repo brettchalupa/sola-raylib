@@ -139,14 +139,21 @@ fn build_with_cmake(src_path: &str) {
         builder.define("OPENGL_VERSION", "OFF");
     }
 
-    // Allows disabling raylib's built-in F12-screenshot keybind.
-    {
-        #[cfg(feature = "noscreenshot")]
-        {
-            builder.define("CUSTOMIZE_BUILD", "ON");
-            builder.define("SUPPORT_SCREEN_CAPTURE", "OFF");
-        }
-    }
+    // Disable raylib's built-in F12-screenshot keybind.
+    //
+    // raylib's `config.h` guards `SUPPORT_SCREEN_CAPTURE` behind
+    // `#ifndef SUPPORT_SCREEN_CAPTURE / #define ... 1`, and the F12 handler in
+    // rcore.c gates on `#if SUPPORT_SCREEN_CAPTURE`. Predefining the macro to
+    // 0 on the C command line short-circuits the `#ifndef`, leaves it at 0,
+    // and skips the handler.
+    //
+    // Why not the `CUSTOMIZE_BUILD=ON` route raylib's CMake exposes? That
+    // switch also defines `EXTERNAL_CONFIG_FLAGS`, which makes `config.h`
+    // skip its entire defaults block; every `SUPPORT_*` becomes undefined.
+    // Rendering, the rtextures module, and Wayland window mapping all break
+    // (issue #40). Going through `cflag` keeps every other default intact.
+    #[cfg(feature = "noscreenshot")]
+    builder.cflag("-DSUPPORT_SCREEN_CAPTURE=0");
 
     match platform {
         Platform::Desktop => {
