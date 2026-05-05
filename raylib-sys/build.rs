@@ -139,21 +139,13 @@ fn build_with_cmake(src_path: &str) {
         builder.define("OPENGL_VERSION", "OFF");
     }
 
-    // Allows disabling the default maping of screenshot and gif recording in raylib
+    // Allows disabling raylib's built-in F12-screenshot keybind.
     {
-        #[cfg(any(feature = "noscreenshot", feature = "nogif"))]
-        builder.define("CUSTOMIZE_BUILD", "ON");
-
         #[cfg(feature = "noscreenshot")]
-        builder.define("SUPPORT_SCREEN_CAPTURE", "OFF");
-        #[cfg(feature = "nogif")]
-        builder.define("SUPPORT_GIF_RECORDING", "OFF");
-
-        // Once again felt this was necessary incase a default was changed :)
-        #[cfg(not(feature = "noscreenshot"))]
-        builder.define("SUPPORT_SCREEN_CAPTURE", "ON");
-        #[cfg(not(feature = "nogif"))]
-        builder.define("SUPPORT_GIF_RECORDING", "ON");
+        {
+            builder.define("CUSTOMIZE_BUILD", "ON");
+            builder.define("SUPPORT_SCREEN_CAPTURE", "OFF");
+        }
     }
 
     match platform {

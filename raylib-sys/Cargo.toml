@@ -36,9 +36,11 @@ opengl_es_20 = []
 opengl_es_30 = []
 sdl = []
 
-# Allow disabling screenshots and gifs on f12
+# Allow disabling raylib's built-in F12 screenshot binding.
+# WARNING: currently broken on Linux on raylib 6.0+ (see issue #40), because
+# the underlying CUSTOMIZE_BUILD CMake toggle blanks out raylib's default
+# SUPPORT_* flags. Avoid until that interaction is fixed.
 noscreenshot = []
-nogif = []
 
 # config.h's SUPPORT_CUSTOM_FRAME_CONTROL
 custom_frame_control = []
