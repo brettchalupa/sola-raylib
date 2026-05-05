@@ -44,6 +44,13 @@ example name:
 example-sw name="hello_raylib":
     cd examples && cargo run --features "sdl,software_render" --bin {{ name }}
 
+# Run an example with the `noscreenshot` feature so raylib's built-in F12
+# screenshot keybind is compiled out. Use to confirm rendering still works
+# under the cflag override path that fixed issue #40.
+# Defaults to hello_raylib; override with e.g. `just example-noscreenshot logo`.
+example-noscreenshot name="hello_raylib":
+    cd examples && cargo run --features noscreenshot --bin {{ name }}
+
 # Initializes git submodules
 setup:
     git submodule update --init
@@ -69,9 +76,26 @@ examples:
     just example texture
     just example yaw_pitch_roll
     just example drop
+    just example-noscreenshot
     just examples-sw
+    just features-build
 
 # Smoke-test the CPU software renderer backend (raylib 6.0 `rlsw`) over SDL.
 # Requires SDL2 dev headers. See `example-sw` comment above for details.
 examples-sw:
     just example-sw hello_raylib
+
+# Build sola-raylib against a handful of Cargo feature combos to catch
+# build-time regressions (CMake knobs renamed upstream, cfg-gated code
+# rotting, conflicting feature interactions). Build-only, no windows.
+# Each unique feature signature triggers a full raylib C rebuild, so this
+# is slow; run it before tagging a release. Skips features that need extra
+# system packages (`sdl`, `software_render`, `wayland`); those are covered
+# by `examples-sw` and manual checks.
+features-build:
+    cargo build -p sola-raylib
+    cargo build -p sola-raylib --features noscreenshot
+    cargo build -p sola-raylib --features custom_frame_control
+    cargo build -p sola-raylib --features with_serde
+    cargo build -p sola-raylib --features convert_mint
+    cargo build -p sola-raylib --features "noscreenshot,with_serde,convert_mint"
