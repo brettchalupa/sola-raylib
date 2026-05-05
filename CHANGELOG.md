@@ -22,6 +22,14 @@
   `cflag`, so `config.h`'s `#ifndef` guard short-circuits while every other
   default flows through normally. The F12 keybind is gone from the compiled
   `libraylib.a`, rendering and Wayland init are unaffected.
+- **`custom_frame_control` feature was a no-op since the 6.0 bump.** The build
+  used `builder.define("SUPPORT_CUSTOM_FRAME_CONTROL", "ON")`, which sets a
+  CMake variable that only reaches the C compiler when `CUSTOMIZE_BUILD=ON` is
+  also set (and that path is the same one that broke `noscreenshot`). Switched
+  to the same `cflag("-DSUPPORT_CUSTOM_FRAME_CONTROL=1")` approach so the
+  feature actually flips the `#if SUPPORT_CUSTOM_FRAME_CONTROL` guards in
+  `rcore.c` (`SwapScreenBuffer`, `PollInputEvents`, frame-time wait become
+  user-driven, as documented).
 
 [#40]: https://github.com/brettchalupa/sola-raylib/issues/40
 

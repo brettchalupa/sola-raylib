@@ -81,10 +81,20 @@ fn build_with_cmake(src_path: &str) {
         .define("BUILD_EXAMPLES", "OFF")
         .define("CMAKE_BUILD_TYPE", profile);
 
+    // Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` so the user drives
+    // `SwapScreenBuffer`, `PollInputEvents`, and frame timing manually.
+    //
+    // Same reasoning as `noscreenshot`: pre-define the macro on the C compile
+    // line via `cflag` rather than going through CMake's `CUSTOMIZE_BUILD`
+    // switch. `CUSTOMIZE_BUILD=ON` defines `EXTERNAL_CONFIG_FLAGS`, which
+    // makes raylib's `config.h` skip every other `SUPPORT_*` default and
+    // breaks rendering (issue #40). Pre-defining the single macro lets
+    // `config.h`'s `#ifndef` guard short-circuit while everything else flows
+    // through normally. Before this fix the feature compiled but had no
+    // effect, since `builder.define` only reaches the compiler under
+    // `CUSTOMIZE_BUILD`.
     #[cfg(feature = "custom_frame_control")]
-    {
-        builder.define("SUPPORT_CUSTOM_FRAME_CONTROL", "ON");
-    }
+    builder.cflag("-DSUPPORT_CUSTOM_FRAME_CONTROL=1");
 
     // Enable wayland cmake flag if feature is specified. raylib 6.0 renamed
     // the knob from USE_WAYLAND (gone) to GLFW_BUILD_WAYLAND.
