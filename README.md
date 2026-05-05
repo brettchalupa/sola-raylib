@@ -158,6 +158,53 @@ for a writeup that should still largely apply.
   `["opengl_21"]` or `["opengl_es_20]` to the `features` array in your
   Cargo.toml dependency definition.
 
+## Cargo features
+
+Every Cargo feature exposed by sola-raylib is listed here. The safe crate
+forwards each name through to `sola-raylib-sys`, so you can enable them on
+either crate and the effect is the same.
+
+**Build / linking**
+
+| Feature   | Default | Effect                                                                                                                                   |
+| --------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `bindgen` | yes     | Run `bindgen` at build time to produce FFI bindings. Disable to supply a hand-rolled `bindings.rs` (for platforms bindgen can't target). |
+| `nobuild` | no      | Skip compiling and linking raylib entirely. For docs.rs and headless setups; you are then responsible for linking raylib yourself.       |
+
+**Platform & rendering backend**
+
+| Feature             | Default | Effect                                                                                                                                                                                                                                                |
+| ------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wayland`           | no      | Build raylib's GLFW with native Wayland support on Linux. Requires the system `glfw-devel` (CMake config files), not just the runtime; see "Building for Wayland on Linux" below. Without this feature, GLFW uses X11/XWayland.                       |
+| `sdl`               | no      | Use the SDL platform backend instead of GLFW. Build script auto-picks SDL3 if present, else SDL2, via `pkg-config`. Install with `sudo dnf install SDL2-devel` (Fedora), `sudo apt install libsdl2-dev` (Debian/Ubuntu), `brew install sdl2` (macOS). |
+| `opengl_33`         | no      | Force OpenGL 3.3 backend.                                                                                                                                                                                                                             |
+| `opengl_21`         | no      | Force OpenGL 2.1 backend.                                                                                                                                                                                                                             |
+| `opengl_es_20`      | no      | Force OpenGL ES 2.0 backend.                                                                                                                                                                                                                          |
+| `opengl_es_30`      | no      | Force OpenGL ES 3.0 backend.                                                                                                                                                                                                                          |
+| `software_render`   | no      | Experimental; see "Experimental raylib 6.0 platform flags".                                                                                                                                                                                           |
+| `platform_memory`   | no      | Experimental; see "Experimental raylib 6.0 platform flags".                                                                                                                                                                                           |
+| `platform_web_rgfw` | no      | Experimental; see "Experimental raylib 6.0 platform flags".                                                                                                                                                                                           |
+
+**Behavior toggles**
+
+| Feature                | Default | Effect                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `custom_frame_control` | no      | Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` so you drive frame timing yourself (call `SwapScreenBuffer`, `PollInputEvents` manually).                                                                                                                                                                                                                                             |
+| `noscreenshot`         | no      | Disable raylib's built-in F12-screenshot keybind. **Currently broken on Linux on raylib 6.x** ([issue #40](https://github.com/brettchalupa/sola-raylib/issues/40)): flipping the underlying `CUSTOMIZE_BUILD` CMake switch makes raylib drop its default `SUPPORT_*` macros, and the window then fails to render or never maps under Wayland. Avoid until that interaction is fixed. |
+
+**Interop**
+
+| Feature        | Default | Effect                                                                                    |
+| -------------- | ------- | ----------------------------------------------------------------------------------------- |
+| `with_serde`   | no      | Derive `serde::Serialize` / `Deserialize` on the public types via `serde` + `serde_json`. |
+| `convert_mint` | no      | Implement conversions to/from [`mint`](https://docs.rs/mint) math types.                  |
+
+> **Removed in 6.1:** the `nogif` feature is gone. Raylib 6.0 dropped its
+> built-in GIF recorder upstream, so `nogif` had no effect, just the harmful
+> side-effect of triggering the same `CUSTOMIZE_BUILD` regression as
+> `noscreenshot`. If you previously listed it in your Cargo.toml, just remove
+> it.
+
 ## Experimental raylib 6.0 platform flags
 
 sola-raylib 6.0 exposes three feature flags for raylib 6.0's new backends. **All

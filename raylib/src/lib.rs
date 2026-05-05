@@ -54,6 +54,44 @@ Permission is granted to anyone to use this software for any purpose, including 
 //!     }
 //! }
 //! ```
+//!
+//! ## Cargo features
+//!
+//! `sola-raylib` exposes Cargo features that toggle build-time options on the
+//! underlying raylib C library. The full reference, with platform notes and
+//! known-broken flags, lives in the [project README]; the quick summary:
+//!
+//! **Build / linking**
+//! - `bindgen` *(default)*: generate FFI bindings at build time. Disable to
+//!   supply a hand-rolled `bindings.rs` (for platforms bindgen can't target).
+//! - `nobuild`: skip building and linking raylib entirely. You then link it
+//!   yourself (used for docs.rs and headless setups).
+//!
+//! **Platform and rendering backend**
+//! - `wayland`: build raylib's GLFW with native Wayland support on Linux.
+//!   Requires the system `glfw-devel` (cmake config files), not just the
+//!   runtime.
+//! - `sdl`: use the SDL platform backend. The build script auto-picks SDL3 if
+//!   present, otherwise SDL2, via `pkg-config`.
+//! - `opengl_33` / `opengl_21` / `opengl_es_20` / `opengl_es_30`: force a
+//!   specific GL backend.
+//! - `software_render`, `platform_memory`, `platform_web_rgfw`: experimental
+//!   raylib 6.0 backends. See the README for caveats.
+//!
+//! **Behavior toggles**
+//! - `custom_frame_control`: enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL`,
+//!   so you drive frame timing yourself.
+//! - `noscreenshot`: disable raylib's built-in F12 screenshot keybind.
+//!   **Currently broken on Linux on raylib 6.x** ([issue #40]); avoid until
+//!   the underlying `CUSTOMIZE_BUILD` interaction is fixed.
+//!
+//! **Interop**
+//! - `with_serde`: derive `serde::Serialize` / `Deserialize` on public types.
+//! - `convert_mint`: conversions to/from the [`mint`](https://docs.rs/mint)
+//!   math types.
+//!
+//! [project README]: https://github.com/brettchalupa/sola-raylib#cargo-features
+//! [issue #40]: https://github.com/brettchalupa/sola-raylib/issues/40
 
 #![allow(dead_code)]
 pub mod consts;

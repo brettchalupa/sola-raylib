@@ -2,6 +2,20 @@
 
 ## 6.1.0 - UNRELEASED
 
+### Removed
+
+- **`nogif` Cargo feature.** raylib 6.0 dropped its built-in GIF recorder
+  upstream (the rcore module no longer references `SUPPORT_GIF_RECORDING`), so
+  the feature had no functional effect since the 6.0 bump. Drop the feature from
+  your `Cargo.toml`; nothing replaces it. [Raylib C example for
+  recording.](https://www.raylib.com/examples/core/loader.html?name=core_screen_recording)
+
+### Documentation
+
+- New canonical "Cargo features" section in the top-level README listing every
+  feature, its default state, and platform notes. The `sola-raylib-sys`
+  README's table now points here.
+
 ### Added
 
 - `RaylibBuilder` now exposes every raylib 6.0 `ConfigFlags` value as a
