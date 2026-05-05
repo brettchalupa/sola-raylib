@@ -116,3 +116,116 @@ jobs:
           path: |
             examples/target/wasm32-unknown-emscripten/release/hello_raylib.js
             examples/target/wasm32-unknown-emscripten/release/hello_raylib.wasm
+
+  features-build:
+    # Build the safe crate against a handful of Cargo feature combos to catch
+    # build-time regressions (CMake knobs renamed upstream, cfg-gated code
+    # rotting, conflicting feature interactions). Linux-only because the
+    # failure modes these flags hit are build-time, not OS-specific; the main
+    # OS matrix already covers default-features compilation per platform.
+    # `wayland`, `sdl`, and `software_render` need extra system packages, so
+    # they live in dedicated jobs (see `wayland-build` below).
+    name: features-build (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: features-build-ubuntu
+
+      - name: Install Linux system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libasound2-dev \
+            libudev-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libgl1-mesa-dev
+
+      - name: Build (default features)
+        run: cargo build -p sola-raylib
+
+      - name: Build --features noscreenshot
+        run: cargo build -p sola-raylib --features noscreenshot
+
+      - name: Build --features custom_frame_control
+        run: cargo build -p sola-raylib --features custom_frame_control
+
+      - name: Build --features with_serde
+        run: cargo build -p sola-raylib --features with_serde
+
+      - name: Build --features convert_mint
+        run: cargo build -p sola-raylib --features convert_mint
+
+      - name: Build --features "noscreenshot,with_serde,convert_mint"
+        run: cargo build -p sola-raylib --features "noscreenshot,with_serde,convert_mint"
+
+  wayland-build:
+    # Verify the `wayland` feature still compiles. It can't fully run on a
+    # headless CI runner (no Wayland compositor), but a clean build catches
+    # the failure modes that have actually broken this path historically:
+    # upstream renaming the CMake knob (USE_WAYLAND -> GLFW_BUILD_WAYLAND in
+    # raylib 6.0), missing system deps in the build script, and stale
+    # `glfw-devel` version requirements.
+    name: wayland-build (ubuntu-24.04)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: wayland-build-ubuntu-24
+
+      - name: Install Wayland system deps
+        # raylib 6.0's `find_package(glfw3 3.4)` needs glfw 3.4+, but Ubuntu
+        # 24.04 still packages 3.3.10. We build glfw 3.4 from source below;
+        # these are the headers the build needs (Wayland client + protocols
+        # + xkbcommon for keyboard) plus the audio/input libs.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwayland-dev \
+            wayland-protocols \
+            libxkbcommon-dev \
+            libgl1-mesa-dev \
+            libasound2-dev \
+            libudev-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libxinerama-dev
+
+      - name: Build glfw 3.4 from source
+        # Ubuntu 24.04 ships libglfw3-dev 3.3.10; raylib 6.0 demands >= 3.4.
+        # Compile and install GLFW 3.4 with Wayland support so
+        # `find_package(glfw3 3.4)` is satisfied during the cargo build.
+        run: |
+          git clone --depth 1 --branch 3.4 https://github.com/glfw/glfw.git /tmp/glfw
+          cmake -S /tmp/glfw -B /tmp/glfw/build \
+            -DBUILD_SHARED_LIBS=ON \
+            -DGLFW_BUILD_WAYLAND=ON \
+            -DGLFW_BUILD_X11=ON \
+            -DGLFW_BUILD_DOCS=OFF \
+            -DGLFW_BUILD_EXAMPLES=OFF \
+            -DGLFW_BUILD_TESTS=OFF
+          cmake --build /tmp/glfw/build -j
+          sudo cmake --install /tmp/glfw/build
+          sudo ldconfig
+
+      - name: Build --features wayland
+        run: cargo build -p sola-raylib --features wayland
