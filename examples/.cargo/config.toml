@@ -4,6 +4,8 @@
 # `cargo:rustc-link-arg` from rlib build scripts, so a sys crate can't
 # inject linker flags into a downstream binary. Link flags belong in
 # the consumer's `.cargo/config.toml`. See `book/src/web.md`.
+#
+# Raylib C reference: https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)
 
 [target.wasm32-unknown-emscripten]
 rustflags = [
