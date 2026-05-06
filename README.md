@@ -129,6 +129,29 @@ fn main() {
 }
 ```
 
+## Building for the web (wasm)
+
+sola-raylib targets `wasm32-unknown-emscripten` so games can run in the browser.
+The link flags raylib needs (`-sUSE_GLFW=3`, `-sASYNCIFY=1`,
+`-sFORCE_FILESYSTEM=1`, `-sSUPPORT_LONGJMP=wasm`,
+`-sEXPORTED_RUNTIME_METHODS=...`, `-sALLOW_MEMORY_GROWTH=1`) live in your
+project's `.cargo/config.toml`: cargo silently drops `cargo:rustc-link-arg` from
+rlib build scripts, so a sys crate can't inject them. raylib's own C compiles
+cleanly under rustc 1.93+'s default link ABI; no sys-side cflag tweaks are
+needed.
+
+There is also [`game_loop::run`], a cross-platform game-loop helper that
+registers a per-frame closure with `emscripten_set_main_loop_arg` on the web and
+drives a normal while-loop natively. Same source for both targets.
+
+The full recipe (asset bundling, save data, audio, deploy) lives in
+[book/src/web.md](book/src/web.md). Reference example:
+[`examples/hello_raylib.rs`](examples/hello_raylib.rs); copyable config:
+[`examples/.cargo/config.toml`](examples/.cargo/config.toml). `just build-web`
+then `just serve-web` opens it at `http://localhost:3535`.
+
+[`game_loop::run`]: https://docs.rs/sola-raylib/latest/sola_raylib/core/game_loop/fn.run.html
+
 ## Cross-compiling using `cross`
 
 Cross compiling with sola-raylib can be made easier with cross. See the

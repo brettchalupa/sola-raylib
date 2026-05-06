@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>sola-raylib example</title>
+        <style>
+            html,
+            body {
+                margin: 0;
+                height: 100%;
+                background: #000;
+                overflow: hidden;
+            }
+            body {
+                display: grid;
+                place-items: center;
+            }
+            canvas {
+                display: block;
+                background: #000;
+                /* Scale to fill the viewport while preserving the backing
+                   store size raylib chose. `image-rendering: pixelated`
+                   keeps upscaled pixel art crisp. */
+                max-width: 100vw;
+                max-height: 100vh;
+                image-rendering: pixelated;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+        <script>
+            // Browsers suspend AudioContext until a user gesture. Resume on
+            // first click so raylib's audio comes through.
+            window.addEventListener(
+                "click",
+                function () {
+                    var Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (!Ctx) return;
+                    [Ctx, Module && Module.audioContext].forEach(function (ctx) {
+                        if (ctx && ctx.state === "suspended") {
+                            ctx.resume();
+                        }
+                    });
+                },
+                { once: true }
+            );
+
+            var Module = {
+                canvas: document.getElementById("canvas"),
+                print: function (text) { console.log(text); },
+                printErr: function (text) { console.error(text); },
+            };
+        </script>
+        <!-- __SOLA_BIN__ is sed-substituted by the build-web justfile recipe. -->
+        <script src="__SOLA_BIN__.js"></script>
+    </body>
+</html>

@@ -111,6 +111,27 @@ Compile-time and unit tests run via `just test` (which shells out to
 `just examples` runs a curated set of 18+ binaries so you can eyeball animation,
 audio, input, shaders, fonts, and gui against a real raylib context.
 
+### Smoke-testing the wasm build
+
+`just setup-web` adds the `wasm32-unknown-emscripten` rustup target and installs
+`simple-http-server`. `./scripts/setup_emscripten.sh` clones emsdk into
+`~/.local/share/emsdk` and pins it to 5.0.6 (5.0.7's wasm-opt breaks our build;
+see `book/src/web.md`). `just build-web` and `just serve-web` auto-source
+emsdk_env.sh from there.
+
+```sh
+./scripts/setup_emscripten.sh   # one-time
+just setup-web                  # one-time
+just build-web hello_raylib     # builds + stages examples/target/web/
+just serve-web                  # http://localhost:3535
+```
+
+`hello_raylib` uses `game_loop::run` and is the smoke test we expect to keep
+working. The other examples mostly load assets or parse CLI flags via
+`structopt`, neither of which work out-of-the-box on wasm without extra
+`--preload-file` rustflags or shimming `args()`. See
+[book/src/web.md](book/src/web.md) for the consumer build story.
+
 ## Bumping raylib
 
 When a new raylib release lands upstream, walk through this checklist on a fresh

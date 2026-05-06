@@ -1,0 +1,25 @@
+# Per-target rustflags for cross-compiling the examples to wasm.
+#
+# Why here and not in `raylib-sys/build.rs`: cargo silently drops
+# `cargo:rustc-link-arg` from rlib build scripts, so a sys crate can't
+# inject linker flags into a downstream binary. Link flags belong in
+# the consumer's `.cargo/config.toml`. See `book/src/web.md`.
+
+[target.wasm32-unknown-emscripten]
+rustflags = [
+    "-C", "link-arg=-sUSE_GLFW=3",
+    "-C", "link-arg=-sALLOW_MEMORY_GROWTH=1",
+    "-C", "link-arg=-sASYNCIFY=1",
+    "-C", "link-arg=-sFORCE_FILESYSTEM=1",
+    "-C", "link-arg=-sSUPPORT_LONGJMP=wasm",
+    "-C", "link-arg=-sEXPORTED_RUNTIME_METHODS=['ccall','wasmMemory','HEAPU8','HEAP32','HEAPF32']",
+]
+
+# If your project has its own C / C++ deps via cc-rs (e.g. mlua with
+# `vendored`), add an `[env]` block to match rustc 1.93+'s wasm-EH ABI:
+#
+# [env]
+# CFLAGS_wasm32_unknown_emscripten = "-fwasm-exceptions -sSUPPORT_LONGJMP=wasm"
+# CXXFLAGS_wasm32_unknown_emscripten = "-fwasm-exceptions -sSUPPORT_LONGJMP=wasm"
+#
+# raylib's own C source compiles fine without these.

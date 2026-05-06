@@ -55,6 +55,19 @@ Permission is granted to anyone to use this software for any purpose, including 
 //! }
 //! ```
 //!
+//! ## Building for the web
+//!
+//! sola-raylib supports `wasm32-unknown-emscripten`. The link flags
+//! raylib needs (`-sUSE_GLFW=3`, `-sASYNCIFY=1`, etc.) live in your
+//! project's `.cargo/config.toml`, since cargo can't propagate linker
+//! flags out of a sys-crate build script.
+//! [`core::game_loop::run`] is the cross-platform loop helper. The
+//! [project web guide] has the config recipe, asset bundling, save
+//! data, audio, and deploy notes.
+//!
+//! [`core::game_loop::run`]: core::game_loop::run
+//! [project web guide]: https://github.com/brettchalupa/sola-raylib/blob/main/book/src/web.md
+//!
 //! ## Cargo features
 //!
 //! `sola-raylib` exposes Cargo features that toggle build-time options on the

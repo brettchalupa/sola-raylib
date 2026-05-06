@@ -16,3 +16,6 @@ examples/imgui.ini
 
 # editors-specific configs
 .zed/
+
+# mdbook rendered output. Source markdown lives in book/src/.
+book/book/

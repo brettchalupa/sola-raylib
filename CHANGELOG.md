@@ -38,9 +38,34 @@
 - New canonical "Cargo features" section in the top-level README listing every
   feature, its default state, and platform notes. The `sola-raylib-sys` README's
   table now points here.
+- New [mdBook](https://rust-lang.github.io/mdBook/) under `book/` for long-form
+  recipes. First chapter [`book/src/web.md`](book/src/web.md) walks through wasm
+  builds end to end: toolchain, the canonical `.cargo/config.toml`, the
+  `game_loop::run` vs Asyncify tradeoff, asset bundling, save data, audio,
+  deploy, pitfalls. Top-level README and the `lib.rs` crate docs link to it.
+  Closes [#34].
+
+[#34]: https://github.com/brettchalupa/sola-raylib/issues/34
 
 ### Added
 
+- **Cross-platform game-loop helper `sola_raylib::core::game_loop::run`.**
+  Native: drives the standard `while !rl.window_should_close()` loop. On
+  `wasm32-unknown-emscripten`: registers the per-frame closure with
+  `emscripten_set_main_loop_arg` so you don't need `-sASYNCIFY=1` just for the
+  loop. Same source for both. `examples/hello_raylib.rs` demonstrates it.
+- **Wasm build recipe is now in-tree.** Cargo silently drops
+  `cargo:rustc-link-arg` from rlib build scripts, so `raylib-sys` cannot inject
+  linker flags into a downstream binary's link step. The flags raylib needs
+  (`-sUSE_GLFW=3`, `-sASYNCIFY=1`, `-sFORCE_FILESYSTEM=1`,
+  `-sSUPPORT_LONGJMP=wasm`, `-sEXPORTED_RUNTIME_METHODS=...`,
+  `-sALLOW_MEMORY_GROWTH=1`) live in the consumer's `.cargo/config.toml`. See
+  [`book/src/web.md`](book/src/web.md) and the copyable
+  [`examples/.cargo/config.toml`](examples/.cargo/config.toml). raylib's own C
+  compiles cleanly under rustc 1.93+'s default link ABI; if you have your own
+  C/C++ deps via cc-rs, add
+  `CFLAGS_wasm32_unknown_emscripten = "-fwasm-exceptions -sSUPPORT_LONGJMP=wasm"`
+  to your `[env]` block.
 - `RaylibBuilder` now exposes every raylib 6.0 `ConfigFlags` value as a
   dedicated builder method, so callers don't need to drop to `SetConfigFlags`
   for options the builder didn't cover. New methods:

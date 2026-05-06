@@ -51,9 +51,46 @@ example-sw name="hello_raylib":
 example-noscreenshot name="hello_raylib":
     cd examples && cargo run --features noscreenshot --bin {{ name }}
 
+# Wasm toolchain: rustup target + simple-http-server. Emscripten itself
+# comes from `scripts/setup_emscripten.sh`.
+setup-web:
+    rustup target add wasm32-unknown-emscripten
+    cargo install simple-http-server
+
+# Build an example for the browser. Default: hello_raylib. Stages
+# index.html (templated from examples/shell.html), the .js, and the
+# .wasm into examples/target/web/ for `just serve-web`. Auto-sources
+# emsdk_env.sh from ~/.local/share/emsdk if emcc is not on PATH.
+build-web name="hello_raylib":
+    bash -c 'set -e; \
+        command -v emcc >/dev/null 2>&1 \
+            || source ~/.local/share/emsdk/emsdk_env.sh >/dev/null 2>&1 \
+            || { echo "[build-web] emcc not on PATH and no emsdk at ~/.local/share/emsdk/. Run scripts/setup_emscripten.sh first." >&2; exit 1; }; \
+        cd examples && cargo build --release --bin {{ name }} --target wasm32-unknown-emscripten'
+    mkdir -p examples/target/web
+    rm -f examples/target/web/*
+    sed 's/__SOLA_BIN__/{{ name }}/g' examples/shell.html > examples/target/web/index.html
+    cp examples/target/wasm32-unknown-emscripten/release/{{ name }}.wasm examples/target/web/
+    cp examples/target/wasm32-unknown-emscripten/release/{{ name }}.js examples/target/web/
+    @echo "[build-web] examples/target/web/ ready. Run 'just serve-web' to open."
+
+# Serve examples/target/web/ on http://localhost:3535. Run after `just build-web NAME`.
+serve-web:
+    simple-http-server --index --nocache -p ${PORT:=3535} examples/target/web
+
+# Serve the mdbook with hot reload (http://localhost:3030).
+serve-book:
+    cd book && mdbook serve --port ${PORT:=3030}
+
+# Render the mdbook to book/book/ (git-ignored).
+build-book:
+    cd book && mdbook build
+
 # Initializes git submodules
 setup:
     git submodule update --init
+    cargo install mdbook
+    @just setup-web
 
 # Run a handful of examples to quickly check things are working
 examples:

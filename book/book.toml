@@ -1,0 +1,16 @@
+[book]
+title = "sola-raylib"
+authors = ["Brett Chalupa"]
+description = "Recipes and guided tutorials for sola-raylib, a maintained Raylib Rust binding crate."
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "dark"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/brettchalupa/sola-raylib"
+edit-url-template = "https://github.com/brettchalupa/sola-raylib/edit/main/book/{path}"
+
+[output.html.fold]
+enable = true
+level = 1

@@ -429,7 +429,12 @@ fn link(platform: Platform, platform_os: PlatformOS) {
         _ => (),
     }
     if platform == Platform::Web {
-        println!("cargo:rustc-link-lib=glfw");
+        // Nothing to do here. The link flags raylib needs (USE_GLFW,
+        // ASYNCIFY, SUPPORT_LONGJMP, FORCE_FILESYSTEM,
+        // EXPORTED_RUNTIME_METHODS, ALLOW_MEMORY_GROWTH) have to live in
+        // the consumer's `.cargo/config.toml`: cargo silently drops
+        // `cargo:rustc-link-arg` from rlib build scripts. See
+        // `book/src/web.md` and `examples/.cargo/config.toml`.
     } else if platform == Platform::RPI {
         println!("cargo:rustc-link-search=/opt/vc/lib");
         println!("cargo:rustc-link-lib=bcm_host");
@@ -446,21 +451,6 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=./binding/binding.h");
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
-
-    if target.contains("wasm32-unknown-emscripten") {
-        if let Err(e) = env::var("EMCC_CFLAGS") {
-            if e == std::env::VarError::NotPresent {
-                panic!("\nYou must have to set EMCC_CFLAGS yourself to compile for WASM.\n{}{}\"\n",{
-                    #[cfg(target_family = "windows")]
-                    {"set EMCC_CFLAGS="}
-                    #[cfg(not(target_family = "windows"))]
-                    {"export EMCC_CFLAGS="}
-                },"\"-O3 -sUSE_GLFW=3 -sASSERTIONS=1 -sWASM=1 -sASYNCIFY -sGL_ENABLE_GET_PROC_ADDRESS=1\"");
-            } else {
-                panic!("\nError regarding EMCC_CFLAGS: {:?}\n", e);
-            }
-        }
-    }
 
     let (platform, platform_os) = platform_from_target(&target);
 

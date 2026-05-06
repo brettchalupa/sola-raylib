@@ -12,6 +12,7 @@ pub mod drawing;
 pub mod error;
 pub mod file;
 
+pub mod game_loop;
 pub mod input;
 pub mod logging;
 pub mod math;
