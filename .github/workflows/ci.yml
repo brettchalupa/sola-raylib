@@ -76,6 +76,15 @@ jobs:
         with:
           targets: wasm32-unknown-emscripten
 
+      - name: Add wasm32-unknown-emscripten target
+        # Belt and suspenders: dtolnay/rust-toolchain's `targets:` is
+        # supposed to install the libstd component, but in some runs the
+        # subsequent `cargo build --target wasm32-unknown-emscripten`
+        # still errors with "can't find crate for `core`". An explicit
+        # `rustup target add` is idempotent and guarantees the target
+        # stdlib is in place before cargo runs.
+        run: rustup target add wasm32-unknown-emscripten
+
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: wasm-emscripten
