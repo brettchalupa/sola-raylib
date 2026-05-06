@@ -59,6 +59,8 @@ fn build_with_cmake(src_path: &str) {
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
 
     let (platform, platform_os) = platform_from_target(&target);
+    configure_windows_cmake_generator();
+    configure_windows_emscripten_wrappers(&target);
 
     let mut conf = cmake::Config::new(src_path);
     let mut builder;
@@ -80,6 +82,19 @@ fn build_with_cmake(src_path: &str) {
     builder
         .define("BUILD_EXAMPLES", "OFF")
         .define("CMAKE_BUILD_TYPE", profile);
+
+    // On Windows, cc-rs represents emsdk's batch-file compilers as
+    // `cmd /c emcc.bat`. The cmake crate appends those wrapper args to
+    // CMAKE_C_FLAGS, which makes clang see `/c` and `emcc.bat` as input
+    // files. Defining the flags here keeps raylib's CMake build on the
+    // emscripten toolchain without leaking Windows shell wrapper details.
+    if platform == Platform::Web && cfg!(windows) {
+        let cflags = emscripten_cmake_flags();
+        builder
+            .define("CMAKE_C_FLAGS", &cflags)
+            .define("CMAKE_CXX_FLAGS", &cflags)
+            .define("CMAKE_ASM_FLAGS", &cflags);
+    }
 
     // Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` so the user drives
     // `SwapScreenBuffer`, `PollInputEvents`, and frame timing manually.
@@ -350,6 +365,11 @@ fn gen_bindings() {
         builder = builder
             .clang_arg("-fvisibility=default")
             .clang_arg("--target=wasm32-emscripten");
+        if let Some(sysroot) = emscripten_sysroot() {
+            builder = builder
+                .clang_arg(format!("--sysroot={}", sysroot.display()))
+                .clang_arg(format!("-I{}", sysroot.join("include").display()));
+        }
     }
 
     // Build
@@ -388,6 +408,109 @@ fn gen_rgui() {
             .extra_warnings(false)
             .compile("rgui");
     }
+}
+
+fn configure_windows_emscripten_wrappers(target: &str) {
+    if !target.contains("wasm32-unknown-emscripten") || !cfg!(windows) {
+        return;
+    }
+
+    let Some(root) = emscripten_root() else {
+        return;
+    };
+
+    set_env_if_missing("EMCMAKE", root.join("emcmake.bat"));
+    set_env_if_missing("EMMAKE", root.join("emmake.bat"));
+}
+
+fn configure_windows_cmake_generator() {
+    if !cfg!(windows) || env::var_os("CMAKE_GENERATOR").is_some() {
+        return;
+    }
+
+    if command_exists("ninja") {
+        env::set_var("CMAKE_GENERATOR", "Ninja");
+    }
+}
+
+fn command_exists(name: &str) -> bool {
+    env::var_os("PATH")
+        .and_then(|paths| {
+            env::split_paths(&paths)
+                .map(|path| path.join(name))
+                .find(|path| {
+                    path.is_file()
+                        || path.with_extension("exe").is_file()
+                        || path.with_extension("bat").is_file()
+                        || path.with_extension("cmd").is_file()
+                })
+        })
+        .is_some()
+}
+
+fn set_env_if_missing(name: &str, value: PathBuf) {
+    if env::var_os(name).is_some() || !value.exists() {
+        return;
+    }
+    env::set_var(name, value);
+}
+
+fn emscripten_cmake_flags() -> String {
+    "-fwasm-exceptions -sSUPPORT_LONGJMP=wasm".to_string()
+}
+
+fn emscripten_sysroot() -> Option<PathBuf> {
+    emscripten_root()
+        .map(|root| root.join("cache").join("sysroot"))
+        .filter(|path| path.join("include").exists())
+}
+
+fn emscripten_root() -> Option<PathBuf> {
+    if let Some(path) = env::var_os("EMSCRIPTEN") {
+        let path = PathBuf::from(path);
+        if path.exists() {
+            return Some(path);
+        }
+    }
+
+    if let Some(path) = env::var_os("EMSDK") {
+        let path = PathBuf::from(path).join("upstream").join("emscripten");
+        if path.exists() {
+            return Some(path);
+        }
+    }
+
+    #[cfg(windows)]
+    {
+        if let Some(profile) = env::var_os("USERPROFILE") {
+            let path = PathBuf::from(profile)
+                .join(".local")
+                .join("share")
+                .join("emsdk")
+                .join("upstream")
+                .join("emscripten");
+            if path.exists() {
+                return Some(path);
+            }
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        if let Some(home) = env::var_os("HOME") {
+            let path = PathBuf::from(home)
+                .join(".local")
+                .join("share")
+                .join("emsdk")
+                .join("upstream")
+                .join("emscripten");
+            if path.exists() {
+                return Some(path);
+            }
+        }
+    }
+
+    None
 }
 
 #[cfg(feature = "nobuild")]
@@ -450,6 +573,7 @@ fn link(platform: Platform, platform_os: PlatformOS) {
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=./binding/binding.h");
+    emit_env_change_triggers();
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
 
     let (platform, platform_os) = platform_from_target(&target);
@@ -471,6 +595,7 @@ fn main() {
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=./binding/binding.h");
+    emit_env_change_triggers();
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
 
     if target.contains("wasm32-unknown-emscripten") {
@@ -492,6 +617,24 @@ fn main() {
     gen_bindings();
 
     gen_rgui();
+}
+
+fn emit_env_change_triggers() {
+    for name in [
+        "ANDROID_NDK_HOME",
+        "CMAKE_GENERATOR",
+        "EMCC_CFLAGS",
+        "EMCMAKE",
+        "EMMAKE",
+        "EMSDK",
+        "EMSCRIPTEN",
+        "HOME",
+        "OS",
+        "PATH",
+        "USERPROFILE",
+    ] {
+        println!("cargo:rerun-if-env-changed={name}");
+    }
 }
 
 #[must_use]
