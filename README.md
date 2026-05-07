@@ -20,13 +20,14 @@ commit
 [github.com/deltaphc/raylib-rs](https://github.com/deltaphc/raylib-rs).
 
 Check out the [examples](./examples) directory to find usage examples. See
-[CHANGELOG.md](CHANGELOG.md) for the 6.0.0 changes, including breaking signature
+[CHANGELOG.md](CHANGELOG.md) for the 6.x changes, including breaking signature
 changes and the new APIs wrapped from raylib 6.0.
 
-sola-raylib development happens on `main`. Be sure to view the tag version of
-the repository if you're wanting to find details on a specific version.
+sola-raylib development happens on `main`. This README.md covers what's in
+`main`. Be sure to view the tag version of the repository if you want to find
+details on a specific version.
 
-The latest released version on crates.io is 6.0.0 (binds raylib 6.0).
+The latest released version on crates.io is 6.1.0 (binds raylib 6.0).
 
 Pull from GitHub if you want the latest `main`:
 
@@ -61,6 +62,17 @@ changes to be more idiomatic for Rust.
   added to create a `Font` from loaded `CharInfo` data.
 - `SubText` and `FormatText` are omitted, and are instead covered by Rust's
   string slicing and Rust's `format!` macro, respectively.
+
+### Why use Rust with Raylib instead of C?
+
+There are many benefits to coding games with Raylib using Rust instead of C:
+
+- Memory safety guarantees from the Rust compiler in the code you write.
+- Best-in-class developer experience with `cargo` and Rust's language server
+  protocol (LSP).
+- Lots of great Rust packages for game development and systems programming on
+  [crates.io](https://crates.io).
+- Easier cross-platform compiling.
 
 ## Installation
 
