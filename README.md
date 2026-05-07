@@ -228,6 +228,17 @@ either crate and the effect is the same.
 > `noscreenshot`. If you previously listed it in your Cargo.toml, just remove
 > it.
 
+## Platform-Specific Notes
+
+### Windows
+
+On Windows, your compiled binary will show a log window by default. If you want
+to hide this, add the following to your `main.rs`:
+
+```rust
+#![windows_subsystem = "windows"]
+```
+
 ## Experimental raylib 6.0 platform flags
 
 sola-raylib 6.0 exposes three feature flags for raylib 6.0's new backends. **All
@@ -319,7 +330,7 @@ incomplete.**
   on the various Vector and Matrix types. Operator overloading is used for more
   intuitive design.
 
-## Contribution & Support
+## Contributing & Support
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for more
 details.
