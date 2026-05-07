@@ -1,6 +1,8 @@
 # sola-raylib Changelog
 
-## 6.1.0 - UNRELEASED
+## UNRELEASED
+
+## 6.1.0 - May 7, 2026
 
 ### Removed
 
@@ -77,6 +79,7 @@
     `always_run()`, `mouse_passthrough()` covering the rest of the
     `FLAG_WINDOW_*` family.
   - `interlaced()` (`FLAG_INTERLACED_HINT`) for 3D TV setups.
+- Improve Emscripten support for building for WASM from Windows.
 - Doc note on `fullscreen()` recommending `borderless_windowed()` on modern
   platforms.
 
