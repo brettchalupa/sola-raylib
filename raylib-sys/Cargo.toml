@@ -1,14 +1,14 @@
 [package]
 name = "sola-raylib-sys"
-version = "6.1.0"
-authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
-license = "Zlib"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
 description = "Raw FFI bindings for raylib. sola-raylib-sys N.x tracks raylib N.x (e.g. 5.x → raylib 5.5; 6.x → raylib 6.0)."
 documentation = "https://docs.rs/sola-raylib-sys"
-repository = "https://github.com/brettchalupa/sola-raylib"
 keywords = ["bindings", "raylib", "gamedev", "ffi"]
 categories = ["external-ffi-bindings"]
-edition = "2018"
 exclude = ["raylib/examples/*", "raylib/projects/*", "raylib/templates/*"]
 
 [build-dependencies]

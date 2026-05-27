@@ -2,6 +2,16 @@
 members = ["raylib", "raylib-sys"]
 exclude = ["examples"]
 
+[workspace.package]
+version = "6.1.0"
+authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
+license = "Zlib"
+repository = "https://github.com/brettchalupa/sola-raylib"
+edition = "2018"
+
+[workspace.dependencies]
+raylib-sys = { package = "sola-raylib-sys", version = "6.1.0", path = "raylib-sys" }
+
 [workspace.lints.rust]
 # Workspace lints apply only to our own crates, never to dependencies.
 warnings = "deny"
