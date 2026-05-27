@@ -98,7 +98,7 @@ platform [here](https://github.com/raysan5/raylib/wiki)
 
 ```toml
 [dependencies]
-sola-raylib = "6.0"
+sola-raylib = "6"
 ```
 
 Then in your code, use it as `sola_raylib`:
@@ -115,7 +115,7 @@ still imported as `raylib` in your source code:
 
 ```toml
 [dependencies]
-raylib = { package = "sola-raylib", version = "6.0" }
+raylib = { package = "sola-raylib", version = "6" }
 ```
 
 With that line, all your existing `raylib` code keeps working. The ./examples in
