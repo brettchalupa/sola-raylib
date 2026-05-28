@@ -2,6 +2,17 @@
 
 ## UNRELEASED
 
+### Added
+
+- **`RaylibHandle::request_quit`.** Programmatic quit for the
+  `sola_raylib::core::game_loop::run` helper (and any hand-rolled
+  `while !rl.window_should_close()` loop). Wire it up to a quit menu item,
+  gamepad button, "game over" transition, etc. `window_should_close` returns
+  true on the next check; on emscripten the registered main loop is cancelled on
+  the next frame. The default ESC / window-close-button paths still work exactly
+  as before. The existing `set_exit_key` API remains the way to change or
+  disable the default exit key.
+
 ## 6.1.0 - May 7, 2026
 
 ### Removed
