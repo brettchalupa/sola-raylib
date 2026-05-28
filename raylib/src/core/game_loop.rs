@@ -94,9 +94,7 @@ where
             // freed; emscripten calls this forever.
             let state = unsafe { &mut *(arg as *mut State<F>) };
             (state.callback)(&mut state.rl, &state.thread);
-            if crate::core::window::QUIT_REQUESTED
-                .load(std::sync::atomic::Ordering::Relaxed)
-            {
+            if crate::core::window::QUIT_REQUESTED.load(std::sync::atomic::Ordering::Relaxed) {
                 unsafe { emscripten_cancel_main_loop() };
             }
         }
