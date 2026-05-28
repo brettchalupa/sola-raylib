@@ -433,6 +433,35 @@ fn configure_windows_cmake_generator() {
     }
 }
 
+/// Inject the MSVC env vars into the build environment for Windows builds.
+fn configure_windows_msvc_env(target: &str) {
+    if !cfg!(windows) || target.contains("wasm") || !target.contains("msvc") {
+        return;
+    }
+
+    if env::var_os("INCLUDE").is_some() {
+        return;
+    }
+
+    let Some(tool) = cc::windows_registry::find_tool(target, "cl.exe") else {
+        println!("cargo:warning=could not locate the MSVC toolchain; set up vcvars manually if the build fails");
+        return;
+    };
+
+    for (key, value) in tool.env() {
+        if key.to_string_lossy().eq_ignore_ascii_case("path") {
+            let mut combined = value.clone();
+            if let Some(existing) = env::var_os("PATH") {
+                combined.push(";");
+                combined.push(existing);
+            }
+            env::set_var("PATH", combined);
+        } else {
+            env::set_var(key, value);
+        }
+    }
+}
+
 fn command_exists(name: &str) -> bool {
     env::var_os("PATH")
         .and_then(|paths| {
@@ -576,6 +605,8 @@ fn main() {
     emit_env_change_triggers();
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
 
+    configure_windows_msvc_env(&target);
+
     let (platform, platform_os) = platform_from_target(&target);
 
     let raylib_src = "./raylib";
@@ -597,6 +628,8 @@ fn main() {
     println!("cargo:rerun-if-changed=./binding/binding.h");
     emit_env_change_triggers();
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
+
+    configure_windows_msvc_env(&target);
 
     if target.contains("wasm32-unknown-emscripten") {
         if let Err(e) = env::var("EMCC_CFLAGS") {
