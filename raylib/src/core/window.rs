@@ -4,6 +4,14 @@ use crate::core::{RaylibHandle, RaylibThread};
 use crate::ffi;
 use std::ffi::{CStr, CString, IntoStringError, NulError};
 use std::os::raw::c_char;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+// Process-wide quit flag set by `RaylibHandle::request_quit` and observed by
+// `window_should_close`. raylib only supports one window per process
+// (`init_window` panics on a second `InitWindow`), so a single static is
+// sufficient. Reads/writes are Relaxed because the value is only consulted on
+// the raylib thread.
+pub(crate) static QUIT_REQUESTED: AtomicBool = AtomicBool::new(false);
 
 #[cfg(not(feature = "with_serde"))]
 #[cfg(feature = "serde")]
@@ -511,11 +519,30 @@ impl RaylibHandle {
 
 // Window handling functions
 impl RaylibHandle {
-    /// Checks if `KEY_ESCAPE` or Close icon was pressed.
+    /// Checks if `KEY_ESCAPE` or Close icon was pressed, or if
+    /// [`request_quit`](Self::request_quit) has been called.
     /// Do not call on web unless you are compiling with asyncify.
     #[inline]
     pub fn window_should_close(&self) -> bool {
-        unsafe { ffi::WindowShouldClose() }
+        QUIT_REQUESTED.load(Ordering::Relaxed) || unsafe { ffi::WindowShouldClose() }
+    }
+
+    /// Programmatically signal that the game loop should exit on its next
+    /// iteration, the same as pressing the exit key or clicking the window
+    /// close button.
+    ///
+    /// Use this to wire up a quit menu item, gamepad button, "game over"
+    /// transition, etc., without having to maintain your own boolean flag
+    /// alongside [`window_should_close`](Self::window_should_close). The
+    /// [`game_loop::run`](crate::core::game_loop::run) helper picks this up on
+    /// both native (the `while !window_should_close()` check) and emscripten
+    /// (the loop is cancelled on the next frame).
+    ///
+    /// The flag is process-wide and sticky once set, since raylib only
+    /// supports a single window per process.
+    #[inline]
+    pub fn request_quit(&mut self) {
+        QUIT_REQUESTED.store(true, Ordering::Relaxed);
     }
 
     /// Checks if window has been initialized successfully.

@@ -34,6 +34,18 @@
 //! The cost is a `'static` closure: no borrowed locals, so `move` your
 //! game state in. On emscripten `run` returns immediately while
 //! emscripten keeps calling the closure each frame.
+//!
+//! ## Quitting
+//!
+//! Native exits when raylib's
+//! [`window_should_close`](crate::core::RaylibHandle::window_should_close)
+//! returns true, which happens on the default exit key (`KEY_ESCAPE`) or the
+//! OS window close button. To trigger that yourself, e.g. from a quit menu
+//! item or gamepad button, call
+//! [`request_quit`](crate::core::RaylibHandle::request_quit) inside the
+//! closure. On emscripten the same call cancels the registered main loop.
+//! Change or disable the default exit key with
+//! [`set_exit_key`](crate::core::RaylibHandle::set_exit_key).
 
 use crate::core::{RaylibHandle, RaylibThread};
 
@@ -48,6 +60,7 @@ extern "C" {
         fps: i32,
         simulate_infinite_loop: i32,
     );
+    fn emscripten_cancel_main_loop();
 }
 
 /// Run `callback` per frame until the window closes (native) or while
@@ -81,6 +94,9 @@ where
             // freed; emscripten calls this forever.
             let state = unsafe { &mut *(arg as *mut State<F>) };
             (state.callback)(&mut state.rl, &state.thread);
+            if crate::core::window::QUIT_REQUESTED.load(std::sync::atomic::Ordering::Relaxed) {
+                unsafe { emscripten_cancel_main_loop() };
+            }
         }
 
         let state = Box::new(State {
