@@ -13,6 +13,20 @@
   as before. The existing `set_exit_key` API remains the way to change or
   disable the default exit key.
 
+### Fixed
+
+- **Windows MSVC builds now work from a plain shell** ([#56]). When
+  `configure_windows_cmake_generator` picked Ninja (auto-selected when `ninja`
+  is on `PATH`), cmake invoked `cl.exe` directly and failed to find
+  `<windows.h>` unless you'd launched cargo from a Developer Command Prompt or
+  run `vcvars*.bat` first. The build script now uses
+  `cc::windows_registry::find_tool` to locate the MSVC toolchain and injects its
+  `INCLUDE` / `LIB` / `PATH` into the build env. No-op if you're already in a
+  vcvars shell (`INCLUDE` is set) or targeting a non-msvc target. Thanks to
+  @lofcz.
+
+[#56]: https://github.com/brettchalupa/sola-raylib/pull/56
+
 ## 6.1.0 - May 7, 2026
 
 ### Removed
