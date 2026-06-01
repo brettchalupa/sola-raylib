@@ -84,8 +84,11 @@ Permission is granted to anyone to use this software for any purpose, including 
 //! - `wayland`: build raylib's GLFW with native Wayland support on Linux.
 //!   Requires the system `glfw-devel` (cmake config files), not just the
 //!   runtime.
-//! - `sdl`: use the SDL platform backend. The build script auto-picks SDL3 if
-//!   present, otherwise SDL2, via `pkg-config`.
+//! - `sdl`: use the SDL platform backend. raylib's CMake prefers SDL3 and
+//!   falls back to SDL2; the build script reads that resolved choice back
+//!   and links the matching library. You must make the SDL library findable
+//!   by CMake at build time and put it on the linker search path yourself
+//!   (e.g. via `RUSTFLAGS` or a `.cargo/config.toml`).
 //! - `opengl_33` / `opengl_21` / `opengl_es_20` / `opengl_es_30`: force a
 //!   specific GL backend.
 //! - `software_render`, `platform_memory`, `platform_web_rgfw`: experimental

@@ -190,19 +190,9 @@ fn build_with_cmake(src_path: &str) {
             }
             #[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
             {
-                // raylib's CMake prefers SDL3 via find_package() and falls
-                // back to SDL2 if SDL3 isn't present. Mirror that here so
-                // we link whichever one raylib actually compiled against.
-                let sdl3_present = std::process::Command::new("pkg-config")
-                    .args(["--exists", "sdl3"])
-                    .status()
-                    .map(|s| s.success())
-                    .unwrap_or(false);
-                if sdl3_present {
-                    println!("cargo:rustc-link-lib=SDL3");
-                } else {
-                    println!("cargo:rustc-link-lib=SDL2");
-                }
+                // We link SDL after the build by reading raylib's own
+                // resolved choice from the generated config file. See
+                // emit_sdl_link_lib().
                 conf.define("PLATFORM", "SDL")
             }
             #[cfg(not(any(feature = "sdl", feature = "platform_memory")))]
@@ -263,6 +253,10 @@ fn build_with_cmake(src_path: &str) {
 
     let dst = conf.build();
     let dst_lib = join_cmake_lib_directory(dst);
+    #[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
+    if platform == Platform::Desktop {
+        emit_sdl_link_lib(&dst_lib);
+    }
     // on windows copy the static library to the proper file name
     if platform_os == PlatformOS::Windows {
         if Path::new(&dst_lib.join("raylib.lib")).exists() {
@@ -299,6 +293,38 @@ fn build_with_cmake(src_path: &str) {
         println!("cargo:rustc-link-lib=OpenSLES");
         println!("cargo:rustc-link-lib=c");
         println!("cargo:rustc-link-lib=m");
+    }
+}
+
+/// Link the SDL version raylib actually built against.
+///
+/// raylib's CMake prefers SDL3 via find_package() and falls back to SDL2,
+/// then records that choice in the generated `raylib-config.cmake` as a
+/// `find_dependency(SDL3 ...)` or `find_dependency(SDL2 ...)` line. Reading
+/// it back mirrors raylib's resolution on every platform without relying on
+/// pkg-config (which Windows does not ship). Note that we only emit the
+/// link directive here, so the SDL library's own search path must be on the
+/// linker path already (e.g. via `RUSTFLAGS` or a `.cargo/config.toml`).
+#[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
+fn emit_sdl_link_lib(dst_lib: &Path) {
+    let config = dst_lib.join("cmake/raylib/raylib-config.cmake");
+    let contents = std::fs::read_to_string(&config).unwrap_or_else(|e| {
+        panic!(
+            "failed to read raylib's generated config at {} to determine the \
+             SDL version it linked: {e}",
+            config.display()
+        )
+    });
+    if contents.contains("find_dependency(SDL3") {
+        println!("cargo:rustc-link-lib=SDL3");
+    } else if contents.contains("find_dependency(SDL2") {
+        println!("cargo:rustc-link-lib=SDL2");
+    } else {
+        panic!(
+            "raylib was built with PLATFORM=SDL but its config at {} records \
+             neither SDL3 nor SDL2",
+            config.display()
+        );
     }
 }
 

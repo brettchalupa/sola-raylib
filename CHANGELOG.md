@@ -24,8 +24,16 @@
   `INCLUDE` / `LIB` / `PATH` into the build env. No-op if you're already in a
   vcvars shell (`INCLUDE` is set) or targeting a non-msvc target. Thanks to
   @lofcz.
+- **The `sdl` feature now links the correct SDL version on Windows** ([#57]).
+  The build script decided between SDL2 and SDL3 by probing `pkg-config`, which
+  Windows does not ship, so it always fell through to linking SDL2 regardless of
+  what raylib's CMake actually compiled against. It now reads raylib's resolved
+  choice from the generated `raylib-config.cmake` (`find_dependency(SDL3 ...)`
+  vs `SDL2`) and links the matching library, on every platform and with no
+  pkg-config dependency.
 
 [#56]: https://github.com/brettchalupa/sola-raylib/pull/56
+[#57]: https://github.com/brettchalupa/sola-raylib/issues/57
 
 ## 6.1.0 - May 7, 2026
 

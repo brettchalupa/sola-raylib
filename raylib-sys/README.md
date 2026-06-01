@@ -55,16 +55,16 @@ The full feature reference (sys + safe crate) lives in the top-level
 itself are the same names; the safe `sola-raylib` crate just forwards each one
 through. Quick map:
 
-| Feature                                                     | Purpose                                                                                                               |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `bindgen` _(default)_                                       | Generate bindings at build time. Turn off if you need to hand-roll `bindings.rs` for a platform bindgen can't target. |
-| `nobuild`                                                   | Skip building and linking raylib entirely. For docs.rs and headless setups; you are responsible for linking.          |
-| `wayland`                                                   | Build raylib with native Wayland support on Linux. Requires `glfw-devel`.                                             |
-| `sdl`                                                       | Build raylib with the SDL platform backend (SDL2 or SDL3, auto-detected via `pkg-config`).                            |
-| `opengl_21` / `opengl_33` / `opengl_es_20` / `opengl_es_30` | Select the GL backend raylib compiles against.                                                                        |
-| `noscreenshot`                                              | Disable raylib's built-in F12 screenshot keybind.                                                                     |
-| `custom_frame_control`                                      | Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` build flag.                                                            |
-| `software_render`, `platform_memory`, `platform_web_rgfw`   | Experimental raylib 6.0 backends; see the top-level README for caveats.                                               |
+| Feature                                                     | Purpose                                                                                                                               |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `bindgen` _(default)_                                       | Generate bindings at build time. Turn off if you need to hand-roll `bindings.rs` for a platform bindgen can't target.                 |
+| `nobuild`                                                   | Skip building and linking raylib entirely. For docs.rs and headless setups; you are responsible for linking.                          |
+| `wayland`                                                   | Build raylib with native Wayland support on Linux. Requires `glfw-devel`.                                                             |
+| `sdl`                                                       | Build raylib with the SDL platform backend. raylib prefers SDL3 and falls back to SDL2; the build script links whichever it resolved. |
+| `opengl_21` / `opengl_33` / `opengl_es_20` / `opengl_es_30` | Select the GL backend raylib compiles against.                                                                                        |
+| `noscreenshot`                                              | Disable raylib's built-in F12 screenshot keybind.                                                                                     |
+| `custom_frame_control`                                      | Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` build flag.                                                                            |
+| `software_render`, `platform_memory`, `platform_web_rgfw`   | Experimental raylib 6.0 backends; see the top-level README for caveats.                                                               |
 
 ## Layout
 
