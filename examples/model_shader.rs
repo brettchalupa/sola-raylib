@@ -18,7 +18,9 @@ fn main() {
     rl.set_target_fps(60);
 
     // Load shader
-    let shader = rl.load_shader(&thread, None, Some("static/model_shader/grayscale.fs"));
+    let shader = rl
+        .load_shader(&thread, None, Some("static/model_shader/grayscale.fs"))
+        .unwrap();
 
     // Load model
     let mut model = rl

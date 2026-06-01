@@ -967,25 +967,53 @@ impl Image {
     /// Image.data buffer includes all frames.
     /// All frames returned are in RGBA format.
     /// Frames delay data is discarded
-    pub fn load_image_anim(filename: &str, frame_num: &mut i32) -> Self {
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] when the file can't be loaded (raylib returns an
+    /// image with null data, which this surfaces instead of silently passing
+    /// along an empty image).
+    pub fn load_image_anim(filename: &str, frame_num: &mut i32) -> Result<Image, Error> {
         let c_filename = CString::new(filename).unwrap();
 
-        unsafe { Image(ffi::LoadImageAnim(c_filename.as_ptr(), frame_num)) }
+        let i = unsafe { ffi::LoadImageAnim(c_filename.as_ptr(), frame_num) };
+        if i.data.is_null() {
+            return Err(error!(
+                "Image data is null. Check if the file exists and is a supported format.",
+                filename
+            ));
+        }
+        Ok(Image(i))
     }
 
     /// Load image from memory buffer, with the number of frames loaded saved to frame_num.
     /// fileType refers to extension: i.e. ".png". File extension must be provided in lower-case
-    pub fn load_image_anim_from_memory(filetype: &str, data: &[u8], frame_num: &mut i32) -> Self {
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] when the buffer can't be decoded (raylib returns an
+    /// image with null data).
+    pub fn load_image_anim_from_memory(
+        filetype: &str,
+        data: &[u8],
+        frame_num: &mut i32,
+    ) -> Result<Image, Error> {
         let c_filetype = CString::new(filetype).unwrap();
 
-        unsafe {
-            Image(ffi::LoadImageAnimFromMemory(
+        let i = unsafe {
+            ffi::LoadImageAnimFromMemory(
                 c_filetype.as_ptr(),
                 data.as_ptr(),
                 data.len() as i32,
                 frame_num,
-            ))
+            )
+        };
+        if i.data.is_null() {
+            return Err(error!(
+                "Image data is null. Check provided buffer data and file type."
+            ));
         }
+        Ok(Image(i))
     }
 
     /// Loads image from RAW file data.
