@@ -18,7 +18,9 @@ pub fn main() {
         65.0,
     );
 
-    let mut shader = rl.load_shader_from_memory(&thread, None, Some(SHADER));
+    let mut shader = rl
+        .load_shader_from_memory(&thread, None, Some(SHADER))
+        .unwrap();
     // let s = std::fs::read_to_string("raymarch-static/raymarching.fs").expect("couldn't read");
     // println!("{}", s);
 

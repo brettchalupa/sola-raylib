@@ -4,46 +4,88 @@ use crate::consts::ShaderUniformDataType;
 use crate::core::math::Matrix;
 use crate::core::math::{Vector2, Vector3, Vector4};
 use crate::core::{RaylibHandle, RaylibThread};
+use crate::error::{error, Error};
 use crate::ffi;
 use std::ffi::CString;
 use std::os::raw::{c_char, c_void};
+use std::path::Path;
 
 fn no_drop<T>(_thing: T) {}
 make_thin_wrapper!(Shader, ffi::Shader, ffi::UnloadShader);
 make_thin_wrapper!(WeakShader, ffi::Shader, no_drop);
 
 impl RaylibHandle {
-    /// Loads a custom shader and binds default locations.
+    /// Loads a custom shader from files and binds default locations.
+    ///
+    /// Pass `None` for either stage to use raylib's built-in default vertex or
+    /// fragment shader. Passing `None` for both returns the default shader.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] when a provided file path does not exist, or when a
+    /// shader is found but fails to compile. raylib itself only logs a warning
+    /// and silently substitutes the default shader in these cases; this wrapper
+    /// surfaces them so the fallback is opt-in rather than the default.
+    ///
+    /// Note: if both a vertex *and* fragment file are provided and the two
+    /// compile individually but fail to *link* together, raylib reassigns the
+    /// default shader id internally and the failure cannot be detected here.
     pub fn load_shader(
         &mut self,
         _: &RaylibThread,
         vs_filename: Option<&str>,
         fs_filename: Option<&str>,
-    ) -> Shader {
+    ) -> Result<Shader, Error> {
+        // A missing file is the case the binding most needs to catch, but
+        // raylib falls back to the (valid, non-zero) default shader id when a
+        // file can't be read, so the returned shader looks fine. Check the
+        // paths up front to turn that into a real error.
+        for filename in vs_filename.iter().chain(fs_filename.iter()) {
+            if !Path::new(filename).exists() {
+                return Err(error!("shader file does not exist", filename));
+            }
+        }
+
         let c_vs_filename = vs_filename.map(|f| CString::new(f).unwrap());
         let c_fs_filename = fs_filename.map(|f| CString::new(f).unwrap());
 
         // Trust me, I have tried ALL the RUST option ergonamics. This is the only way
         // to get this to work without raylib breaking for whatever reason
         // UPDATE FOR 2024 FROM ANOTHER PERSON: Yes this is still true, doing although "for some reason" is likely due to the pointer getting freed too early if you don't do it this way.
-        match (c_vs_filename, c_fs_filename) {
+        let shader = match (c_vs_filename, c_fs_filename) {
             (Some(vs), Some(fs)) => unsafe { Shader(ffi::LoadShader(vs.as_ptr(), fs.as_ptr())) },
             (None, Some(fs)) => unsafe { Shader(ffi::LoadShader(std::ptr::null(), fs.as_ptr())) },
             (Some(vs), None) => unsafe { Shader(ffi::LoadShader(vs.as_ptr(), std::ptr::null())) },
             (None, None) => unsafe { Shader(ffi::LoadShader(std::ptr::null(), std::ptr::null())) },
+        };
+
+        if !shader.is_shader_valid() {
+            return Err(error!("shader failed to compile"));
         }
+        Ok(shader)
     }
 
-    /// Loads shader from code strings and binds default locations.
+    /// Loads a shader from code strings and binds default locations.
+    ///
+    /// Pass `None` for either stage to use raylib's built-in default vertex or
+    /// fragment shader. Passing `None` for both returns the default shader.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] when the provided shader code fails to compile.
+    /// raylib itself only logs a warning and silently substitutes the default
+    /// shader; this wrapper surfaces the failure instead. As with
+    /// [`load_shader`](Self::load_shader), a vertex/fragment pair that compiles
+    /// individually but fails to link cannot be detected here.
     pub fn load_shader_from_memory(
         &mut self,
         _: &RaylibThread,
         vs_code: Option<&str>,
         fs_code: Option<&str>,
-    ) -> Shader {
+    ) -> Result<Shader, Error> {
         let c_vs_code = vs_code.map(|f| CString::new(f).unwrap());
         let c_fs_code = fs_code.map(|f| CString::new(f).unwrap());
-        match (c_vs_code, c_fs_code) {
+        let shader = match (c_vs_code, c_fs_code) {
             (Some(vs), Some(fs)) => unsafe {
                 Shader(ffi::LoadShaderFromMemory(
                     vs.as_ptr() as *mut c_char,
@@ -68,7 +110,12 @@ impl RaylibHandle {
                     std::ptr::null_mut(),
                 ))
             },
+        };
+
+        if !shader.is_shader_valid() {
+            return Err(error!("shader failed to compile from memory"));
         }
+        Ok(shader)
     }
 
     /// Get default shader. Modifying it modifies everthing that uses that shader
