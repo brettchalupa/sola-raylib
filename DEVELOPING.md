@@ -52,13 +52,9 @@ Guide to creating new releases on crates.io.
 
 ### Steps
 
-1. **Bump the version in a PR.** The version lives in several places — update
-   all of them together and add the release notes to
-   [CHANGELOG.md](CHANGELOG.md):
-   - `raylib-sys/Cargo.toml` — its own `version`
-   - `raylib/Cargo.toml` — its own `version` **and** the `version = "X.Y.Z"`
-     pinned on the `raylib-sys` dep line (easy to miss)
-   - Any version references in `README.md`
+1. **Bump the version in a PR.** Update following semver in `Cargo.toml`, update
+   the version references in `README.md`, and add the release notes to
+   [CHANGELOG.md](CHANGELOG.md)
 2. **After the PR merges, tag the merge commit and push the tag:**
    ```
    git checkout main && git pull

@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+No unreleased changes.
+
+## 6.2.0 - June 2, 2026
+
 ### BREAKING
 
 - **`RaylibHandle::load_shader` and `load_shader_from_memory` are now fallible**

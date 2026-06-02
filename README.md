@@ -27,7 +27,7 @@ sola-raylib development happens on `main`. This README.md covers what's in
 `main`. Be sure to view the tag version of the repository if you want to find
 details on a specific version.
 
-The latest released version on crates.io is 6.1.0 (binds raylib 6.0).
+The latest released version on crates.io is 6.2.0 (binds raylib 6.0).
 
 Pull from GitHub if you want the latest `main`:
 
