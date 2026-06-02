@@ -3,7 +3,7 @@ members = ["raylib", "raylib-sys"]
 exclude = ["examples"]
 
 [workspace.package]
-version = "6.1.0"
+version = "6.2.0"
 authors = ["Brett Chalupa <brett@brettchalupa.com>", "raylib-rs team <https://github.com/raylib-rs/raylib-rs>"]
 license = "Zlib"
 repository = "https://github.com/brettchalupa/sola-raylib"
