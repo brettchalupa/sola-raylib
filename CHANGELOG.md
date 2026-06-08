@@ -4,6 +4,16 @@
 
 No unreleased changes.
 
+### Fixes
+
+- Don't show non-gamepad joysticks on Linux as gamepads. Previous versions were
+  showing some keyboards, some mainboard sensors, etc. as gamepads which was
+  wrong and confusing. While the issue is upstream in Raylib and GLFW, there's
+  seemingly little appetite or momentum in fixing this, so sola-raylb now
+  applies a check for gamepad mapping. This means that controllers without a
+  mapping won't show up as detected, but that's better than showing up and not
+  working. See https://github.com/brettchalupa/sola-raylib/issues/62
+
 ## 6.2.0 - June 2, 2026
 
 ### BREAKING

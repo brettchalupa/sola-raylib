@@ -9,6 +9,18 @@ use crate::ffi;
 use std::ffi::c_char;
 use std::ffi::CStr;
 
+// GLFW is statically linked into the raylib library on the desktop and web
+// backends, so we can call its joystick API directly. raylib only exposes
+// `IsGamepadAvailable`, which reports any present joystick, but GLFW registers
+// every input device with an absolute axis (mainboard sensors, some keyboards)
+// as a joystick. `glfwJoystickIsGamepad` is true only for devices with a valid
+// gamepad mapping, which is exactly the set raylib's GLFW input path can read.
+// Not declared on the SDL backend, where GLFW is absent and SDL already filters.
+#[cfg(not(feature = "sdl"))]
+extern "C" {
+    fn glfwJoystickIsGamepad(jid: std::ffi::c_int) -> std::ffi::c_int;
+}
+
 impl RaylibHandle {
     /// Detect if a key has been pressed once.
     #[inline]
@@ -95,9 +107,27 @@ impl RaylibHandle {
     }
 
     /// Detect if a gamepad is available.
+    ///
+    /// On the GLFW backend this additionally requires the device to have a
+    /// valid gamepad mapping (`glfwJoystickIsGamepad`), so non-controller
+    /// devices that GLFW registers as joysticks (mainboard sensors, some
+    /// keyboards) are not reported. This matches the SDL backend, which only
+    /// surfaces mapped controllers.
     #[inline]
     pub fn is_gamepad_available(&self, gamepad: i32) -> bool {
-        unsafe { ffi::IsGamepadAvailable(gamepad) }
+        unsafe {
+            if !ffi::IsGamepadAvailable(gamepad) {
+                return false;
+            }
+            #[cfg(not(feature = "sdl"))]
+            {
+                glfwJoystickIsGamepad(gamepad) != 0
+            }
+            #[cfg(feature = "sdl")]
+            {
+                true
+            }
+        }
     }
 
     /// Returns gamepad internal name id.
