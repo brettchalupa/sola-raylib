@@ -394,6 +394,40 @@ where
         // Uncomment the following if RaylibBlendMode has been changed to no longer call EndBlendMode() in its drop implementation:
         // unsafe { ffi::EndBlendMode(); }
     }
+
+    /// Sets the source/destination factors and equation used by
+    /// [`BlendMode::BLEND_CUSTOM`]. Factors and equation are raw GL enum
+    /// values (see the `RL_*` constants, e.g. [`ffi::RL_SRC_ALPHA`]).
+    fn set_blend_factors(&mut self, gl_src_factor: i32, gl_dst_factor: i32, gl_equation: i32) {
+        unsafe { ffi::rlSetBlendFactors(gl_src_factor, gl_dst_factor, gl_equation) }
+    }
+
+    /// Like [`set_blend_factors`](RaylibBlendModeExt::set_blend_factors) but
+    /// with independent color and alpha factors, used by
+    /// [`BlendMode::BLEND_CUSTOM_SEPARATE`]. Lets you blend color normally
+    /// while controlling the destination alpha separately (e.g. keeping a
+    /// render texture opaque). Values are raw GL enum values (the `RL_*`
+    /// constants).
+    fn set_blend_factors_separate(
+        &mut self,
+        gl_src_rgb: i32,
+        gl_dst_rgb: i32,
+        gl_src_alpha: i32,
+        gl_dst_alpha: i32,
+        gl_eq_rgb: i32,
+        gl_eq_alpha: i32,
+    ) {
+        unsafe {
+            ffi::rlSetBlendFactorsSeparate(
+                gl_src_rgb,
+                gl_dst_rgb,
+                gl_src_alpha,
+                gl_dst_alpha,
+                gl_eq_rgb,
+                gl_eq_alpha,
+            )
+        }
+    }
 }
 
 impl<D: RaylibDraw> RaylibBlendModeExt for D {}
