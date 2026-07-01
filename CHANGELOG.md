@@ -2,7 +2,9 @@
 
 ## UNRELEASED
 
-No unreleased changes.
+### Added
+
+- `set_blend_factors` and `set_blend_factors_separate` wrapper functions
 
 ### Fixes
 
