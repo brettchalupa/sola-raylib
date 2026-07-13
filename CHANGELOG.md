@@ -17,6 +17,8 @@
   working. See https://github.com/brettchalupa/sola-raylib/issues/62
 - Fix segfault due to OOB read when using certain characters; see
   https://github.com/brettchalupa/sola-raylib/pull/67
+- Fix window monitor functions panicing with SDL backend; see
+  https://github.com/brettchalupa/sola-raylib/issues/65
 
 ## 6.2.0 - June 2, 2026
 
