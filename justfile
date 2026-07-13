@@ -32,6 +32,10 @@ fmt-check:
 build-examples:
     cd examples && cargo build --all-targets
 
+# Refresh the vendored SDL_GameControllerDB (bundled gamepad mappings).
+update-gamecontrollerdb:
+    ./scripts/update_gamecontrollerdb.sh
+
 # Run a specific example by name, e.g. `just example drop`.
 example name:
     cd examples && cargo run --bin {{ name }}

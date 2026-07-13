@@ -6,7 +6,6 @@ use crate::core::math::Vector2;
 use crate::core::RaylibHandle;
 use crate::ffi;
 
-use std::ffi::c_char;
 use std::ffi::CStr;
 
 // GLFW is statically linked into the raylib library on the desktop and web
@@ -323,9 +322,45 @@ impl RaylibHandle {
         }
     }
 
-    /// Set internal gamepad mappings (SDL_GameControllerDB)
-    pub fn set_gamepad_mappings(&self, bind: &[c_char]) -> i32 {
-        unsafe { ffi::SetGamepadMappings(bind.as_ptr()) }
+    /// Registers gamepad mappings in `SDL_GameControllerDB` format, layered on
+    /// top of the currently loaded mappings (later entries override earlier
+    /// ones with the same controller GUID).
+    ///
+    /// `mappings` is the text of a `gamecontrollerdb.txt` (one mapping per
+    /// line; comments and blank lines are ignored). To load your own file:
+    ///
+    /// ```no_run
+    /// # use sola_raylib::prelude::*;
+    /// # fn f(rl: &RaylibHandle) {
+    /// // Typically: rl.set_gamepad_mappings(include_str!("my_gamepads.txt"));
+    /// rl.set_gamepad_mappings("03000000...,My Pad,a:b0,b:b1,platform:Linux,");
+    /// # }
+    /// ```
+    ///
+    /// Returns the raylib status code (1 on success, 0 if any line failed).
+    /// See also [`RaylibHandle::load_gamepad_mappings_from_file`] and the
+    /// bundled [`crate::core::gamepad_db`].
+    pub fn set_gamepad_mappings(&self, mappings: &str) -> i32 {
+        let c = match std::ffi::CString::new(mappings) {
+            Ok(c) => c,
+            // A stray NUL means the text isn't a valid C string; nothing loads.
+            Err(_) => return 0,
+        };
+        unsafe { ffi::SetGamepadMappings(c.as_ptr()) }
+    }
+
+    /// Reads a `gamecontrollerdb.txt` file from disk and registers its mappings
+    /// via [`set_gamepad_mappings`](RaylibHandle::set_gamepad_mappings).
+    ///
+    /// Convenience for shipping your own mappings file as a game asset and
+    /// loading it at runtime. Returns the raylib status code, or an
+    /// [`std::io::Error`] if the file can't be read.
+    pub fn load_gamepad_mappings_from_file(
+        &self,
+        path: impl AsRef<std::path::Path>,
+    ) -> std::io::Result<i32> {
+        let text = std::fs::read_to_string(path)?;
+        Ok(self.set_gamepad_mappings(&text))
     }
 
     /// Set gamepad vibration for both motors

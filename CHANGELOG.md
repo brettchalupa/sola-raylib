@@ -2,9 +2,26 @@
 
 ## UNRELEASED
 
+### BREAKING
+
+- **`RaylibHandle::set_gamepad_mappings` now takes `&str`** instead of
+  `&[c_char]`. The old signature required building a NUL-terminated `c_char`
+  slice by hand and had no terminator guarantee. Pass the text of a
+  `gamecontrollerdb.txt` directly, e.g.
+  `rl.set_gamepad_mappings(include_str!("my_gamepads.txt"))`.
+
 ### Added
 
 - `set_blend_factors` and `set_blend_factors_separate` wrapper functions
+- Bundled gamepad mappings. sola-raylib now vendors a recent
+  [SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB) and, by
+  default, loads it over raylib's built-in table when the window is created, so
+  games recognize controllers added since raylib was built. Opt out with
+  `init().bundled_gamepad_mappings(false)`. Provide your own at init with
+  `init().gamepad_mappings(include_str!("my_gamepads.txt"))`, or at runtime with
+  `RaylibHandle::load_gamepad_mappings_from_file(path)`. The bundled database is
+  exposed as `core::gamepad_db::BUNDLED`. See
+  https://github.com/brettchalupa/sola-raylib/issues/63
 
 ### Fixes
 
