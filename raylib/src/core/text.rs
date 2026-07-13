@@ -92,7 +92,7 @@ impl RaylibHandle {
 
         unsafe {
             Codepoints(std::mem::ManuallyDrop::new(Box::from_raw(
-                std::ptr::slice_from_raw_parts_mut(u, text.len()),
+                std::ptr::slice_from_raw_parts_mut(u, len as usize),
             )))
         }
     }
@@ -139,7 +139,7 @@ impl RaylibHandle {
                         c_filename.as_ptr(),
                         font_size,
                         co.0.as_mut_ptr(),
-                        c.len() as i32,
+                        co.0.len() as i32,
                     )
                 }
                 None => ffi::LoadFontEx(c_filename.as_ptr(), font_size, std::ptr::null_mut(), 0),
@@ -192,7 +192,7 @@ impl RaylibHandle {
                         file_data.len() as i32,
                         font_size,
                         co.0.as_mut_ptr(),
-                        c.len() as i32,
+                        co.0.len() as i32,
                     )
                 }
                 None => ffi::LoadFontFromMemory(
@@ -235,7 +235,7 @@ impl RaylibHandle {
                         data.len() as i32,
                         font_size,
                         co.0.as_mut_ptr(),
-                        c.len() as i32,
+                        co.0.len() as i32,
                         sdf,
                         &mut glyph_count,
                     )
@@ -445,5 +445,54 @@ impl RaylibHandle {
 
     pub fn set_text_line_spacing(&self, spacing: i32) {
         unsafe { ffi::SetTextLineSpacing(spacing) }
+    }
+}
+
+#[cfg(test)]
+mod codepoint_tests {
+    use crate::ffi;
+    use std::ffi::CString;
+
+    /// Reconstructs the codepoint array exactly like `load_codepoints` does,
+    /// returning `(byte_len, codepoints)` so tests can compare the two.
+    ///
+    /// SAFETY: `LoadCodepoints`/`UnloadCodepoints` are pure text-parsing
+    /// helpers in raylib's rtext module and need no window or GPU context.
+    fn codepoints(text: &str) -> (usize, Vec<i32>) {
+        let ptr = CString::new(text).unwrap();
+        let mut len = 0;
+        unsafe {
+            let u = ffi::LoadCodepoints(ptr.as_ptr(), &mut len);
+            let slice = std::slice::from_raw_parts(u, len as usize);
+            let out = slice.to_vec();
+            ffi::UnloadCodepoints(u);
+            (text.len(), out)
+        }
+    }
+
+    /// Regression test for the OOB read fix
+    #[test]
+    fn codepoint_count_differs_from_byte_len_for_multibyte() {
+        // '¿' is 2 bytes, 1 codepoint.
+        let (byte_len, cps) = codepoints("¿");
+        assert_eq!(byte_len, 2, "'¿' is two UTF-8 bytes");
+        assert_eq!(cps.len(), 1, "'¿' is a single codepoint");
+        assert_eq!(cps[0], 0xBF, "codepoint of '¿' is U+00BF");
+    }
+
+    #[test]
+    fn codepoint_count_matches_char_count_for_mixed_string() {
+        let text = "a¿b€c"; // ascii + 2-byte + 3-byte, 5 chars, 8 bytes
+        let (byte_len, cps) = codepoints(text);
+        assert_eq!(byte_len, 8);
+        assert_eq!(cps.len(), text.chars().count());
+        assert_eq!(cps.len(), 5);
+    }
+
+    #[test]
+    fn ascii_count_equals_byte_len() {
+        let (byte_len, cps) = codepoints("hello");
+        assert_eq!(byte_len, 5);
+        assert_eq!(cps.len(), 5);
     }
 }

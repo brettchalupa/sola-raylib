@@ -15,6 +15,8 @@
   applies a check for gamepad mapping. This means that controllers without a
   mapping won't show up as detected, but that's better than showing up and not
   working. See https://github.com/brettchalupa/sola-raylib/issues/62
+- Fix segfault due to OOB read when using certain characters; see
+  https://github.com/brettchalupa/sola-raylib/pull/67
 
 ## 6.2.0 - June 2, 2026
 
