@@ -1,6 +1,6 @@
 # Contributing
 
-PRs are always welcome to help make Sola better!
+PRs are always welcome to help make sola-raylib better!
 
 Pull requests will get squashed down into a single commit following
 [the Conventional Commit syntax](https://www.conventionalcommits.org/en/v1.0.0/).

@@ -7,7 +7,7 @@ version 1.78 or higher.
 - View the project on crates.io: https://crates.io/crates/sola-raylib
 - View the docs: https://docs.rs/sola-raylib/latest/sola_raylib/
 
-**Versioning:** sola-raylib's major version tracks raylib's major version — 5.x
+**Versioning:** sola-raylib's major version tracks raylib's major version. 5.x
 binds raylib 5.5, 6.x binds raylib 6.0, and so on. Minor and patch numbers are
 sola-raylib's own (raylib doesn't follow strict semver, so this project doesn't
 try to mirror it beyond the major).
@@ -20,20 +20,14 @@ commit
 [github.com/deltaphc/raylib-rs](https://github.com/deltaphc/raylib-rs).
 
 Check out the [examples](./examples) directory to find usage examples. See
-[CHANGELOG.md](CHANGELOG.md) for the 6.x changes, including breaking signature
-changes and the new APIs wrapped from raylib 6.0.
+[CHANGELOG.md](CHANGELOG.md) for recent changes, including breaking signature
+changes and new APIs wrapped from raylib 6.0.
 
 sola-raylib development happens on `main`. This README.md covers what's in
 `main`. Be sure to view the tag version of the repository if you want to find
 details on a specific version.
 
 The latest released version on crates.io is 6.2.0 (binds raylib 6.0).
-
-Pull from GitHub if you want the latest `main`:
-
-```
-raylib = { package = "sola-raylib", git = "https://github.com/brettchalupa/sola-raylib.git" }
-```
 
 ## Features / Bugs
 
@@ -68,9 +62,9 @@ changes to be more idiomatic for Rust.
 There are many benefits to coding games with Raylib using Rust instead of C:
 
 - Memory safety guarantees from the Rust compiler in the code you write.
-- Best-in-class developer experience with `cargo` and Rust's language server
-  protocol (LSP).
-- Lots of great Rust packages for game development and systems programming on
+- Great developer experience with `cargo` and Rust's language server protocol
+  (LSP).
+- Lots of Rust packages for game development and systems programming on
   [crates.io](https://crates.io).
 - Easier cross-platform compiling.
 
@@ -87,6 +81,8 @@ The table below shows which core APIs are supported for which platforms:
 | core | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | rgui | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ❔                 |
 | rlgl | :heavy_check_mark: | :x:                | :x:                | ❔                 |
+
+Android may work, but it isn't actively tested against.
 
 ## Build Dependencies
 
@@ -193,7 +189,7 @@ for a writeup that should still largely apply.
   `["opengl_21"]` or `["opengl_es_20]` to the `features` array in your
   Cargo.toml dependency definition.
 
-## Cargo features
+## Cargo Features
 
 Every Cargo feature exposed by sola-raylib is listed here. The safe crate
 forwards each name through to `sola-raylib-sys`, so you can enable them on
@@ -251,7 +247,7 @@ to hide this, add the following to your `main.rs`:
 #![windows_subsystem = "windows"]
 ```
 
-## Experimental raylib 6.0 platform flags
+## Experimental Raylib 6.0 Platform Flags
 
 sola-raylib 6.0 exposes three feature flags for raylib 6.0's new backends. **All
 three are experimental upstream**, shipped with known gaps in raylib 6.0 itself.
@@ -288,7 +284,7 @@ raylib's C side supports at HEAD. Expect rough edges.
 If you're evaluating one of these for production, test on your target platform
 first and expect to track upstream raylib for fixes.
 
-## Gamepad mappings
+## Gamepad Mappings
 
 raylib freezes its controller mappings at build time (GLFW compiles them in; SDL
 keeps its own table), so a game built against an older raylib won't recognize
@@ -329,7 +325,7 @@ rl.load_gamepad_mappings_from_file("assets/gamecontrollerdb.txt")?;
 
 The bundled database text is available as `core::gamepad_db::BUNDLED`.
 
-## Drop ordering
+## Drop Ordering
 
 Resources like `Texture2D`, `RenderTexture2D`, `Font`, `Model`, `Mesh`, and
 `Shader` hold GPU handles and free them in their `Drop` impl. `RaylibHandle`'s
@@ -359,12 +355,12 @@ Audio resources (`Wave`, `Sound`, `Music`, `AudioStream`) are lifetime-bound to
 `RaylibAudio`, so the borrow checker enforces their ordering for you — no
 discipline required.
 
-## Building from source
+## Building From Source
 
 1. Clone repository: `git clone --recurse-submodules`
 2. `cargo build`
 
-### If building for Wayland on Linux
+### Wayland on Linux
 
 1. Install these packages:\
    `libglfw3-dev wayland-devel libxkbcommon-devel wayland-protocols wayland-protocols-devel libecm-dev`
