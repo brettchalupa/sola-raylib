@@ -13,6 +13,7 @@ pub mod error;
 pub mod file;
 
 pub mod game_loop;
+pub mod gamepad_db;
 pub mod input;
 pub mod logging;
 pub mod math;
@@ -102,6 +103,8 @@ pub struct RaylibBuilder {
     width: i32,
     height: i32,
     title: String,
+    bundled_gamepad_mappings: bool,
+    custom_gamepad_mappings: Option<String>,
 }
 
 /// Creates a `RaylibBuilder` for choosing window options before initialization.
@@ -110,6 +113,7 @@ pub fn init() -> RaylibBuilder {
         width: 640,
         height: 480,
         title: "raylib-rs".to_string(),
+        bundled_gamepad_mappings: true,
         ..Default::default()
     }
 }
@@ -258,6 +262,27 @@ impl RaylibBuilder {
         self
     }
 
+    /// Controls whether the bundled [`gamepad_db`] (a recent
+    /// SDL_GameControllerDB) is loaded over raylib's built-in mappings when the
+    /// window is created. Enabled by default so games recognize controllers
+    /// added since raylib was built. Pass `false` to use only raylib's
+    /// built-in mappings.
+    pub fn bundled_gamepad_mappings(&mut self, enabled: bool) -> &mut Self {
+        self.bundled_gamepad_mappings = enabled;
+        self
+    }
+
+    /// Registers your own gamepad mappings (`SDL_GameControllerDB` text) at
+    /// window creation, layered on top of the built-in and bundled mappings so
+    /// yours win on conflicts. Typically `include_str!("your_gamepads.txt")`.
+    ///
+    /// To load a file at runtime instead, see
+    /// [`RaylibHandle::load_gamepad_mappings_from_file`].
+    pub fn gamepad_mappings(&mut self, mappings: &str) -> &mut Self {
+        self.custom_gamepad_mappings = Some(mappings.to_string());
+        self
+    }
+
     /// Builds and initializes a Raylib window.
     ///
     /// # Panics
@@ -324,6 +349,15 @@ impl RaylibBuilder {
         }
 
         let rl = init_window(self.width, self.height, &self.title);
+
+        // Layer gamepad mappings over raylib's built-in table: bundled db
+        // first, then the dev's custom mappings so theirs win on conflicts.
+        if self.bundled_gamepad_mappings {
+            rl.set_gamepad_mappings(gamepad_db::BUNDLED);
+        }
+        if let Some(custom) = &self.custom_gamepad_mappings {
+            rl.set_gamepad_mappings(custom);
+        }
 
         (rl, RaylibThread(PhantomData))
     }

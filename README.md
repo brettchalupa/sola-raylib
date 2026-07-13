@@ -288,6 +288,47 @@ raylib's C side supports at HEAD. Expect rough edges.
 If you're evaluating one of these for production, test on your target platform
 first and expect to track upstream raylib for fixes.
 
+## Gamepad mappings
+
+raylib freezes its controller mappings at build time (GLFW compiles them in; SDL
+keeps its own table), so a game built against an older raylib won't recognize
+controllers released since. raylib also releases infrequently.
+
+To fix this, sola-raylib bundles a recent copy of the community
+[SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB) and, by
+default, loads it over raylib's built-in table when the window is created. You
+get broader controller support for free, no setup required.
+
+Opt out to use only raylib's built-in mappings:
+
+```rust
+let (mut rl, thread) = raylib::init()
+    .size(800, 600)
+    .title("My Game")
+    .bundled_gamepad_mappings(false)
+    .build();
+```
+
+Ship your own mappings, layered on top of the bundled database (yours win on
+conflicts). Bundle them into the binary at compile time:
+
+```rust
+let (mut rl, thread) = raylib::init()
+    .size(800, 600)
+    .title("My Game")
+    .gamepad_mappings(include_str!("../assets/my_gamepads.txt"))
+    .build();
+```
+
+Or load a `gamecontrollerdb.txt` file from disk at runtime (e.g. one shipped
+alongside your game so players can update it):
+
+```rust
+rl.load_gamepad_mappings_from_file("assets/gamecontrollerdb.txt")?;
+```
+
+The bundled database text is available as `core::gamepad_db::BUNDLED`.
+
 ## Drop ordering
 
 Resources like `Texture2D`, `RenderTexture2D`, `Font`, `Model`, `Mesh`, and
