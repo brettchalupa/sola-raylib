@@ -274,61 +274,36 @@ pub fn get_current_monitor_index() -> i32 {
 /// Get specified monitor refresh rate
 #[inline]
 pub fn get_monitor_refresh_rate(monitor: i32) -> i32 {
-    debug_assert!(
-        monitor < get_monitor_count() && monitor >= 0,
-        "monitor index out of range"
-    );
-
     unsafe { ffi::GetMonitorRefreshRate(monitor) }
 }
 
 /// Get width of monitor
-/// Only checks that monitor index is in range in debug mode
 #[inline]
 pub fn get_monitor_width(monitor: i32) -> i32 {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     unsafe { ffi::GetMonitorWidth(monitor) }
 }
 
 /// Get height of monitor
-/// Only checks that monitor index is in range in debug mode
 #[inline]
 pub fn get_monitor_height(monitor: i32) -> i32 {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     unsafe { ffi::GetMonitorHeight(monitor) }
 }
 
 /// Get physical width of monitor
-/// Only checks that monitor index is in range in debug mode
 #[inline]
 pub fn get_monitor_physical_width(monitor: i32) -> i32 {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     unsafe { ffi::GetMonitorPhysicalWidth(monitor) }
 }
 
 /// Get physical height of monitor
-/// Only checks that monitor index is in range in debug mode
 #[inline]
 pub fn get_monitor_physical_height(monitor: i32) -> i32 {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     unsafe { ffi::GetMonitorPhysicalHeight(monitor) }
 }
 
 /// Get name of monitor
-/// Only checks that monitor index is in range in debug mode
 #[inline]
 pub fn get_monitor_name(monitor: i32) -> Result<String, IntoStringError> {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     Ok(unsafe {
         let c = CString::from_raw(ffi::GetMonitorName(monitor) as *mut c_char);
         c.into_string()?
@@ -336,12 +311,8 @@ pub fn get_monitor_name(monitor: i32) -> Result<String, IntoStringError> {
 }
 
 /// Get position of monitor
-/// Only checks that monitor index is in range in debug mode
 #[inline]
 pub fn get_monitor_position(monitor: i32) -> Vector2 {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     unsafe { ffi::GetMonitorPosition(monitor).into() }
 }
 
@@ -359,9 +330,6 @@ pub fn get_monitor_position(monitor: i32) -> Vector2 {
 /// }
 /// ```
 pub fn get_monitor_info(monitor: i32) -> Result<MonitorInfo, IntoStringError> {
-    let len = get_monitor_count();
-    debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
-
     Ok(MonitorInfo {
         width: get_monitor_width(monitor),
         height: get_monitor_height(monitor),
@@ -726,8 +694,6 @@ impl RaylibHandle {
     /// Sets monitor for the current window (fullscreen mode).
     #[inline]
     pub fn set_window_monitor(&mut self, monitor: i32) {
-        let len = get_monitor_count();
-        debug_assert!(monitor < len && monitor >= 0, "monitor index out of range");
         unsafe {
             ffi::SetWindowMonitor(monitor);
         }
