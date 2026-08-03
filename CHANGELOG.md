@@ -1,6 +1,6 @@
 # sola-raylib Changelog
 
-## UNRELEASED
+## v6.3.0 - August 3, 2026
 
 ### BREAKING
 
