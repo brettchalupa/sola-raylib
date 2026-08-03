@@ -236,6 +236,18 @@ either crate and the effect is the same.
 > `noscreenshot`. If you previously listed it in your Cargo.toml, just remove
 > it.
 
+### Known Issues
+
+Under `--features sdl` with SDL3, controllers connected before launch are not
+detected at all: raylib 6.0 opens them with a joystick _index_ where SDL3
+expects an `SDL_JoystickID` instance id, so every open fails with
+`PLATFORM: Unable to open game controller [ERROR: Parameter 'joystick' is
+invalid]`.
+Plugging a controller in after launch works, because that path uses a real
+instance id. Fixed upstream in raylib after the 6.0 tag, so it will clear when
+sola-raylib moves to the next raylib release. SDL2 builds and the default GLFW
+backend are unaffected.
+
 ## Platform-Specific Notes
 
 ### Windows

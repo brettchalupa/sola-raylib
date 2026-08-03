@@ -119,6 +119,61 @@ pub struct RaylibBuilder {
     custom_gamepad_mappings: Option<String>,
 }
 
+/// Seeds SDL's gamepad mapping hint for the duration of `InitWindow`, then puts
+/// the environment back the way it was found.
+///
+/// raylib's SDL backend opens every already-connected controller once, inside
+/// `InitWindow`, and afterwards only reacts to hotplug events. Mappings
+/// registered later with `SetGamepadMappings` (which is all
+/// [`RaylibBuilder::build`] could do) therefore never reach a controller that
+/// was plugged in before launch: at open time SDL still only knows its built-in
+/// table, so a pad that needs a bundled mapping is not recognized as a gamepad
+/// and never gets opened.
+///
+/// SDL reads `SDL_HINT_GAMECONTROLLERCONFIG` out of the environment while it
+/// brings up its gamepad subsystem, which happens during `InitWindow`, so
+/// setting it beforehand gets the mappings in early enough. The variable is
+/// restored once the window is up so it isn't inherited by child processes.
+///
+/// The GLFW backend needs none of this: it re-reads its mapping table every
+/// frame, so a post-`InitWindow` `SetGamepadMappings` applies immediately.
+#[cfg(feature = "sdl")]
+struct SdlGamepadHint(Option<std::ffi::OsString>);
+
+#[cfg(feature = "sdl")]
+impl SdlGamepadHint {
+    const VAR: &'static str = "SDL_GAMECONTROLLERCONFIG";
+
+    fn set(mappings: &str) -> Self {
+        let previous = std::env::var_os(Self::VAR);
+
+        if !mappings.is_empty() {
+            let mut value = mappings.to_string();
+
+            // Anything the caller set in the environment themselves goes last,
+            // so it still wins on a matching controller GUID.
+            if let Some(prev) = previous.as_ref().and_then(|v| v.to_str()) {
+                value.push('\n');
+                value.push_str(prev);
+            }
+
+            std::env::set_var(Self::VAR, value);
+        }
+
+        Self(previous)
+    }
+}
+
+#[cfg(feature = "sdl")]
+impl Drop for SdlGamepadHint {
+    fn drop(&mut self) {
+        match self.0.take() {
+            Some(previous) => std::env::set_var(Self::VAR, previous),
+            None => std::env::remove_var(Self::VAR),
+        }
+    }
+}
+
 /// Creates a `RaylibBuilder` for choosing window options before initialization.
 pub fn init() -> RaylibBuilder {
     RaylibBuilder {
@@ -295,6 +350,27 @@ impl RaylibBuilder {
         self
     }
 
+    /// The mapping text this builder will register, bundled database first and
+    /// the caller's own mappings last so theirs win on a matching controller
+    /// GUID. Empty when both are absent.
+    #[cfg(feature = "sdl")]
+    fn gamepad_mappings_text(&self) -> String {
+        let mut text = String::new();
+
+        if self.bundled_gamepad_mappings {
+            text.push_str(gamepad_db::BUNDLED);
+        }
+
+        if let Some(custom) = &self.custom_gamepad_mappings {
+            if !text.is_empty() {
+                text.push('\n');
+            }
+            text.push_str(custom);
+        }
+
+        text
+    }
+
     /// Builds and initializes a Raylib window.
     ///
     /// # Panics
@@ -360,10 +436,19 @@ impl RaylibBuilder {
             ffi::SetTraceLogLevel(self.log_level as i32);
         }
 
+        // On the SDL backend the mappings have to be in place *before* the
+        // window comes up, because that is when raylib opens the controllers
+        // that are already plugged in. Held until the end of `build` so the
+        // environment is restored right after `InitWindow` returns.
+        #[cfg(feature = "sdl")]
+        let _sdl_gamepad_hint = SdlGamepadHint::set(&self.gamepad_mappings_text());
+
         let rl = init_window(self.width, self.height, &self.title);
 
         // Layer gamepad mappings over raylib's built-in table: bundled db
         // first, then the dev's custom mappings so theirs win on conflicts.
+        // Still needed after `InitWindow`: this is the only path on GLFW, and
+        // on SDL it covers controllers hotplugged later in the session.
         if self.bundled_gamepad_mappings {
             rl.set_gamepad_mappings(gamepad_db::BUNDLED);
         }
