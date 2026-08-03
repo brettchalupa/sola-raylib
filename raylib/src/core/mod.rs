@@ -74,6 +74,18 @@ impl Drop for RaylibHandle {
     }
 }
 
+/// Whether raylib's GL context is still alive.
+///
+/// `CloseWindow()` calls `rlglClose()` and then tears down the platform layer,
+/// which unloads the GL driver entirely: the `gl*` entry points raylib's
+/// `Unload*` functions call are unmapped, so calling one segfaults. GPU-backed
+/// resources check this in their `Drop` impls and skip the GPU release rather
+/// than crash.
+#[inline]
+pub(crate) fn gpu_alive() -> bool {
+    unsafe { ffi::IsWindowReady() }
+}
+
 /// A builder that allows more customization of the game window shown to the user before the `RaylibHandle` is created.
 ///
 /// One field per `ConfigFlags` value defined in raylib 6.0

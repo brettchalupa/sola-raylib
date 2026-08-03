@@ -11,7 +11,19 @@ use std::os::raw::{c_char, c_void};
 use std::path::Path;
 
 fn no_drop<T>(_thing: T) {}
-make_thin_wrapper!(Shader, ffi::Shader, ffi::UnloadShader);
+
+/// `UnloadShader` both deletes the GL program and frees the CPU-side `locs`
+/// array. Once the GL context is gone we can't do the first, but we still do
+/// the second by hand so nothing leaks.
+unsafe fn unload_shader(s: ffi::Shader) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadShader(s);
+    } else if s.id != ffi::rlGetShaderIdDefault() {
+        ffi::MemFree(s.locs as *mut c_void);
+    }
+}
+
+make_thin_wrapper!(Shader, ffi::Shader, unload_shader);
 make_thin_wrapper!(WeakShader, ffi::Shader, no_drop);
 
 impl RaylibHandle {

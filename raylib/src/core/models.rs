@@ -10,11 +10,77 @@ use std::os::raw::c_void;
 use std::ptr::NonNull;
 
 fn no_drop<T>(_thing: T) {}
-make_thin_wrapper!(Model, ffi::Model, ffi::UnloadModel);
+
+/// The CPU half of `UnloadMesh`: everything that function frees except the
+/// `rlUnloadVertexArray` / `rlUnloadVertexBuffer` calls, which can't run once
+/// the GL context is gone. Kept in sync with `UnloadMesh` in `rmodels.c`;
+/// a field added upstream that isn't mirrored here leaks at teardown.
+unsafe fn free_mesh_cpu(mesh: &ffi::Mesh) {
+    for p in [
+        mesh.vboId as *mut c_void,
+        mesh.vertices as *mut c_void,
+        mesh.texcoords as *mut c_void,
+        mesh.normals as *mut c_void,
+        mesh.colors as *mut c_void,
+        mesh.tangents as *mut c_void,
+        mesh.texcoords2 as *mut c_void,
+        mesh.indices as *mut c_void,
+        mesh.boneWeights as *mut c_void,
+        mesh.boneIndices as *mut c_void,
+        mesh.animVertices as *mut c_void,
+        mesh.animNormals as *mut c_void,
+    ] {
+        ffi::MemFree(p);
+    }
+}
+
+unsafe fn unload_mesh(mesh: ffi::Mesh) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadMesh(mesh);
+    } else {
+        free_mesh_cpu(&mesh);
+    }
+}
+
+unsafe fn unload_model(model: ffi::Model) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadModel(model);
+        return;
+    }
+    // Mirror `UnloadModel` in rmodels.c, minus the GPU releases.
+    for i in 0..model.meshCount as isize {
+        free_mesh_cpu(&*model.meshes.offset(i));
+    }
+    for i in 0..model.materialCount as isize {
+        ffi::MemFree((*model.materials.offset(i)).maps as *mut c_void);
+    }
+    for p in [
+        model.meshes as *mut c_void,
+        model.materials as *mut c_void,
+        model.meshMaterial as *mut c_void,
+        model.skeleton.bones as *mut c_void,
+        model.skeleton.bindPose as *mut c_void,
+    ] {
+        ffi::MemFree(p);
+    }
+}
+
+unsafe fn unload_material(material: ffi::Material) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadMaterial(material);
+        return;
+    }
+    if material.shader.id != ffi::rlGetShaderIdDefault() {
+        ffi::MemFree(material.shader.locs as *mut c_void);
+    }
+    ffi::MemFree(material.maps as *mut c_void);
+}
+
+make_thin_wrapper!(Model, ffi::Model, unload_model);
 make_thin_wrapper!(WeakModel, ffi::Model, no_drop);
-make_thin_wrapper!(Mesh, ffi::Mesh, |mesh: ffi::Mesh| ffi::UnloadMesh(mesh));
+make_thin_wrapper!(Mesh, ffi::Mesh, unload_mesh);
 make_thin_wrapper!(WeakMesh, ffi::Mesh, no_drop);
-make_thin_wrapper!(Material, ffi::Material, ffi::UnloadMaterial);
+make_thin_wrapper!(Material, ffi::Material, unload_material);
 make_thin_wrapper!(WeakMaterial, ffi::Material, no_drop);
 make_thin_wrapper!(BoneInfo, ffi::BoneInfo, no_drop);
 // raylib 6.0 removed the single-anim `UnloadModelAnimation`; only the

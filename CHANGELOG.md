@@ -23,7 +23,7 @@
   exposed as `core::gamepad_db::BUNDLED`. See
   https://github.com/brettchalupa/sola-raylib/issues/63
 
-### Fixes
+### Fixed
 
 - Don't show non-gamepad joysticks on Linux as gamepads. Previous versions were
   showing some keyboards, some mainboard sensors, etc. as gamepads which was
@@ -36,6 +36,8 @@
   https://github.com/brettchalupa/sola-raylib/pull/67
 - Fix window monitor functions panicing with SDL backend; see
   https://github.com/brettchalupa/sola-raylib/issues/65
+- Dropping a GPU resource after the window closed no longer segfaults; see
+  https://github.com/brettchalupa/sola-raylib/issues/70
 
 ## 6.2.0 - June 2, 2026
 

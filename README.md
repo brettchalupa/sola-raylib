@@ -327,11 +327,22 @@ The bundled database text is available as `core::gamepad_db::BUNDLED`.
 
 ## Drop Ordering
 
-Resources like `Texture2D`, `RenderTexture2D`, `Font`, `Model`, `Mesh`, and
-`Shader` hold GPU handles and free them in their `Drop` impl. `RaylibHandle`'s
-`Drop` calls `CloseWindow()`, which tears down the GL context. **GPU resources
-must drop before the `RaylibHandle`** — otherwise their unload calls run against
-a dead context and segfault.
+Resources like `Texture2D`, `RenderTexture2D`, `Font`, `Model`, `Mesh`,
+`Material`, and `Shader` hold GPU handles and free them in their `Drop` impl.
+`RaylibHandle`'s `Drop` calls `CloseWindow()`, which tears down the GL context
+and unloads the GL driver. Dropping a GPU resource after that point used to
+segfault in versions of sola-raylib pre v6.3.0. These `Drop` impls now notice
+the window is gone and skip the GPU release, so the wrong order is no longer a
+crash.
+
+Getting the order right is still worth it:
+
+- If you close one window and open another, a resource left over from the first
+  is released against the _second_ context, where its handle may name an
+  unrelated object. This is the one case the guard cannot detect, because from
+  its point of view a window is open.
+- Skipped releases produce no unload trace logs, which makes VRAM accounting
+  harder to follow. (The VRAM itself goes away with the context.)
 
 Rust drops local variables in reverse declaration order, and struct fields in
 **declaration order**. So if you hold both resources and `RaylibHandle` in the
@@ -352,8 +363,7 @@ The same rule applies when `rl` and resources are locals in the same function:
 declare `rl` first so it drops last.
 
 Audio resources (`Wave`, `Sound`, `Music`, `AudioStream`) are lifetime-bound to
-`RaylibAudio`, so the borrow checker enforces their ordering for you — no
-discipline required.
+`RaylibAudio`, so the borrow checker enforces their ordering for you.
 
 ## Building From Source
 

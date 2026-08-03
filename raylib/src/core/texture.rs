@@ -51,14 +51,27 @@ impl From<&NPatchInfo> for ffi::NPatchInfo {
 }
 
 fn no_drop<T>(_thing: T) {}
+
+/// `UnloadTexture` is pure GPU work, so it is skipped wholesale once the GL
+/// context is gone. Nothing leaks: a `Texture2D` owns no CPU allocation.
+unsafe fn unload_texture(t: ffi::Texture2D) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadTexture(t);
+    }
+}
+
+/// Same as [`unload_texture`]: `UnloadRenderTexture` only deletes the FBO and
+/// its color attachment, so skipping it leaks nothing CPU-side.
+unsafe fn unload_render_texture(t: ffi::RenderTexture2D) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadRenderTexture(t);
+    }
+}
+
 make_thin_wrapper!(Image, ffi::Image, ffi::UnloadImage);
-make_thin_wrapper!(Texture2D, ffi::Texture2D, ffi::UnloadTexture);
+make_thin_wrapper!(Texture2D, ffi::Texture2D, unload_texture);
 make_thin_wrapper!(WeakTexture2D, ffi::Texture2D, no_drop);
-make_thin_wrapper!(
-    RenderTexture2D,
-    ffi::RenderTexture2D,
-    ffi::UnloadRenderTexture
-);
+make_thin_wrapper!(RenderTexture2D, ffi::RenderTexture2D, unload_render_texture);
 make_thin_wrapper!(WeakRenderTexture2D, ffi::RenderTexture2D, no_drop);
 
 // Weak things can be clone

@@ -13,7 +13,20 @@ use std::ffi::{CString, OsString};
 use std::mem::ManuallyDrop;
 
 fn no_drop<T>(_thing: T) {}
-make_thin_wrapper!(Font, ffi::Font, ffi::UnloadFont);
+
+/// `UnloadFont` frees the glyph images and rec array (CPU) *and* the atlas
+/// texture (GPU). Once the GL context is gone we replicate just the CPU half,
+/// mirroring what `UnloadFont` does minus the `UnloadTexture` call.
+unsafe fn unload_font(f: ffi::Font) {
+    if crate::core::gpu_alive() {
+        ffi::UnloadFont(f);
+    } else if f.texture.id != ffi::GetFontDefault().texture.id {
+        ffi::UnloadFontData(f.glyphs, f.glyphCount);
+        ffi::MemFree(f.recs as *mut std::os::raw::c_void);
+    }
+}
+
+make_thin_wrapper!(Font, ffi::Font, unload_font);
 make_thin_wrapper!(WeakFont, ffi::Font, no_drop);
 make_thin_wrapper!(GlyphInfo, ffi::GlyphInfo, no_drop);
 
