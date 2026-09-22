@@ -1,5 +1,10 @@
 # sola-raylib Changelog
 
+## v6.3.1 - September 22, 2026
+
+- Fix gamepad check crashing on WASM; see
+  [#74](https://github.com/brettchalupa/sola-raylib/pull/74)
+
 ## v6.3.0 - August 3, 2026
 
 ### BREAKING
