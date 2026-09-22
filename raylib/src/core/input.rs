@@ -15,7 +15,7 @@ use std::ffi::CStr;
 // as a joystick. `glfwJoystickIsGamepad` is true only for devices with a valid
 // gamepad mapping, which is exactly the set raylib's GLFW input path can read.
 // Not declared on the SDL backend, where GLFW is absent and SDL already filters.
-#[cfg(not(feature = "sdl"))]
+#[cfg(all(not(feature = "sdl"), not(target_arch = "wasm32")))]
 extern "C" {
     fn glfwJoystickIsGamepad(jid: std::ffi::c_int) -> std::ffi::c_int;
 }
@@ -118,11 +118,11 @@ impl RaylibHandle {
             if !ffi::IsGamepadAvailable(gamepad) {
                 return false;
             }
-            #[cfg(not(feature = "sdl"))]
+            #[cfg(all(not(feature = "sdl"), not(target_arch = "wasm32")))]
             {
                 glfwJoystickIsGamepad(gamepad) != 0
             }
-            #[cfg(feature = "sdl")]
+            #[cfg(any(feature = "sdl", target_arch = "wasm32"))]
             {
                 true
             }

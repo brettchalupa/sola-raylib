@@ -221,7 +221,7 @@ fn build_with_cmake(src_path: &str) {
                 .last()
                 .expect("Could not get abi version. Is ANDROID_PLATFORM valid?");
             let toolchain_file =
-                format!("{}/build/cmake/android.toolchain.cmake", &android_ndk_home);
+                format!("{}/build/cmake/android.toolchain.cmake", android_ndk_home);
             // Detect ANDROID_ABI using the target triple
             let android_arch_abi = match target.as_str() {
                 "aarch64-linux-android" => "arm64-v8a",
