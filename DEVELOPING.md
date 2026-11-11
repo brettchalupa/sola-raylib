@@ -145,9 +145,16 @@ it as a breaking release.
    git add raylib-sys/raylib
    ```
 
-2. **Bump raygui to the matching release.** raygui is vendored, not submoduled,
-   so replace `raylib-sys/binding/raygui.h` with the new release from
-   [raysan5/raygui](https://github.com/raysan5/raygui) and commit it.
+2. **Bump raygui.** raygui is vendored as a single header (not submoduled), so
+   pull the latest version from [raysan5/raygui](https://github.com/raysan5/raygui)
+   and commit it:
+
+   ```
+   just update-raygui # pull latest from master branch
+   ```
+
+   This replaces `raylib-sys/binding/raygui.h` with `src/raygui.h` from the
+   raygui repo.
 
 3. **Force a clean rebuild of the sys crate.** bindgen caches aggressively and
    `build.rs` won't always notice a header swap:
