@@ -15,6 +15,7 @@ No dependencies beyond the Python standard library.
 """
 
 import os
+import re
 
 # Functions we intentionally don't wrap in the safe layer.
 wont_impl = [
@@ -72,7 +73,7 @@ wont_impl = [
     "ChangeDirectory",
     "IsFileNameValid",
     "GetFileModTime",
-    # raylib 6.0 file ops — covered by std::fs.
+    # file and path helpers are covered by Rust's std::path and std::fs
     "FileRename",
     "FileRemove",
     "FileCopy",
@@ -81,6 +82,11 @@ wont_impl = [
     "FileTextFindIndex",
     "GetDirectoryFileCount",
     "GetDirectoryFileCountEx",
+    "IsFileHidden",
+    "IsPathDirectory",
+    "IsPathAbsolute",
+    # Declared in raylib 6.2's header but not implemented upstream yet.
+    "ImageDrawTextPro",
     # Misc
     "MemRealloc",
     # ModelAnimation cleanup is inlined into the safe layer's Drop impl
@@ -100,7 +106,7 @@ def file_find(lib, src, dest, opener):
                 src_files.append("\n".join(f.readlines()))
 
     with open(src) as d:
-        lines = [ln for ln in d.readlines() if ln.startswith(opener)]
+        lines = [ln for ln in d.readlines() if ln.lstrip().startswith(opener)]
 
     for line in lines:
         func_name = (
@@ -109,8 +115,11 @@ def file_find(lib, src, dest, opener):
             .replace("*", "")
         )
 
+        # Word-boundary match: a call to `ffi::ImageDrawImagePro` must not
+        # count as covering the distinct `ImageDrawImage` function.
         found = func_name in wont_impl or any(
-            "ffi::" + func_name in body for body in src_files
+            re.search(r"ffi::" + re.escape(func_name) + r"\b", body)
+            for body in src_files
         )
         if not found:
             print("- [ ] " + func_name)

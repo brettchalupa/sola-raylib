@@ -397,6 +397,9 @@ impl Image {
     }
 
     /// Draws a source image within a destination image.
+    ///
+    /// Maps to raylib 6.2's `ImageDrawImagePro` (the old `ImageDraw`) with a
+    /// zero origin and no rotation.
     #[inline]
     pub fn draw(
         &mut self,
@@ -406,11 +409,66 @@ impl Image {
         tint: impl Into<ffi::Color>,
     ) {
         unsafe {
-            ffi::ImageDraw(
+            ffi::ImageDrawImagePro(
                 &mut self.0,
                 src.0,
                 src_rec.into(),
                 dst_rec.into(),
+                ffi::Vector2 { x: 0.0, y: 0.0 },
+                0.0,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draws an image within an image at the given position.
+    #[inline]
+    pub fn draw_image(&mut self, src: &Image, pos_x: i32, pos_y: i32, tint: impl Into<ffi::Color>) {
+        unsafe {
+            ffi::ImageDrawImage(&mut self.0, src.0, pos_x, pos_y, tint.into());
+        }
+    }
+
+    /// Draws an image within an image with scaling and rotation.
+    ///
+    /// `rotation` is in degrees, matching raylib's C API.
+    #[inline]
+    pub fn draw_image_ex(
+        &mut self,
+        src: &Image,
+        position: impl Into<ffi::Vector2>,
+        rotation: f32,
+        scale: f32,
+        tint: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::ImageDrawImageEx(
+                &mut self.0,
+                src.0,
+                position.into(),
+                rotation,
+                scale,
+                tint.into(),
+            );
+        }
+    }
+
+    /// Draws a part of an image defined by a source rectangle at the given
+    /// position.
+    #[inline]
+    pub fn draw_image_rec(
+        &mut self,
+        src: &Image,
+        src_rec: Rectangle,
+        position: impl Into<ffi::Vector2>,
+        tint: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::ImageDrawImageRec(
+                &mut self.0,
+                src.0,
+                src_rec.into(),
+                position.into(),
                 tint.into(),
             );
         }
@@ -484,6 +542,18 @@ impl Image {
         unsafe { ffi::ImageDrawLineV(&mut self.0, start.into(), end.into(), color.into()) }
     }
 
+    /// Draw a lines sequence within an image
+    pub fn draw_line_strip(&mut self, points: &[Vector2], color: impl Into<ffi::Color>) {
+        unsafe {
+            ffi::ImageDrawLineStrip(
+                &mut self.0,
+                points.as_ptr() as *mut ffi::Vector2,
+                points.len() as i32,
+                color.into(),
+            )
+        }
+    }
+
     /// Draw triangle within an image
     pub fn draw_triangle(
         &mut self,
@@ -498,6 +568,8 @@ impl Image {
     }
 
     /// Draw triangle with interpolated colors within an image
+    ///
+    /// raylib 6.2 renamed `ImageDrawTriangleEx` to `ImageDrawTriangleGradient`.
     pub fn draw_triangle_ex(
         &mut self,
         v1: impl Into<ffi::Vector2>,
@@ -508,7 +580,7 @@ impl Image {
         c3: impl Into<ffi::Color>,
     ) {
         unsafe {
-            ffi::ImageDrawTriangleEx(
+            ffi::ImageDrawTriangleGradient(
                 &mut self.0,
                 v1.into(),
                 v2.into(),
@@ -588,6 +660,25 @@ impl Image {
         unsafe { ffi::ImageDrawCircleV(&mut self.0, center.into(), radius, color.into()) }
     }
 
+    /// Draw a gradient-filled circle within an image
+    pub fn draw_circle_gradient(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        radius: f32,
+        inner: impl Into<ffi::Color>,
+        outer: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::ImageDrawCircleGradient(
+                &mut self.0,
+                center.into(),
+                radius,
+                inner.into(),
+                outer.into(),
+            )
+        }
+    }
+
     /// Draws a rectangle within an image.
     #[inline]
     pub fn draw_rectangle(
@@ -626,16 +717,83 @@ impl Image {
         }
     }
 
-    /// Draws a rectangle within an image.
+    /// Draws a color-filled rectangle with pro parameters (origin and
+    /// rotation) within an image.
+    ///
+    /// `origin` is relative to the rectangle's top-left and `rotation` is in
+    /// degrees, matching raylib's C API.
+    pub fn draw_rectangle_pro(
+        &mut self,
+        rec: Rectangle,
+        origin: impl Into<ffi::Vector2>,
+        rotation: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::ImageDrawRectanglePro(
+                &mut self.0,
+                rec.into(),
+                origin.into(),
+                rotation,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draws a 1-pixel rectangle outline within an image.
+    ///
+    /// raylib 6.2 moved the thickness parameter out of `ImageDrawRectangleLines`
+    /// into `ImageDrawRectangleLinesEx`, matching the screen-space API.
     #[inline]
     pub fn draw_rectangle_lines(
+        &mut self,
+        pos_x: i32,
+        pos_y: i32,
+        width: i32,
+        height: i32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::ImageDrawRectangleLines(&mut self.0, pos_x, pos_y, width, height, color.into());
+        }
+    }
+
+    /// Draws a rectangle outline with line thickness within an image.
+    ///
+    /// Renamed from `draw_rectangle_lines` in the raylib 6.2 upgrade; calls
+    /// `ImageDrawRectangleLinesEx` since raylib 6.2's
+    /// `ImageDrawRectangleLines` no longer takes a thickness.
+    #[inline]
+    pub fn draw_rectangle_lines_ex(
         &mut self,
         rec: Rectangle,
         thickness: i32,
         color: impl Into<ffi::Color>,
     ) {
         unsafe {
-            ffi::ImageDrawRectangleLines(&mut self.0, rec.into(), thickness, color.into());
+            ffi::ImageDrawRectangleLinesEx(&mut self.0, rec.into(), thickness, color.into());
+        }
+    }
+
+    /// Draw rectangle with gradient colors within an image,
+    /// counter-clockwise color order.
+    pub fn draw_rectangle_gradient_ex(
+        &mut self,
+        rec: Rectangle,
+        col1: impl Into<ffi::Color>,
+        col2: impl Into<ffi::Color>,
+        col3: impl Into<ffi::Color>,
+        col4: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::ImageDrawRectangleGradientEx(
+                &mut self.0,
+                rec.into(),
+                col1.into(),
+                col2.into(),
+                col3.into(),
+                col4.into(),
+            );
         }
     }
 
@@ -744,8 +902,10 @@ impl Image {
     }
 
     /// Adjusts the contrast of `image`.
+    ///
+    /// raylib 6.2 changed the parameter from `f32` to `i32` in the `-100..=100` range.
     #[inline]
-    pub fn color_contrast(&mut self, contrast: f32) {
+    pub fn color_contrast(&mut self, contrast: i32) {
         unsafe {
             ffi::ImageColorContrast(&mut self.0, contrast);
         }
@@ -1252,7 +1412,7 @@ pub fn get_pixel_color(src: &[u8], format: ffi::PixelFormat) -> Option<crate::co
     if src.len() < needed {
         return None;
     }
-    let raw = unsafe { ffi::GetPixelColor(src.as_ptr() as *mut std::ffi::c_void, format as i32) };
+    let raw = unsafe { ffi::GetPixelColor(src.as_ptr() as *const std::ffi::c_void, format as i32) };
     Some(raw.into())
 }
 
@@ -1334,6 +1494,27 @@ impl RaylibHandle {
         }
         Ok(RenderTexture2D(t))
     }
+
+    /// Loads a texture for rendering (framebuffer) with a specific pixel
+    /// format.
+    ///
+    /// Useful for float/half-float render targets (e.g.
+    /// `PixelFormat::PIXELFORMAT_UNCOMPRESSED_R32G32B32A32_FLOAT`) for
+    /// HDR-style pipelines; note that sampling and blending behavior depends
+    /// on the backend's support for the chosen format.
+    pub fn load_render_texture_ex(
+        &mut self,
+        _: &RaylibThread,
+        width: u32,
+        height: u32,
+        format: crate::consts::PixelFormat,
+    ) -> Result<RenderTexture2D, Error> {
+        let t = unsafe { ffi::LoadRenderTextureEx(width as i32, height as i32, format as i32) };
+        if t.id == 0 {
+            return Err(error!("failed to create render texture."));
+        }
+        Ok(RenderTexture2D(t))
+    }
 }
 
 impl RaylibHandle {
@@ -1364,5 +1545,142 @@ impl RaylibHandle {
         {
             ffi::UnloadRenderTexture(*texture.as_ref())
         }
+    }
+}
+
+#[cfg(test)]
+mod image_draw_tests {
+    use super::*;
+
+    /// Reads a pixel out of an image.
+    ///
+    /// SAFETY: the image-drawing functions used by these tests are pure CPU
+    /// helpers in raylib's rtextures module and need no window or GPU
+    /// context. `get_image_data` copies through raylib-owned memory.
+    fn pixel(img: &Image, x: i32, y: i32) -> (u8, u8, u8, u8) {
+        let data = img.get_image_data();
+        let colors: &[Color] = data.as_ref();
+        let c = colors[(y * img.width + x) as usize];
+        (c.r, c.g, c.b, c.a)
+    }
+
+    #[test]
+    fn draw_image_blits_exact_source() {
+        let src = Image::gen_image_color(4, 4, Color::RED);
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        img.draw_image(&src, 10, 10, Color::WHITE);
+        assert_eq!(pixel(&img, 10, 10), (255, 0, 0, 255));
+        assert_eq!(pixel(&img, 13, 13), (255, 0, 0, 255), "4x4 covers 10..=13");
+        assert_eq!(pixel(&img, 14, 10), (255, 255, 255, 255), "outside src");
+    }
+
+    #[test]
+    fn draw_image_rec_crops_source_rectangle() {
+        let src = Image::gen_image_color(4, 4, Color::RED);
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        img.draw_image_rec(
+            &src,
+            Rectangle::new(0.0, 0.0, 2.0, 2.0),
+            Vector2::new(20.0, 20.0),
+            Color::WHITE,
+        );
+        assert_eq!(pixel(&img, 20, 20), (255, 0, 0, 255));
+        assert_eq!(pixel(&img, 21, 21), (255, 0, 0, 255));
+        assert_eq!(
+            pixel(&img, 22, 22),
+            (255, 255, 255, 255),
+            "srcRec was 2x2, so 22 is past the blit"
+        );
+    }
+
+    #[test]
+    fn draw_image_ex_scales_source() {
+        let src = Image::gen_image_color(4, 4, Color::RED);
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        img.draw_image_ex(&src, Vector2::new(2.0, 2.0), 0.0, 2.0, Color::WHITE);
+        // 4x4 scaled by 2 covers 2..=9.
+        assert_eq!(pixel(&img, 2, 2), (255, 0, 0, 255));
+        assert_eq!(pixel(&img, 9, 9), (255, 0, 0, 255));
+        assert_eq!(pixel(&img, 10, 10), (255, 255, 255, 255), "past scaled src");
+    }
+
+    #[test]
+    fn draw_line_strip_connects_points() {
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        let points: &[Vector2] = &[
+            Vector2::new(5.0, 5.0),
+            Vector2::new(20.0, 5.0),
+            Vector2::new(20.0, 15.0),
+        ];
+        img.draw_line_strip(points, Color::DARKGREEN);
+        assert_eq!(pixel(&img, 10, 5), (0, 100, 0, 255));
+        assert_eq!(pixel(&img, 20, 10), (0, 100, 0, 255));
+        assert_eq!(pixel(&img, 10, 10), (255, 255, 255, 255), "off the strip");
+    }
+
+    #[test]
+    fn draw_rectangle_lines_is_one_pixel_thin() {
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        img.draw_rectangle_lines(5, 5, 10, 10, Color::BLACK);
+        assert_eq!(pixel(&img, 5, 5), (0, 0, 0, 255), "top-left corner");
+        assert_eq!(pixel(&img, 14, 5), (0, 0, 0, 255), "top-right corner");
+        assert_eq!(pixel(&img, 5, 14), (0, 0, 0, 255), "bottom-left corner");
+        assert_eq!(pixel(&img, 14, 14), (0, 0, 0, 255), "bottom-right corner");
+        assert_eq!(pixel(&img, 10, 10), (255, 255, 255, 255), "interior");
+        assert_eq!(pixel(&img, 15, 10), (255, 255, 255, 255), "outside");
+    }
+
+    #[test]
+    fn draw_rectangle_gradient_ex_interpolates_corners() {
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        img.draw_rectangle_gradient_ex(
+            Rectangle::new(0.0, 0.0, 16.0, 16.0),
+            Color::RED,
+            Color::GREEN,
+            Color::BLUE,
+            Color::YELLOW,
+        );
+        // col1 lands exactly on the top-left pixel.
+        assert_eq!(pixel(&img, 0, 0), (255, 0, 0, 255));
+        // The bottom-right pixel is a bilinear blend dominated by col3.
+        let br = pixel(&img, 15, 15);
+        assert!(br.2 > 200, "bottom-right is mostly blue, got {:?}", br);
+        assert!(br.0 < 50, "bottom-right has little red, got {:?}", br);
+    }
+
+    #[test]
+    fn draw_circle_gradient_fades_from_center() {
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        img.draw_circle_gradient(Vector2::new(16.5, 16.5), 8.0, Color::RED, Color::BLUE);
+        // The exact center is the inner color.
+        assert_eq!(pixel(&img, 16, 16), (255, 0, 0, 255));
+        // Pixels beyond the radius are untouched.
+        assert_eq!(pixel(&img, 27, 16), (255, 255, 255, 255));
+        // A pixel between center and edge is a blend of both.
+        let mid = pixel(&img, 22, 16);
+        assert!(
+            mid.0 > 0 && mid.2 > 0,
+            "midpoint blends red and blue, got {:?}",
+            mid
+        );
+    }
+
+    #[test]
+    fn draw_rectangle_pro_rotates_around_origin() {
+        let mut img = Image::gen_image_color(32, 32, Color::WHITE);
+        // 8x8 square at (12, 12); the origin is relative to the rectangle's
+        // top-left, so (4, 4) is its center. Rotating 45 degrees around the
+        // center turns the footprint into a diamond with inradius 4.
+        img.draw_rectangle_pro(
+            Rectangle::new(12.0, 12.0, 8.0, 8.0),
+            Vector2::new(4.0, 4.0),
+            45.0,
+            Color::RED,
+        );
+        assert_eq!(pixel(&img, 16, 16), (255, 0, 0, 255), "rotation origin");
+        // Distance 3 from center, on the vertical axis: inside the diamond.
+        assert_eq!(pixel(&img, 16, 13), (255, 0, 0, 255));
+        // Distance ~5.66 from center: the old corner, outside the diamond.
+        assert_eq!(pixel(&img, 12, 12), (255, 255, 255, 255));
     }
 }

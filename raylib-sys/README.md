@@ -5,7 +5,7 @@ Raw FFI bindings for [raylib](https://www.raylib.com/) and
 [`sola-raylib`](../raylib) wrapper. Not intended to be used directly.
 
 `sola-raylib-sys N.x` tracks raylib's major version (5.x → raylib 5.5, 6.x →
-raylib 6.0) and is pinned to the matching `sola-raylib N.x`.
+raylib 6.2) and is pinned to the matching `sola-raylib N.x`.
 
 ## How bindings are built
 
@@ -64,7 +64,7 @@ through. Quick map:
 | `opengl_21` / `opengl_33` / `opengl_es_20` / `opengl_es_30` | Select the GL backend raylib compiles against.                                                                                        |
 | `noscreenshot`                                              | Disable raylib's built-in F12 screenshot keybind.                                                                                     |
 | `custom_frame_control`                                      | Enable raylib's `SUPPORT_CUSTOM_FRAME_CONTROL` build flag.                                                                            |
-| `software_render`, `platform_memory`, `platform_web_rgfw`   | Experimental raylib 6.0 backends; see the top-level README for caveats.                                                               |
+| `software_render`, `platform_memory`, `platform_web_rgfw`   | Experimental backends (introduced in raylib 6.0, still upstream-experimental in 6.2); see the top-level README for caveats.           |
 
 ## Layout
 

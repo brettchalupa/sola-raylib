@@ -83,6 +83,15 @@ fn build_with_cmake(src_path: &str) {
         .define("BUILD_EXAMPLES", "OFF")
         .define("CMAKE_BUILD_TYPE", profile);
 
+    // Keep the C build's macOS deployment target aligned with Rust's link
+    // target to avoid version-mismatch warnings and linkage issues on newer
+    // SDKs (e.g. GitHub macOS runners).
+    if platform_os == PlatformOS::OSX {
+        if let Ok(ver) = env::var("MACOSX_DEPLOYMENT_TARGET") {
+            builder.define("CMAKE_OSX_DEPLOYMENT_TARGET", ver);
+        }
+    }
+
     // On Windows, cc-rs represents emsdk's batch-file compilers as
     // `cmd /c emcc.bat`. The cmake crate appends those wrapper args to
     // CMAKE_C_FLAGS, which makes clang see `/c` and `emcc.bat` as input
@@ -302,9 +311,9 @@ fn build_with_cmake(src_path: &str) {
 /// then records that choice in the generated `raylib-config.cmake` as a
 /// `find_dependency(SDL3 ...)` or `find_dependency(SDL2 ...)` line. Reading
 /// it back mirrors raylib's resolution on every platform without relying on
-/// pkg-config (which Windows does not ship). Note that we only emit the
-/// link directive here, so the SDL library's own search path must be on the
-/// linker path already (e.g. via `RUSTFLAGS` or a `.cargo/config.toml`).
+/// pkg-config (which Windows does not ship). We also try to emit the library
+/// search path when CMake found SDL in a non-standard prefix (e.g.
+/// Homebrew/Linuxbrew), so the final Rust link step can locate it.
 #[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
 fn emit_sdl_link_lib(dst_lib: &Path) {
     let config = dst_lib.join("cmake/raylib/raylib-config.cmake");
@@ -315,17 +324,86 @@ fn emit_sdl_link_lib(dst_lib: &Path) {
             config.display()
         )
     });
-    if contents.contains("find_dependency(SDL3") {
+    let sdl_pkg = if contents.contains("find_dependency(SDL3") {
         println!("cargo:rustc-link-lib=SDL3");
+        "SDL3"
     } else if contents.contains("find_dependency(SDL2") {
         println!("cargo:rustc-link-lib=SDL2");
+        "SDL2"
     } else {
         panic!(
             "raylib was built with PLATFORM=SDL but its config at {} records \
              neither SDL3 nor SDL2",
             config.display()
         );
+    };
+
+    if let Some(lib_dir) = find_sdl_link_search_dir(dst_lib, sdl_pkg) {
+        println!("cargo:rustc-link-search=native={}", lib_dir.display());
     }
+}
+
+#[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
+fn find_sdl_link_search_dir(dst_lib: &Path, sdl_pkg: &str) -> Option<PathBuf> {
+    // Try to derive the lib dir from CMake's <PKG>_DIR cache entry, e.g.
+    // /prefix/lib/cmake/SDL3 -> /prefix/lib. CMake may find SDL in a prefix
+    // that isn't on the default linker search path (Homebrew/Linuxbrew).
+    if let Some(build_root) = dst_lib.parent() {
+        let cache = build_root.join("build/CMakeCache.txt");
+        if let Ok(cache_contents) = std::fs::read_to_string(&cache) {
+            let needle = format!("{sdl_pkg}_DIR:PATH=");
+            if let Some(line) = cache_contents.lines().find(|l| l.starts_with(&needle)) {
+                let dir = PathBuf::from(line.trim_start_matches(&needle));
+                if let Some(lib_dir) = sdl_lib_dir_from_cmake_dir(&dir, sdl_pkg) {
+                    return Some(lib_dir);
+                }
+            }
+        }
+    }
+
+    // Fall back to pkg-config (helpful on Unix when it knows about SDL).
+    let pkg = if sdl_pkg == "SDL3" { "sdl3" } else { "sdl2" };
+    if let Ok(out) = Command::new("pkg-config")
+        .args(["--libs-only-L", pkg])
+        .output()
+    {
+        if out.status.success() {
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            for token in stdout.split_whitespace() {
+                if let Some(path) = token.strip_prefix("-L") {
+                    let p = PathBuf::from(path);
+                    if p.is_dir() {
+                        return Some(p);
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+#[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
+fn sdl_lib_dir_from_cmake_dir(cmake_dir: &Path, sdl_pkg: &str) -> Option<PathBuf> {
+    // Typical layouts: <prefix>/lib/cmake/SDL3 or <prefix>/lib64/cmake/SDL3.
+    let lib_names: &[&str] = if sdl_pkg == "SDL3" {
+        &["libSDL3.so", "libSDL3.dylib", "SDL3.lib"]
+    } else {
+        &["libSDL2.so", "libSDL2.dylib", "SDL2.lib"]
+    };
+
+    let mut cur = cmake_dir.to_path_buf();
+    for _ in 0..4 {
+        if !cur.pop() {
+            break;
+        }
+        for name in lib_names {
+            if cur.join(name).exists() {
+                return Some(cur.clone());
+            }
+        }
+    }
+    None
 }
 
 fn gen_bindings() {
@@ -474,9 +552,9 @@ fn configure_windows_msvc_env(target: &str) {
         return;
     };
 
-    for (key, value) in tool.env() {
+    for (key, value) in tool.get_envs() {
         if key.to_string_lossy().eq_ignore_ascii_case("path") {
-            let mut combined = value.clone();
+            let mut combined = value.to_os_string();
             if let Some(existing) = env::var_os("PATH") {
                 combined.push(";");
                 combined.push(existing);
@@ -603,6 +681,7 @@ fn link(platform: Platform, platform_os: PlatformOS) {
             println!("cargo:rustc-link-lib=framework=IOKit");
             println!("cargo:rustc-link-lib=framework=CoreFoundation");
             println!("cargo:rustc-link-lib=framework=CoreVideo");
+            println!("cargo:rustc-link-lib=framework=QuartzCore");
         }
         _ => (),
     }

@@ -106,6 +106,7 @@ examples:
     just example camera_2d
     just example extensions
     just example hello_raylib
+    just example image_draw
     just example input
     just example logo
     just example font
@@ -121,7 +122,7 @@ examples:
     just examples-sw
     just features-build
 
-# Smoke-test the CPU software renderer backend (raylib 6.0 `rlsw`) over SDL.
+# Smoke-test the CPU software renderer backend (`rlsw`) over SDL.
 # Requires SDL2 dev headers. See `example-sw` comment above for details.
 examples-sw:
     just example-sw hello_raylib
