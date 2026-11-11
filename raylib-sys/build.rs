@@ -83,6 +83,15 @@ fn build_with_cmake(src_path: &str) {
         .define("BUILD_EXAMPLES", "OFF")
         .define("CMAKE_BUILD_TYPE", profile);
 
+    // Keep the C build's macOS deployment target aligned with Rust's link
+    // target to avoid version-mismatch warnings and linkage issues on newer
+    // SDKs (e.g. GitHub macOS runners).
+    if platform_os == PlatformOS::OSX {
+        if let Ok(ver) = env::var("MACOSX_DEPLOYMENT_TARGET") {
+            builder.define("CMAKE_OSX_DEPLOYMENT_TARGET", ver);
+        }
+    }
+
     // On Windows, cc-rs represents emsdk's batch-file compilers as
     // `cmd /c emcc.bat`. The cmake crate appends those wrapper args to
     // CMAKE_C_FLAGS, which makes clang see `/c` and `emcc.bat` as input
@@ -672,6 +681,7 @@ fn link(platform: Platform, platform_os: PlatformOS) {
             println!("cargo:rustc-link-lib=framework=IOKit");
             println!("cargo:rustc-link-lib=framework=CoreFoundation");
             println!("cargo:rustc-link-lib=framework=CoreVideo");
+            println!("cargo:rustc-link-lib=framework=QuartzCore");
         }
         _ => (),
     }
