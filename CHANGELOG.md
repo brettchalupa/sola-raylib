@@ -9,6 +9,13 @@
 
 ### BREAKING
 
+- **`AudioStream::update` now takes an explicit `frame_count: i32` argument**
+  (`update(&mut self, data: &[T], frame_count: i32)`) and forwards it to
+  `ffi::UpdateAudioStream`, matching Raylib’s C API where `frameCount` is the
+  number of frames (not interleaved sample elements). This fixes incorrect
+  buffer updates for multi-channel audio. For fully interleaved data,
+  `frame_count` is typically `data.len() / self.channels() as usize`. See
+  [#78](https://github.com/brettchalupa/sola-raylib/issues/78)
 - **`Image::color_contrast` now takes `i32`** in the `-100..=100` range instead
   of `f32`, matching raylib 6.2's `ImageColorContrast` signature change
 - **`Image::draw_rectangle_lines(rec, thickness, color)` is now
