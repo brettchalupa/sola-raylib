@@ -586,13 +586,18 @@ impl<'aud> AudioStream<'aud> {
     }
 
     /// Updates audio stream buffers with data.
+    ///
+    /// `frame_count` is the number of audio frames in `data` (not the number of
+    /// sample values). For interleaved multi-channel streams, a single frame
+    /// contains one sample per channel, so `frame_count` is typically
+    /// `data.len() / self.channels() as usize`.
     #[inline]
-    pub fn update<T: AudioSample>(&mut self, data: &[T]) {
+    pub fn update<T: AudioSample>(&mut self, data: &[T], frame_count: i32) {
         unsafe {
             ffi::UpdateAudioStream(
                 self.0,
                 data.as_ptr() as *const std::os::raw::c_void,
-                data.len() as i32,
+                frame_count,
             );
         }
     }
