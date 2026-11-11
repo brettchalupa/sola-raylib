@@ -132,7 +132,7 @@ working. The other examples mostly load assets or parse CLI flags via
 
 When a new raylib release lands upstream, walk through this checklist on a fresh
 branch. The major version of sola-raylib tracks raylib's major (5.x binds 5.5,
-6.x binds 6.0), so a major raylib bump is also a major sola-raylib bump — treat
+6.x binds 6.2), so a major raylib bump is also a major sola-raylib bump — treat
 it as a breaking release.
 
 1. **Bump the raylib submodule.**
@@ -140,7 +140,7 @@ it as a breaking release.
    ```
    cd raylib-sys/raylib
    git fetch --tags
-   git checkout <new-tag>       # e.g. 6.0
+   git checkout <new-tag>       # e.g. 6.2
    cd ../..
    git add raylib-sys/raylib
    ```

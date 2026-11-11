@@ -565,6 +565,13 @@ pub trait RaylibDrawGui {
         }
     }
     /// Message Box control, displays a message
+    ///
+    /// Returns the pressed button index (`1`-based), `0` if the window close
+    /// button was pressed, or `-1` if nothing was pressed this frame.
+    ///
+    /// raygui 5.x moved the pressed-button index into an out-parameter
+    /// (`btnActive`) and made the return value a `GuiResult` status; this
+    /// wrapper keeps the pre-5.x return semantics.
     #[inline]
     fn gui_message_box(
         &mut self,
@@ -576,18 +583,35 @@ pub trait RaylibDrawGui {
         let c_text = CString::new(text).unwrap();
         let c_message = CString::new(message).unwrap();
         let c_buttons = CString::new(buttons).unwrap();
-        unsafe {
+
+        // raygui 5.x: 0 = window close button, otherwise the 1-based button index.
+        let mut btn_active = -1;
+        let result = unsafe {
             ffi::GuiMessageBox(
                 bounds.into(),
                 c_text.as_ptr(),
                 c_message.as_ptr(),
                 c_buttons.as_ptr(),
+                &mut btn_active,
             )
+        };
+
+        if result == ffi::GuiResult::RESULT_PRESSED as i32 {
+            btn_active
+        } else {
+            -1
         }
     }
     /// Text Input Box control, ask for text
     // Mirrors raylib's `GuiTextInputBox` which takes the same number of parameters;
     // splitting would require changing the public API shape.
+    ///
+    /// Returns the pressed button index (`1`-based), `0` if the window close
+    /// button was pressed, or `-1` if nothing was pressed this frame.
+    ///
+    /// raygui 5.x moved the pressed-button index into an out-parameter
+    /// (`btnActive`), reordered the text parameters, and made the return value
+    /// a `GuiResult` status; this wrapper keeps the pre-5.x return semantics.
     #[allow(clippy::too_many_arguments)]
     #[inline]
     fn gui_text_input_box(
@@ -608,14 +632,18 @@ pub trait RaylibDrawGui {
         let c_title = CString::new(title).unwrap();
         let c_message = CString::new(message).unwrap();
         let c_buttons = CString::new(buttons).unwrap();
-        let btn_index = unsafe {
+
+        // raygui 5.x: 0 = window close button, otherwise the 1-based button index.
+        let mut btn_active = -1;
+        let result = unsafe {
             ffi::GuiTextInputBox(
                 bounds.into(),
                 c_title.as_ptr(),
                 c_message.as_ptr(),
-                c_buttons.as_ptr(),
                 ptr as *mut c_char,
                 capacity as i32,
+                c_buttons.as_ptr(),
+                &mut btn_active,
                 secret_view_active,
             )
         };
@@ -638,7 +666,12 @@ pub trait RaylibDrawGui {
             // There is no null terminator, the best we can do is to not
             // update the string length.
         }
-        btn_index
+
+        if result == ffi::GuiResult::RESULT_PRESSED as i32 {
+            btn_active
+        } else {
+            -1
+        }
     }
 
     /// Color Picker control

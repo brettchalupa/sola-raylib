@@ -1814,7 +1814,7 @@ impl Matrix {
     }
 
     /// Compose a transform matrix from translation, rotation, and scale.
-    /// Mirrors raymath's `MatrixCompose` (raylib 6.0).
+    /// Mirrors raymath's `MatrixCompose` (raylib 6.2).
     pub fn compose(translation: Vector3, rotation: Quaternion, scale: Vector3) -> Matrix {
         let right = Vector3::new(1.0, 0.0, 0.0)
             .scale_by(scale.x)

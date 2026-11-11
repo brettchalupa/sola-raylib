@@ -1,5 +1,74 @@
 # sola-raylib Changelog
 
+## UNRELEASED
+
+- Upgrade to raylib v6.2 (sha: 02566453880e06bec97f5b8160fa6fe1e98397ca,
+  [GitHub link](https://github.com/raysan5/raylib/commit/02566453880e06bec97f5b8160fa6fe1e98397ca))
+- Upgrade raygui.h to SHA 1abccb3a5303d041dc14404b7dd874fa665dd4af,
+  [GitHub link](https://github.com/raysan5/raygui/blob/1abccb3a5303d041dc14404b7dd874fa665dd4af/src/raygui.h)
+
+### BREAKING
+
+- **`Image::color_contrast` now takes `i32`** in the `-100..=100` range instead
+  of `f32`, matching raylib 6.2's `ImageColorContrast` signature change
+- **`Image::draw_rectangle_lines(rec, thickness, color)` is now
+  `draw_rectangle_lines_ex`**, matching raylib 6.2's split of
+  `ImageDrawRectangleLines` (1-pixel outline) from `ImageDrawRectangleLinesEx`
+  (thickness). A new thin
+  `Image::draw_rectangle_lines(pos_x, pos_y, width, height, color)` matches the
+  screen-space API
+- **`RaylibDraw::draw_capsule` and `draw_capsule_wires` now take
+  `(start_pos, end_pos, radius, rings, slices, color)`**, swapping `rings` and
+  `slices` to match raylib 6.2's redesigned `DrawCapsule`/ `DrawCapsuleWires`
+  parameter order (aligned with `DrawSphere`). The old order compiled silently
+  but rendered with swapped tessellation
+
+### Changed
+
+raylib 6.2 renamed or reshaped several functions the safe layer wraps which
+means the sola-raylib Rust API keeps its existing shape while calling the new
+FFI symbols:
+
+- `RaylibDraw::get_spline_point_bezier_quad` now calls
+  `GetSplinePointBezierQuadratic` (renamed upstream)
+- `Image::draw` now calls `ImageDrawImagePro` with a zero origin and no rotation
+  identical to the old `ImageDraw`
+- `Image::draw_triangle_ex` now calls `ImageDrawTriangleGradient` (renamed
+  upstream)
+- `rgui`'s `gui_message_box` and `gui_text_input_box` still return the
+  pressed-button index (`0` = window close, `-1` = nothing) even though raygui
+  5.x moved that index into an out-parameter and returns a `GuiResult` status
+  instead
+- `set_save_file_data_callback`'s trampoline matches raylib 6.2's const-correct
+  `SaveFileDataCallback` (`const void *data`)
+
+### Added
+
+Safe wrappers for the rest of raylib 6.2's new APIs.
+
+- Screen drawing (`RaylibDraw`): `draw_triangle_gradient`,
+  `draw_triangle_lines_ex`, `draw_circle_lines_ex`,
+  `draw_circle_sector_lines_ex`, `draw_ellipse_lines_ex`, `draw_ring_lines_ex`
+- Image drawing (`Image`): `draw_image`, `draw_image_ex`, `draw_image_rec`,
+  `draw_line_strip`, `draw_rectangle_pro`, `draw_rectangle_gradient_ex`,
+  `draw_circle_gradient`
+- `RaylibHandle::load_render_texture_ex` (render texture with an explicit pixel
+  format, e.g. float targets)
+- `RaylibHandle::get_codepoint` (pre-existing raylib gap that the
+  unimplemented-APIs scanner had been hiding)
+
+The raylib 6.2 path helpers (`IsFileHidden`, `IsPathDirectory`,
+`IsPathAbsolute`) stay unwrapped like the rest of the file helpers because
+they're covered by Rust's `std::path`/`std::fs`. `ImageDrawTextPro` is also
+unwrapped because raylib 6.2 declares it in the header but the implementation is
+an empty stub, so wrapping it would expose a silent no-op.
+
+### Examples
+
+- `shapes_new` now demos the 6.2 shape additions
+- New `image_draw` example exercising the `ImageDraw*` family,
+  `load_render_texture_ex`, and `get_codepoint`
+
 ## v6.3.1 - September 22, 2026
 
 - Fix gamepad check crashing on WASM; see

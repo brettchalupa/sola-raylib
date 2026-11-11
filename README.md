@@ -1,14 +1,14 @@
 # sola-raylib
 
 sola-raylib is an actively maintained Rust bindings and wrapper for
-[raylib](http://www.raylib.com/) 6.0. It currently targets Rust toolchain
+[raylib](http://www.raylib.com/) 6.2. It currently targets Rust toolchain
 version 1.78 or higher.
 
 - View the project on crates.io: https://crates.io/crates/sola-raylib
 - View the docs: https://docs.rs/sola-raylib/latest/sola_raylib/
 
 **Versioning:** sola-raylib's major version tracks raylib's major version. 5.x
-binds raylib 5.5, 6.x binds raylib 6.0, and so on. Minor and patch numbers are
+binds raylib 5.5, 6.x binds raylib 6.x, and so on. Minor and patch numbers are
 sola-raylib's own (raylib doesn't follow strict semver, so this project doesn't
 try to mirror it beyond the major).
 
@@ -21,13 +21,13 @@ commit
 
 Check out the [examples](./examples) directory to find usage examples. See
 [CHANGELOG.md](CHANGELOG.md) for recent changes, including breaking signature
-changes and new APIs wrapped from raylib 6.0.
+changes and new APIs wrapped for raylib 6.2.
 
 sola-raylib development happens on `main`. This README.md covers what's in
 `main`. Be sure to view the tag version of the repository if you want to find
 details on a specific version.
 
-The latest released version on crates.io is **6.3.1** (binds raylib 6.0).
+The latest released version on crates.io is **6.4.0** (binds raylib 6.2).
 
 ## Features / Bugs
 
@@ -212,9 +212,9 @@ either crate and the effect is the same.
 | `opengl_21`         | no      | Force OpenGL 2.1 backend.                                                                                                                                                                                                                                                 |
 | `opengl_es_20`      | no      | Force OpenGL ES 2.0 backend.                                                                                                                                                                                                                                              |
 | `opengl_es_30`      | no      | Force OpenGL ES 3.0 backend.                                                                                                                                                                                                                                              |
-| `software_render`   | no      | Experimental; see "Experimental raylib 6.0 platform flags".                                                                                                                                                                                                               |
-| `platform_memory`   | no      | Experimental; see "Experimental raylib 6.0 platform flags".                                                                                                                                                                                                               |
-| `platform_web_rgfw` | no      | Experimental; see "Experimental raylib 6.0 platform flags".                                                                                                                                                                                                               |
+| `software_render`   | no      | Experimental (introduced in raylib 6.0, still upstream-experimental in 6.2); see "Experimental platform/backend flags".                                                                                                                                                   |
+| `platform_memory`   | no      | Experimental (introduced in raylib 6.0, still upstream-experimental in 6.2); see "Experimental platform/backend flags".                                                                                                                                                   |
+| `platform_web_rgfw` | no      | Experimental (introduced in raylib 6.0, still upstream-experimental in 6.2); see "Experimental platform/backend flags".                                                                                                                                                   |
 
 **Behavior toggles**
 
@@ -236,18 +236,6 @@ either crate and the effect is the same.
 > `noscreenshot`. If you previously listed it in your Cargo.toml, just remove
 > it.
 
-### Known Issues
-
-Under `--features sdl` with SDL3, controllers connected before launch are not
-detected at all: raylib 6.0 opens them with a joystick _index_ where SDL3
-expects an `SDL_JoystickID` instance id, so every open fails with
-`PLATFORM: Unable to open game controller [ERROR: Parameter 'joystick' is
-invalid]`.
-Plugging a controller in after launch works, because that path uses a real
-instance id. Fixed upstream in raylib after the 6.0 tag, so it will clear when
-sola-raylib moves to the next raylib release. SDL2 builds and the default GLFW
-backend are unaffected.
-
 ## Platform-Specific Notes
 
 ### Windows
@@ -259,12 +247,12 @@ to hide this, add the following to your `main.rs`:
 #![windows_subsystem = "windows"]
 ```
 
-## Experimental Raylib 6.0 Platform Flags
+## Experimental platform/backend flags
 
-sola-raylib 6.0 exposes three feature flags for raylib 6.0's new backends. **All
-three are experimental upstream**, shipped with known gaps in raylib 6.0 itself.
-We surface them for opt-in use, but what actually renders or links is whatever
-raylib's C side supports at HEAD. Expect rough edges.
+sola-raylib exposes three feature flags for the alternative backends introduced
+in raylib 6.0. **All three remain experimental upstream in raylib 6.2**, with
+known gaps and ongoing fixes. We surface them for opt-in use, but what actually
+renders or links is whatever raylib's C side supports. Expect rough edges.
 
 - `software_render`: compiles raylib with the CPU `rlsw` software rasterizer.
   **Must be combined with the `sdl` feature** on Linux/macOS because rlsw is not

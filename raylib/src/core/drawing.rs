@@ -692,6 +692,32 @@ pub trait RaylibDraw {
         }
     }
 
+    /// Draw circle sector outline with line thickness.
+    #[inline]
+    #[allow(clippy::too_many_arguments)]
+    fn draw_circle_sector_lines_ex(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: i32,
+        thick: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawCircleSectorLinesEx(
+                center.into(),
+                radius,
+                start_angle,
+                end_angle,
+                segments,
+                thick,
+                color.into(),
+            );
+        }
+    }
+
     /// Draws a gradient-filled circle.
     ///
     /// raylib 6.0 changed `DrawCircleGradient` to take a `Vector2` center
@@ -745,7 +771,7 @@ pub trait RaylibDraw {
         }
     }
 
-    /// Draws circle outline. (Vector Version)
+    /// Draws circle outline (Vector Version)
     #[inline]
     fn draw_circle_lines_v(
         &mut self,
@@ -755,6 +781,20 @@ pub trait RaylibDraw {
     ) {
         unsafe {
             ffi::DrawCircleLinesV(center.into(), radius, color.into());
+        }
+    }
+
+    /// Draws circle outline with line thickness.
+    #[inline]
+    fn draw_circle_lines_ex(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        radius: f32,
+        thick: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawCircleLinesEx(center.into(), radius, thick, color.into());
         }
     }
 
@@ -816,9 +856,23 @@ pub trait RaylibDraw {
         }
     }
 
+    /// Draws ellipse outline with line thickness.
+    #[inline]
+    fn draw_ellipse_lines_ex(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        radius_h: f32,
+        radius_v: f32,
+        thick: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawEllipseLinesEx(center.into(), radius_h, radius_v, thick, color.into());
+        }
+    }
+
     /// Draw ring
     #[inline]
-    // Argument list mirrors raylib's `DrawRing` C API; refactoring would diverge from upstream.
     #[allow(clippy::too_many_arguments)]
     fn draw_ring(
         &mut self,
@@ -845,7 +899,6 @@ pub trait RaylibDraw {
 
     /// Draw ring lines
     #[inline]
-    // Argument list mirrors raylib's `DrawRingLines` C API; refactoring would diverge from upstream.
     #[allow(clippy::too_many_arguments)]
     fn draw_ring_lines(
         &mut self,
@@ -865,6 +918,34 @@ pub trait RaylibDraw {
                 start_angle,
                 end_angle,
                 segments,
+                color.into(),
+            );
+        }
+    }
+
+    /// Draw ring lines with line thickness.
+    #[inline]
+    #[allow(clippy::too_many_arguments)]
+    fn draw_ring_lines_ex(
+        &mut self,
+        center: impl Into<ffi::Vector2>,
+        inner_radius: f32,
+        outer_radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: i32,
+        thick: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawRingLinesEx(
+                center.into(),
+                inner_radius,
+                outer_radius,
+                start_angle,
+                end_angle,
+                segments,
+                thick,
                 color.into(),
             );
         }
@@ -1078,6 +1159,44 @@ pub trait RaylibDraw {
     ) {
         unsafe {
             ffi::DrawTriangleLines(v1.into(), v2.into(), v3.into(), color.into());
+        }
+    }
+
+    /// Draws a triangle using lines with line thickness.
+    #[inline]
+    fn draw_triangle_lines_ex(
+        &mut self,
+        v1: impl Into<ffi::Vector2>,
+        v2: impl Into<ffi::Vector2>,
+        v3: impl Into<ffi::Vector2>,
+        thick: f32,
+        color: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawTriangleLinesEx(v1.into(), v2.into(), v3.into(), thick, color.into());
+        }
+    }
+
+    /// Draws a triangle with interpolated colors, counter-clockwise vertex/color order.
+    #[inline]
+    fn draw_triangle_gradient(
+        &mut self,
+        v1: impl Into<ffi::Vector2>,
+        v2: impl Into<ffi::Vector2>,
+        v3: impl Into<ffi::Vector2>,
+        c1: impl Into<ffi::Color>,
+        c2: impl Into<ffi::Color>,
+        c3: impl Into<ffi::Color>,
+    ) {
+        unsafe {
+            ffi::DrawTriangleGradient(
+                v1.into(),
+                v2.into(),
+                v3.into(),
+                c1.into(),
+                c2.into(),
+                c3.into(),
+            );
         }
     }
 
@@ -1326,7 +1445,6 @@ pub trait RaylibDraw {
         }
     }
 
-    // Argument list mirrors raylib's `DrawTextPro` C API; refactoring would diverge from upstream.
     #[allow(clippy::too_many_arguments)]
     fn draw_text_pro(
         &mut self,
@@ -1608,6 +1726,9 @@ pub trait RaylibDraw {
     }
 
     /// Get (evaluate) spline point: Quadratic Bezier
+    ///
+    /// raylib 6.2 renamed this from `GetSplinePointBezierQuad` to
+    /// `GetSplinePointBezierQuadratic`.
     fn get_spline_point_bezier_quad(
         &mut self,
         p1: Vector2,
@@ -1615,7 +1736,7 @@ pub trait RaylibDraw {
         p3: Vector2,
         t: f32,
     ) -> Vector2 {
-        unsafe { ffi::GetSplinePointBezierQuad(p1.into(), c2.into(), p3.into(), t).into() }
+        unsafe { ffi::GetSplinePointBezierQuadratic(p1.into(), c2.into(), p3.into(), t).into() }
     }
 
     fn get_spline_point_bezier_cubic(
@@ -1924,13 +2045,16 @@ pub trait RaylibDraw3D {
     }
 
     /// Draw capsule with the center of its sphere caps at startPos and endPos
+    ///
+    /// raylib 6.2 swapped `rings` and `slices` to match `DrawSphere`'s
+    /// parameter order.
     fn draw_capsule(
         &mut self,
         start_pos: impl Into<ffi::Vector3>,
         end_pos: impl Into<ffi::Vector3>,
         radius: f32,
-        slices: i32,
         rings: i32,
+        slices: i32,
         color: impl Into<ffi::Color>,
     ) {
         unsafe {
@@ -1938,21 +2062,24 @@ pub trait RaylibDraw3D {
                 start_pos.into(),
                 end_pos.into(),
                 radius,
-                slices,
                 rings,
+                slices,
                 color.into(),
             )
         }
     }
 
     ///Draw capsule wireframe with the center of its sphere caps at startPos and endPos
+    ///
+    /// raylib 6.2 swapped `rings` and `slices` to match `DrawSphere`'s
+    /// parameter order.
     fn draw_capsule_wires(
         &mut self,
         start_pos: impl Into<ffi::Vector3>,
         end_pos: impl Into<ffi::Vector3>,
         radius: f32,
-        slices: i32,
         rings: i32,
+        slices: i32,
         color: impl Into<ffi::Color>,
     ) {
         unsafe {
@@ -1960,8 +2087,8 @@ pub trait RaylibDraw3D {
                 start_pos.into(),
                 end_pos.into(),
                 radius,
-                slices,
                 rings,
+                slices,
                 color.into(),
             )
         }
@@ -2121,7 +2248,6 @@ pub trait RaylibDraw3D {
     }
 
     /// Draw a billboard texture defined by source and rotation
-    // Argument list mirrors raylib's `DrawBillboardPro` C API; refactoring would diverge from upstream.
     #[allow(clippy::too_many_arguments)]
     fn draw_billboard_pro(
         &mut self,

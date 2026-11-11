@@ -115,6 +115,21 @@ impl RaylibHandle {
         unsafe { ffi::GetCodepointCount(ptr.as_ptr()) }
     }
 
+    /// Get the next codepoint in a UTF-8 encoded string.
+    ///
+    /// Returns the codepoint value and the number of bytes it occupies, or
+    /// `None` if `text` is empty. This reads from the start of the string;
+    /// slice `text` to advance.
+    pub fn get_codepoint(text: &str) -> Option<(i32, i32)> {
+        if text.is_empty() {
+            return None;
+        }
+        let ptr = CString::new(text).unwrap();
+        let mut codepoint_size = 0;
+        let codepoint = unsafe { ffi::GetCodepoint(ptr.as_ptr(), &mut codepoint_size) };
+        Some((codepoint, codepoint_size))
+    }
+
     pub fn unload_font(&mut self, font: WeakFont) {
         unsafe { ffi::UnloadFont(font.0) };
     }
@@ -463,6 +478,7 @@ impl RaylibHandle {
 
 #[cfg(test)]
 mod codepoint_tests {
+    use crate::core::RaylibHandle;
     use crate::ffi;
     use std::ffi::CString;
 
@@ -507,5 +523,25 @@ mod codepoint_tests {
         let (byte_len, cps) = codepoints("hello");
         assert_eq!(byte_len, 5);
         assert_eq!(cps.len(), 5);
+    }
+
+    #[test]
+    fn get_codepoint_decodes_multibyte_leading_char() {
+        // 'é' is U+00E9, 2 UTF-8 bytes.
+        assert_eq!(RaylibHandle::get_codepoint("éa"), Some((0xE9, 2)));
+        // '€' is U+20AC, 3 UTF-8 bytes.
+        assert_eq!(RaylibHandle::get_codepoint("€!"), Some((0x20AC, 3)));
+        // Emoji are 4 UTF-8 bytes.
+        assert_eq!(RaylibHandle::get_codepoint("🦀"), Some((0x1F980, 4)));
+    }
+
+    #[test]
+    fn get_codepoint_ascii_is_one_byte() {
+        assert_eq!(RaylibHandle::get_codepoint("a"), Some((0x61, 1)));
+    }
+
+    #[test]
+    fn get_codepoint_empty_is_none() {
+        assert_eq!(RaylibHandle::get_codepoint(""), None);
     }
 }

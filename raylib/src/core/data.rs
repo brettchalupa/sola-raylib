@@ -98,7 +98,7 @@ pub fn encode_data_base64(data: &[u8]) -> Vec<c_char> {
 
 /// Compute a CRC32 checksum of `data`. Added in raylib 6.0.
 pub fn compute_crc32(data: &[u8]) -> u32 {
-    unsafe { ffi::ComputeCRC32(data.as_ptr() as *mut u8, data.len() as i32) }
+    unsafe { ffi::ComputeCRC32(data.as_ptr(), data.len() as i32) }
 }
 
 /// Compute an MD5 hash of `data`. Returns 16 bytes (4 × u32). Added in
@@ -109,7 +109,7 @@ pub fn compute_crc32(data: &[u8]) -> u32 {
 /// [`u32::to_le_bytes`] to each word (MD5 is little-endian).
 pub fn compute_md5(data: &[u8]) -> [u32; 4] {
     unsafe {
-        let ptr = ffi::ComputeMD5(data.as_ptr() as *mut u8, data.len() as i32);
+        let ptr = ffi::ComputeMD5(data.as_ptr(), data.len() as i32);
         let mut out = [0u32; 4];
         std::ptr::copy_nonoverlapping(ptr, out.as_mut_ptr(), 4);
         out
@@ -123,7 +123,7 @@ pub fn compute_md5(data: &[u8]) -> [u32; 4] {
 /// digest, apply [`u32::to_be_bytes`] to each word.
 pub fn compute_sha1(data: &[u8]) -> [u32; 5] {
     unsafe {
-        let ptr = ffi::ComputeSHA1(data.as_ptr() as *mut u8, data.len() as i32);
+        let ptr = ffi::ComputeSHA1(data.as_ptr(), data.len() as i32);
         let mut out = [0u32; 5];
         std::ptr::copy_nonoverlapping(ptr, out.as_mut_ptr(), 5);
         out
@@ -147,7 +147,7 @@ pub fn compute_sha1(data: &[u8]) -> [u32; 5] {
 /// ```
 pub fn compute_sha256(data: &[u8]) -> [u32; 8] {
     unsafe {
-        let ptr = ffi::ComputeSHA256(data.as_ptr() as *mut u8, data.len() as i32);
+        let ptr = ffi::ComputeSHA256(data.as_ptr(), data.len() as i32);
         let mut out = [0u32; 8];
         std::ptr::copy_nonoverlapping(ptr, out.as_mut_ptr(), 8);
         out
