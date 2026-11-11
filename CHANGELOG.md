@@ -4,8 +4,9 @@
 
 - Upgrade to raylib v6.2 (sha: 02566453880e06bec97f5b8160fa6fe1e98397ca,
   [GitHub link](https://github.com/raysan5/raylib/commit/02566453880e06bec97f5b8160fa6fe1e98397ca))
-- Upgrade raygui.h to SHA 1abccb3a5303d041dc14404b7dd874fa665dd4af,
-  [GitHub link](https://github.com/raysan5/raygui/blob/1abccb3a5303d041dc14404b7dd874fa665dd4af/src/raygui.h)
+- Upgrade raygui.h to SHA 2a3c4790c6a887075ee192e44892916ed210c2e6,
+  [GitHub link](https://github.com/raysan5/raygui/commit/2a3c4790c6a887075ee192e44892916ed210c2e6)
+- Upgrade gamecotnrollerdb.txt to latest
 
 ### BREAKING
 
