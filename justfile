@@ -36,6 +36,10 @@ build-examples:
 update-gamecontrollerdb:
     ./scripts/update_gamecontrollerdb.sh
 
+# Refresh the vendored raygui header (single-file GUI library).
+update-raygui:
+    ./scripts/update_raygui.sh
+
 # Run a specific example by name, e.g. `just example drop`.
 example name:
     cd examples && cargo run --bin {{ name }}
