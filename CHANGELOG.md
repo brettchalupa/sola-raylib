@@ -1,6 +1,6 @@
 # sola-raylib Changelog
 
-## v6.4.0 - November 11, 2026
+## v6.4.0 - November 12, 2026
 
 - Upgrade to raylib v6.2 (sha: 02566453880e06bec97f5b8160fa6fe1e98397ca,
   [GitHub link](https://github.com/raysan5/raylib/commit/02566453880e06bec97f5b8160fa6fe1e98397ca))
