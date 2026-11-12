@@ -418,7 +418,7 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "sola-raylib"
-version = "6.4.0-dev"
+version = "6.4.0"
 dependencies = [
  "cfg-if",
  "paste",
@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "sola-raylib-sys"
-version = "6.4.0-dev"
+version = "6.4.0"
 dependencies = [
  "bindgen",
  "cc",

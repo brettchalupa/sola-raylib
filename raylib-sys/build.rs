@@ -556,7 +556,10 @@ fn configure_windows_msvc_env(target: &str) {
         if key.to_string_lossy().eq_ignore_ascii_case("path") {
             let mut combined = value.to_os_string();
             if let Some(existing) = env::var_os("PATH") {
+                #[cfg(windows)]
                 combined.push(";");
+                #[cfg(not(windows))]
+                combined.push(":");
                 combined.push(existing);
             }
             env::set_var("PATH", combined);
