@@ -6,7 +6,7 @@
   [GitHub link](https://github.com/raysan5/raylib/commit/02566453880e06bec97f5b8160fa6fe1e98397ca))
 - Upgrade raygui.h to SHA 2a3c4790c6a887075ee192e44892916ed210c2e6,
   [GitHub link](https://github.com/raysan5/raygui/commit/2a3c4790c6a887075ee192e44892916ed210c2e6)
-- Upgrade gamecotnrollerdb.txt to latest
+- Upgrade gamecontrollerdb.txt to latest
 
 ### BREAKING
 
