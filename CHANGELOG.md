@@ -1,5 +1,12 @@
 # sola-raylib Changelog
 
+## v6.4.1 - November 19, 2026
+
+### Fixed
+
+- Build script has proper `use` for SDL, see
+  [#83](https://github.com/brettchalupa/sola-raylib/pull/83)
+
 ## v6.4.0 - November 12, 2026
 
 - Upgrade to raylib v6.2 (sha: 02566453880e06bec97f5b8160fa6fe1e98397ca,
