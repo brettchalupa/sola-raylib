@@ -345,6 +345,8 @@ fn emit_sdl_link_lib(dst_lib: &Path) {
 
 #[cfg(all(feature = "sdl", not(feature = "platform_memory")))]
 fn find_sdl_link_search_dir(dst_lib: &Path, sdl_pkg: &str) -> Option<PathBuf> {
+    use std::process::Command;
+
     // Try to derive the lib dir from CMake's <PKG>_DIR cache entry, e.g.
     // /prefix/lib/cmake/SDL3 -> /prefix/lib. CMake may find SDL in a prefix
     // that isn't on the default linker search path (Homebrew/Linuxbrew).
