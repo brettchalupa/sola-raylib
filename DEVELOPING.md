@@ -58,7 +58,7 @@ Guide to creating new releases on crates.io.
 2. **After the PR merges, tag the merge commit and push the tag:**
    ```
    git checkout main && git pull
-   git tag v5.5.2      # replace with the new version
+   git tag -a v5.5.2      # replace with the new version
    git push origin v5.5.2
    ```
 3. **Dry-run publish** to catch manifest issues while everything is still
